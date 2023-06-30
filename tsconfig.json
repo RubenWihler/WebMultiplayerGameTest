@@ -1,0 +1,11 @@
+{
+    "compilerOptions": {
+        "target": "esnext",
+        "lib": ["DOM", "es2017"],
+        "module": "esnext",
+        "typeRoots" : ["./node_modules/@types", "./node_modules/@socket.io"],
+        "moduleResolution": "node",
+        "rootDir": "src",
+        "outDir": "dist"
+    }
+}
