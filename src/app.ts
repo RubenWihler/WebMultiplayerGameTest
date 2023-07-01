@@ -6,6 +6,8 @@ import express from 'express';
 import http from 'http';
 import * as socketIO from 'socket.io';
 import path from 'path';
+import UserProcessor from './server/database/processor/user_processor.js';
+import EventsManager from './server/class/events_manager.js';
 
 const PORT = 2000;
 const __dirname = path.resolve();
@@ -19,7 +21,10 @@ app.get('/', function (req, res) {
 app.use('/client', express.static(__dirname + '/dist/client'));
 
 server.listen(PORT);
-console.log('Server started.');
+console.log('[+] Server started.');
+
+console.log('[+] Test');
+
 
 var SOCKET_LIST = {};
 
