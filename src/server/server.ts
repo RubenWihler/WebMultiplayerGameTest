@@ -5,26 +5,27 @@
 import express from 'express';
 import http from 'http';
 import * as socketIO from 'socket.io';
-import path from 'path';
+import dotenv from 'dotenv';
 import UserProcessor from './database/processor/user_processor.js';
 import EventsManager from './class/events_manager.js';
 
-const PORT = 2000;
-const __dirname = path.resolve();
+import { router as main_router, __dirname } from './routes/main_routes.js';
 
+dotenv.config();
+
+//-------------- Server starting --------------//
 const app = express();
 const server = http.createServer(app);
+const port : number = Number(process.env.LISTEN_PORT);
 
-app.get('/', function (req, res) {
-    res.sendFile(__dirname + '/client/index.html');
-});
-app.use('/client', express.static(__dirname + '/dist/client'));
+console.log('[+] strating server...');
 
-server.listen(PORT);
-console.log('[+] Server started.');
+app.use('/', main_router);
 
-console.log('[+] Test');
+server.listen(port);
+console.log('[+] Server started on port ' + port);
 
+//-------------- Socket.io --------------//
 
 var SOCKET_LIST = {};
 
