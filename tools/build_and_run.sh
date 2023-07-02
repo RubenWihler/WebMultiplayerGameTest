@@ -9,4 +9,5 @@ echo '';
 echo '[+] Lancement du serveur ...';
 echo '';
 
-node dist/server/server.js;
+cd dist;
+node server/server.js;
