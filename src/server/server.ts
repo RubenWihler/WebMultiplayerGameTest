@@ -6,8 +6,8 @@ import express from 'express';
 import http from 'http';
 import * as socketIO from 'socket.io';
 import path from 'path';
-import UserProcessor from './server/database/processor/user_processor.js';
-import EventsManager from './server/class/events_manager.js';
+import UserProcessor from './database/processor/user_processor.js';
+import EventsManager from './class/events_manager.js';
 
 const PORT = 2000;
 const __dirname = path.resolve();
