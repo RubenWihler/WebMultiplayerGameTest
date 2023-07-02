@@ -1,5 +1,8 @@
 # exclude files in dist folder
 dist/*
 
+# exclude .env file
+!.env
+
 # just include dist folder
 !dist/.gitkeep
