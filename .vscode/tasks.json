@@ -6,7 +6,7 @@
             "type": "shell",
             "command": "wsl",
             "args": [
-                "\"./tools/build.sh ; node dist/app.js\""
+                "\"./tools/build_and_run.sh\""
             ],
             "problemMatcher": []
         }
