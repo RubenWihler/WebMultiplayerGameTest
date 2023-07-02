@@ -8,6 +8,9 @@ echo '[+] Copie de src dans dist ...';
 cp -R src/client dist/client;
 cp -R src/server dist/server;
 
+echo '[+] Copie des fichiers de configuration ...';
+cp .env dist/.env;
+
 echo '[+] Suppression des fichiers inutiles ...';
 find dist/ -name "*.ts" -type f -delete;
 
