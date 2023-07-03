@@ -10,7 +10,29 @@
 <body>
     <script src="/socket.io/socket.io.js"></script>
     
-    <canvas id="ctx", width="500" height="500" style="border: 1px solid black"></canvas>
+    
+    <form id="signin-form">
+        <h3>sign in</h3>
+        <label for="signin-username">username</label>
+        <input type="text" id="signin-username">
+        <label for="signin-password">password</label>
+        <input type="password" id="signin-password">
+        <button type="submit" id="signin-button">sign in</button>
+    </form>
+
+    <form id="signup-form">
+        <h3>sign up</h3>
+        <label for="signup-username">username</label>
+        <input type="text" id="signup-username">
+        <label for="signup-email">email</label>
+        <input type="text" id="signup-email">
+        <label for="signup-password">password</label>
+        <input type="password" id="signup-password">
+        <label for="signup-password-confirm">confirm password</label>
+        <input type="password" id="signup-password-confirm">
+        <button type="submit" id="signup-button">sign up</button>
+    </form>
+    
 
     <script type="module" src="./scripts/home_main.js"></script>
 </body>

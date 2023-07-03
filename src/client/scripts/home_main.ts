@@ -1,25 +1,43 @@
-//to remove in the javascript file
-import io from 'socket.io-client';
+import ConnectionManager from './classes/connection/connection_manager.js';
+const connection_manager = new ConnectionManager();
 
-var socket = io();
+const element_login_form : HTMLFormElement = document.getElementById('signin-form') as HTMLFormElement;
+const element_login_username : HTMLInputElement = document.getElementById('signin-username') as HTMLInputElement;
+const element_login_password : HTMLInputElement = document.getElementById('signin-password') as HTMLInputElement;
 
-var canvas : HTMLCanvasElement = document.querySelector('#ctx');
-var ctx = canvas.getContext('2d');
 
-console.log('Client started.');
+element_login_form.addEventListener('submit', (event) => {
+    if (!ConnectionManager.isConnected) {
+        event.preventDefault();
+        return;
+    }
 
-socket.on('connect', function () {
-    console.log('socket connection');
+    const username = element_login_username.value;
+    const password = element_login_password.value;
+    const login_data = {
+        username: username,
+        password: password
+    };
+
+    ConnectionManager.send('login', login_data);
+    event.preventDefault();
 });
 
-socket.on('update', function (data) {
-    console.log(data);
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = 'red';
+ConnectionManager.onDisconnect.subscribe(() => {
+    alert('Disconnected from server.\r\nPlease refresh the page to reconnect.');
+});
 
-    for (var i in data) {
-        var player = data[i];
-        ctx.fillRect(player.position.x, player.position.y, 50, 50);
-        ctx.fillText(player.name, player.position.x + 20, player.position.y -5);
+ConnectionManager.onLoginResponse.subscribe((login_response) => {
+    if (login_response.success) {
+        alert('Login success');
+    }
+    else {
+        console.log(JSON.stringify(login_response));
+        let errormsg : string = "login failed : ";
+        login_response.messages.forEach((error : string) => {
+            errormsg += error + "\n";
+        });
+
+        alert(errormsg);
     }
 });

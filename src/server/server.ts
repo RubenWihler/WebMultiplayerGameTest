@@ -1,13 +1,14 @@
 // Ceci est le fichier principal de l'application. Il permet de lancer le serveur.
 
 // Importation des modules
-// var express = require('express');
 import express from 'express';
 import http from 'http';
 import * as socketIO from 'socket.io';
 import dotenv from 'dotenv';
-import UserProcessor from './database/processor/user_processor.js';
-import EventsManager from './class/events_manager.js';
+import UserProcessor from './class/database/processor/user_processor.js';
+import EventsManager from './class/event_system/events_manager.js';
+import SocketManager from './class/connection/socket_manager.js';
+import ConnectionsManager from './class/connection/connections_manager.js';
 
 import { router as main_router, __dirname } from './routes/main_routes.js';
 
@@ -23,46 +24,19 @@ console.log('[+] strating server...');
 app.use('/', main_router);
 
 server.listen(port);
-console.log('[+] Server started on port ' + port);
+console.log('[+] Server started ! listening on port : ' + port);
 
-//-------------- Socket.io --------------//
 
-var SOCKET_LIST = {};
-
+//-------------- Test --------------//
 const io = new socketIO.Server(server, {});
-io.sockets.on('connection', function (socket:any) {
-    socket.id = Math.random();
-    socket.name = "P-" + Math.floor(Math.random() * 10);
-    socket.position = {
-        x: 0,
-        y: 0
-    };
-    SOCKET_LIST[socket.id] = socket;
-    
-    console.log('socket connection');
+const socket_manager = new SocketManager(io);
+const connections_manager = ConnectionsManager.Instance;
 
-    socket.on('disconnect', function () {
-        console.log('socket disconnection');
-        delete SOCKET_LIST[socket.id];
-    });
+
+EventsManager.onUserCreated.subscribe((connectionData) => {
+    console.log("User created : " + JSON.stringify(connectionData));
 });
 
-setInterval(function () {
-    var pack = [];
-
-    for (var i in SOCKET_LIST) {
-        var socket = SOCKET_LIST[i];
-        socket.position.x++;
-        socket.position.y++;
-        pack.push({
-            position: socket.position,
-            name: socket.name
-        });
-    }
-
-    for (var i in SOCKET_LIST) {
-        var socket = SOCKET_LIST[i];
-        socket.emit('update', pack);
-    }   
-
-}, 1000 / 25);
+EventsManager.onUserDeleted.subscribe((userId) => {
+    console.log("User deleted : id = " + userId);
+});
