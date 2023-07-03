@@ -162,6 +162,44 @@ export default class UserProcessor{
         };
     }
     /**
+     * Sign in a user with a token and a username. 
+     * @param username the username of the user
+     * @param token the token of the user
+     * @returns If the token or the username is incorrect, return an object with the statut false and a message
+     * If the sign in is successful, return an object with the statut true and a connection_data.
+     */
+    static async signinWithTokenAsync(username:string, token: string) : Promise<any>{
+        const pool : Pool = DatabaseManager.Pool;
+        const query = "SELECT * FROM Users WHERE username = ? AND token = ? LIMIT 1";
+        const queryValues = [username, token];
+        const [rows] : any = await pool.promise().query(query, queryValues);
+        
+        if (rows.length == 0){
+            return {
+                statut: false,
+                msg: ["the token or the username is incorrect"]
+            };
+        }
+
+        const user = new User(
+            rows[0].userId,
+            rows[0].username,
+            rows[0].email
+        );
+
+        const connection_data = new ConnectionData(
+            token,
+            user
+        );
+
+        EventsManager.onUserLogin.notify(connection_data);
+
+        return {
+            statut: true,
+            connection_data: connection_data
+        };
+    }
+    /**
      * sign out a user from his id. If the user doesn't exist, return an object with the statut false and a message
      * If the sign out is successful, return an object with the statut true
      * @param userId the id of the user to sign out

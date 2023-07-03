@@ -16,4 +16,8 @@ export default class ObservableEvent<T>{
     notify(data:T) {
         this.observers.forEach((observer) => observer(data));
     }
+
+    dispose(){
+        this.observers = [];
+    }
 }
