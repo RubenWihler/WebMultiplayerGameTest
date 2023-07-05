@@ -1,16 +1,21 @@
-import * as socketIO from 'socket.io';
+import { Socket, Server } from 'socket.io';
 import UserProcessor from '../database/processor/user_processor.js';
 import ConnectionHandler from './connection_handler.js';
 import ConnectionsManager from './connections_manager.js';
+import ObservableEvent from '../event_system/observable_event.js';
 import { json } from 'express';
 
 export default class SocketManager {
     private static instance: SocketManager;
-    private io: socketIO.Server;
+    private io: Server;
 
     private connected_sockets: Map<string, ConnectionHandler>;
-    private not_connected_sockets: socketIO.Socket[];
+    private not_connected_sockets: Socket[];
 
+    public static readonly onConnection: ObservableEvent<Socket> = new ObservableEvent();
+    public static readonly onDisconnection: ObservableEvent<Socket> = new ObservableEvent();
+    private static readonly listeningMessages: Map<string, (socket: Socket, data) => void> = new Map();
+    public static readonly listeningMessagesForLoggedConnections: Map<string, (connecitonHandler: ConnectionHandler, data: any) => void> = new Map();
 
     public static get Instance(): SocketManager {
         if (SocketManager.instance == null || SocketManager.instance == undefined) {
@@ -20,7 +25,7 @@ export default class SocketManager {
         return SocketManager.instance;
     }
 
-    public static get Io(): socketIO.Server {
+    public static get Io(): Server {
         return this.Instance.io;
     }
 
@@ -28,7 +33,7 @@ export default class SocketManager {
         return this.Instance.connected_sockets;
     }
 
-    constructor(io: socketIO.Server) {
+    constructor(io: Server) {
         SocketManager.instance = this;
         this.not_connected_sockets = [];
         this.connected_sockets = new Map();
@@ -36,13 +41,29 @@ export default class SocketManager {
         io.on('connection', (socket) => this.onConnection(socket));
     }
 
-    private onConnection(socket: socketIO.Socket){
+    public static listenMessage(message: string, callback: (socket: Socket, data: any) => void){
+        SocketManager.listeningMessages.set(message, callback);
+    }
+    public static listenMessageForLoggedConnections(message: string, callback: (connection: ConnectionHandler, data: any) => void){
+        SocketManager.listeningMessagesForLoggedConnections.set(message, callback);
+    }
+
+    private onConnection(socket: Socket){
         this.not_connected_sockets.push(socket);
         this.bindMessages(socket);
         console.log('[+] New socket connected : ' + socket.id);
     }
 
-    private bindMessages(socket: socketIO.Socket){
+    private bindMessages(socket: Socket){
+
+        //Bind all messages
+        for(const [message, callback] of SocketManager.listeningMessages.entries()){
+            socket.on(message, (data) => {
+                callback(socket, data);
+            });
+        }
+
+        socket.on('test', (data) => {});
         socket.on('disconnect', () => this.onDisconnect(socket));
         socket.on('signup', (signup_data) => this.onSignup(socket, signup_data));
         socket.on('login', (login_data) => this.onLogin(socket, login_data));
@@ -50,8 +71,7 @@ export default class SocketManager {
         socket.on('logout', () => this.onLogout(socket));
     }
 
-
-    private onDisconnect(socket: socketIO.Socket){
+    private onDisconnect(socket: Socket){
         //When the socket is not associated with a connection
         if(this.not_connected_sockets.find((s) => s.id == socket.id) != null){
             this.not_connected_sockets.splice(this.not_connected_sockets.indexOf(socket), 1);
@@ -67,7 +87,7 @@ export default class SocketManager {
 
         console.log('[+] connected-socket disconnected : ' + socket.id);
     }
-    private async onSignup(socket: socketIO.Socket, signup_data: any){
+    private async onSignup(socket: Socket, signup_data: any){
         
         //If the socket is already associated with a connection
         if(this.isSocketAlreadyConnected(socket)){
@@ -154,7 +174,7 @@ export default class SocketManager {
         }
         socket.emit('signup-response', response);
     }
-    private async onLogin(socket: socketIO.Socket, login_data: any){
+    private async onLogin(socket: Socket, login_data: any){
 
         //If the socket is already associated with a connection
         if(this.isSocketAlreadyConnected(socket)){
@@ -197,7 +217,7 @@ export default class SocketManager {
             }
         });
     }
-    private async onLogout(socket: socketIO.Socket){
+    private async onLogout(socket: Socket){
         if(!this.isSocketAlreadyConnected(socket)){
             socket.emit('logout-response', {
                 success: false,
@@ -210,7 +230,7 @@ export default class SocketManager {
         socket.emit('logout-response', {success: true});
         return;
     }
-    private async onTokenLogin(socket: socketIO.Socket, credentials: any){
+    private async onTokenLogin(socket: Socket, credentials: any){
         //If the socket is already associated with a connection
         if(this.isSocketAlreadyConnected(socket)){
             socket.emit('token-login-response', {
@@ -259,7 +279,7 @@ export default class SocketManager {
      * @param socket the socket to check
      * @returns true if the socket is already connected to an account.
      */
-    private isSocketAlreadyConnected(socket: socketIO.Socket): Boolean{
+    private isSocketAlreadyConnected(socket: Socket): Boolean{
         return this.connected_sockets.get(socket.id) != null;
     }
     // private printTest(){

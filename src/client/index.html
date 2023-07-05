@@ -10,31 +10,59 @@
 <body>
     <script src="/socket.io/socket.io.js"></script>
     
-    
-    <form id="signin-form">
-        <h3>sign in</h3>
-        <label for="signin-username">username</label>
-        <input type="text" id="signin-username">
-        <label for="signin-password">password</label>
-        <input type="password" id="signin-password">
-        <button type="submit" id="signin-button">sign in</button>
-    </form>
+    <div id="wrapper">
+        <div class="view" id="connection" style="display: none; visibility: hidden;">
+            <h3>connection</h3>
+            <button id="connection-signin-button">Sign-in</button>
+            <button id="connection-signup-button">Sign-up</button>
+        </div>
 
-    <form id="signup-form">
-        <h3>sign up</h3>
-        <label for="signup-username">username</label>
-        <input type="text" id="signup-username">
-        <label for="signup-email">email</label>
-        <input type="text" id="signup-email">
-        <label for="signup-password">password</label>
-        <input type="password" id="signup-password">
-        <label for="signup-password-confirm">confirm password</label>
-        <input type="password" id="signup-password-confirm">
-        <button type="submit" id="signup-button">sign up</button>
-    </form>
+        <div class="view" id="signin" style="display: none; visibility: hidden;">
+            <form id="signin-form">
+                <h3>sign in</h3>
+                <label for="signin-username">username</label>
+                <input type="text" id="signin-username">
+                <label for="signin-password">password</label>
+                <input type="password" id="signin-password">
+                <button type="submit" id="signin-button">sign in</button>
+            </form>
+        </div>
+        
+        <div class="view" id="signup" style="display: none; visibility: hidden;">
+            <form id="signup-form">
+                <h3>sign up</h3>
+                <label for="signup-username">username</label>
+                <input type="text" id="signup-username">
+                <label for="signup-email">email</label>
+                <input type="text" id="signup-email">
+                <label for="signup-password">password</label>
+                <input type="password" id="signup-password">
+                <label for="signup-password-confirm">confirm password</label>
+                <input type="password" id="signup-password-confirm">
+                <button type="submit" id="signup-button">sign up</button>
+            </form>
+        </div>
+        
+        <div class="view" id="disconnected" style="display: none; visibility: hidden;">
+            <h1>disconnected</h1>
+            <p>
+                you have been disconnected from the server.<br>
+                <span id="disconnected-countdown-message" style="display: none; visibility: hidden;">
+                    the page will automatically refresh in <span id="disconnected-countdown">3</span> seconds.
+                </span>
+                <br>
+                <span id="disconnected-error-message" style="display: none; visibility: hidden;">
+                    <b><span id="disconnected-error-message-text"></span></b>
+                </span>
+            </p>
+        </div>
 
-    <button id="logout-button" style="display: none; visibility: hidden;">logout</button>
+        <div class="view" id="home" style="display: none; visibility: hidden;">
+            <h1>Home</h1>
+        </div>
     
+        <button id="logout-button" style="display: none; visibility: hidden;">logout</button>
+    </div>
 
     <script type="module" src="./scripts/home_main.js"></script>
 </body>

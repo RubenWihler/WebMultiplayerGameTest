@@ -15,6 +15,7 @@ export default class ConnectionManager {
     public static onTokenLogin : ObservableEvent<any> = new ObservableEvent();
     public static onSignup : ObservableEvent<any> = new ObservableEvent();
     public static onLogout : ObservableEvent<any> = new ObservableEvent();
+    public static onConnectionError : ObservableEvent<any> = new ObservableEvent();
 
 
     public static get Instance(): ConnectionManager {
@@ -48,6 +49,7 @@ export default class ConnectionManager {
         this.socket.on('token-login-response', (login_response) => this.onReceiveTokenLoginResponse(login_response));
         this.socket.on('signup-response', (signup_response) => this.onReceiveSignupResponse(signup_response));
         this.socket.on('logout-response', (logout_response) => this.onReceiveLogoutResponse(logout_response));
+        this.socket.on('connection-error', (data) => this.onReceivConnectionError(data));
     }
     
     private onReceiveConnect(){
@@ -70,6 +72,9 @@ export default class ConnectionManager {
     }
     private onReceiveLogoutResponse(logout_response: any){
         ConnectionManager.onLogout.notify(logout_response);
+    }
+    private onReceivConnectionError(data: any){
+        ConnectionManager.onConnectionError.notify(data);
     }
 
 }

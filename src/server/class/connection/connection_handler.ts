@@ -2,6 +2,7 @@ import * as socketIO from 'socket.io';
 import ObservableEvent from "../event_system/observable_event.js";
 import ConnectionData from "./connection_types/connection_data.js";
 import ConnectionsManager from "./connections_manager.js";
+import SocketManager from './socket_manager.js';
 
 export class ConnectionStatut {
     static readonly CONNECTED = "CONNECTED";
@@ -15,7 +16,6 @@ export default class ConnectionHandler {
     connection_data: ConnectionData;
     statut : ConnectionStatut;
     socket : socketIO.Socket;
-
 
     onConnect : ObservableEvent<ConnectionHandler> = new ObservableEvent();
     onDisconnect : ObservableEvent<ConnectionHandler> = new ObservableEvent();
@@ -37,6 +37,13 @@ export default class ConnectionHandler {
         this.connection_data = connection_data;
         this.statut = ConnectionStatut.CONNECTED;
         this.socket = socket;
+        
+        for (const [message, callback] of SocketManager.listeningMessagesForLoggedConnections.entries()) {            
+            this.socket.on(message, (data) => {
+                callback(this, data);
+            });
+        }
+
         ConnectionsManager.Instance.addConnection(this);
         this.onConnect.notify(this);
     }

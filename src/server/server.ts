@@ -32,6 +32,12 @@ const io = new socketIO.Server(server, {});
 const socket_manager = new SocketManager(io);
 const connections_manager = ConnectionsManager.Instance;
 
+//-------------- Socket events --------------//
+//#todo : move this in a file
+SocketManager.listenMessageForLoggedConnections('test', (connectionHandler, data) => {
+    console.log('test received : ' + data + ' from ' + connectionHandler.connection_data.user.username);
+});
+
 
 EventsManager.onUserCreated.subscribe((connectionData) => {
     console.log("User created : " + JSON.stringify(connectionData));

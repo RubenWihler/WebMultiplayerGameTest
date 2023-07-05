@@ -23,7 +23,6 @@ export default class ConnectionsManager{
         this.current_connections = [];
     }
 
-
     public addConnection(connection_handler: ConnectionHandler): Boolean {
         const connections_to_remove: ConnectionHandler[] = [];
 
@@ -33,7 +32,11 @@ export default class ConnectionsManager{
             }
         });
 
-        connections_to_remove.forEach(connection => {
+        connections_to_remove.forEach(async (connection) => {
+            connection.socket.emit("connection-error", {
+                code: "OTHER_DEVICE_LOGGED_IN",
+            });
+            await setTimeout(() => {}, 1000);
             connection.disconnect();
         });
 
