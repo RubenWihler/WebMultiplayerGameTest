@@ -17,6 +17,7 @@ export default class LobbiesManager{
     }
 
     private constructor() {
+        LobbiesManager._instance = this;
         this._lobbies = new Map<string, Lobby>();
     }
 
@@ -25,12 +26,12 @@ export default class LobbiesManager{
      * @param name the name of the lobby
      * @returns the created lobby
      */
-    public static createLobby(name: string): Lobby {
+    public static createLobby(name: string, password: string = null): Lobby {
         const id = LobbiesManager.generateId();
-        const lobby = new Lobby(id, name);
-
+        const lobby = new Lobby(id, name, password);
+        
         LobbiesManager.instance._lobbies.set(id, lobby);
-
+        
         return lobby;
     }
     /**
@@ -65,7 +66,7 @@ export default class LobbiesManager{
         let id: string;
 
         do id = IdGenerator.generate();
-        while (!(id in LobbiesManager.instance._lobbies.values()));
+        while (LobbiesManager.instance._lobbies.has(id));
 
         return IdGenerator.generate();
     }

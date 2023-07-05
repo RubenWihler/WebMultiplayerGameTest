@@ -1,11 +1,17 @@
 import ConnectionHandler, { ConnectionStatut } from "../../connection/connection_handler.js";
+import HashTools from "../../global_types/hash_tools.js";
 import ObservableEvent from "../../event_system/observable_event.js";
 import BanWord from "../../global_types/ban_word.js";
 import LobbiesManager from "./lobbies_manager.js";
 
 export default class Lobby {
+    public static readonly MIN_LOBBY_PLAYERS = 2;
+    public static readonly MAX_LOBBY_PLAYERS = 8;
+
     private readonly _id: string;
     private readonly _connections: Map<number, ConnectionHandler>;
+    private _password_hash: string;
+    private _max_players: number;
     private _name: string;
     private _owner_id: number;
     private _banned_user_ids: Set<number>;
@@ -13,15 +19,18 @@ export default class Lobby {
     public readonly onConnectionAdd: ObservableEvent<ConnectionHandler> = new ObservableEvent();
     public readonly onConnectionRemove: ObservableEvent<ConnectionHandler> = new ObservableEvent();
     public readonly onNameChange: ObservableEvent<string> = new ObservableEvent();
+    public readonly onPasswordChange: ObservableEvent<string> = new ObservableEvent();
+    public readonly onMaxPlayersChange: ObservableEvent<number> = new ObservableEvent();
     public readonly onOwnerChange: ObservableEvent<ConnectionHandler> = new ObservableEvent();
     public readonly onUserBan: ObservableEvent<number> = new ObservableEvent();
     public readonly onUserUnBan: ObservableEvent<number> = new ObservableEvent();
     public readonly onUserKick: ObservableEvent<number> = new ObservableEvent();
 
 
-    constructor(id: string, name: string) {
+    constructor(id: string, name: string, password: string = null) {
         this._id = id;
         this._name = name;
+        this._password_hash = password;
         this._owner_id = null;
         this._banned_user_ids = new Set<number>();
         this._connections = new Map<number, ConnectionHandler>();
@@ -38,6 +47,19 @@ export default class Lobby {
      */
     public get name(): string {
         return this._name;
+    }
+    /**
+     * Returns the password of the lobby.
+     * If the lobby has no password, returns null.
+     */
+    public get password(): string {
+        return this._password_hash;
+    }
+    /**
+     * Returns true if the lobby has a password. False otherwise.
+     */
+    public get using_password(): boolean {
+        return this._password_hash !== null;
     }
     /**
      * returns all the connections in the lobby.
@@ -74,23 +96,46 @@ export default class Lobby {
      * @param connection 
      * @returns 
      */
-    public connect(connection: ConnectionHandler): any {
+    public connect(connection: ConnectionHandler, password: string = null): any {
         if (this._connections.has(connection.connection_data.user.userId)){
             return {
-                sucess: false,
+                success: false,
                 error: "You are already in this lobby."
             };
         }
         if (connection.statut !== ConnectionStatut.CONNECTED) {
             return {
-                sucess: false,
+                success: false,
                 error: "An error occured while joining the lobby! Please try logging out and logging back in."
             };
         }
         if (this._banned_user_ids.has(connection.connection_data.user.userId)) {
             return {
-                sucess: false,
+                success: false,
                 error: "You are banned from this lobby."
+            };
+        }
+        //if the lobby has a password, ensure that the password is correct.
+        if (this.using_password){
+            if (password === null){
+                return {
+                    success: false,
+                    error: "This lobby is protected by a password."
+                };
+            }
+
+            if (!HashTools.compareHash(password, this._password_hash)){
+                return {
+                    success: false,
+                    error: "The submitted password is incorrect."
+                };
+            }
+        }
+        //ensure that the lobby is not full.
+        if(this._connections.size >= this._max_players){
+            return {
+                success: false,
+                error: "This lobby is full."
             };
         }
 
@@ -109,17 +154,30 @@ export default class Lobby {
         this._connections.set(connection.connection_data.user.userId, connection);
         this.onNewConnection(connection);
 
-        connection.socket.emit("lobby-joined", {
-            sucess: true,
+
+        const users = [];
+        for (let connection of this._connections.values()) {
+            users.push({
+                user_id: connection.connection_data.user.userId,
+                username: connection.connection_data.user.username,
+            });
+        }
+        const paquet = {
+            success: true,
             lobby_data: {
                 id: this._id,
                 name: this._name,
-                owner_id: this._owner_id
+                using_password: this.using_password,
+                max_players: this._max_players,
+                owner_id: this._owner_id,
+                users: users
             }
-        });
+        }
+
+        connection.socket.emit("lobby-joined", paquet);
 
         return {
-            sucess: true
+            success: true
         };
     }
     /**
@@ -142,7 +200,7 @@ export default class Lobby {
         this.onConnectionLeft(connection);
 
         connection.socket.emit("lobby-left", {
-           sucess: true,
+           success: true,
             lobby_data: {
                 id: this._id,
                 name: this._name
@@ -158,6 +216,7 @@ export default class Lobby {
     }
     /**
      * Change the name of the lobby.
+     * Can only be done by the owner of the lobby.
      * @param new_name the new name of the lobby
      * @returns if the operation was successful or not and the error messages if any.
      */
@@ -180,7 +239,7 @@ export default class Lobby {
 
         if (errors.length > 0) {
             return {
-                sucess: false,
+                success: false,
                 messages: errors
             };
         }
@@ -189,7 +248,103 @@ export default class Lobby {
         this.onNameChanged(new_name);
 
         return {
-            sucess: true
+            success: true
+        };
+    }
+    /**
+     * Change the password of the lobby.
+     * Can only be done by the owner of the lobby.
+     * @param new_password 
+     */
+    public changePassword(new_password: string): any {
+        const errors = [];
+
+        if (new_password === null) {
+            this._password_hash = null;
+            this.onPasswordChanged(null);
+            return {
+                success: true
+            };
+        }
+
+        if (new_password.length < 3) {
+            errors.push("The password must be at least 3 characters long.");
+        }
+        if (new_password.length > 25) {
+            errors.push("The password must be at most 25 characters long.");
+        }
+
+        if (errors.length > 0) {
+            return {
+                success: false,
+                messages: errors
+            };
+        }
+
+        this._password_hash = HashTools.hash(new_password);
+        this.onPasswordChanged(this._password_hash);
+
+        return {
+            success: true
+        };
+    }
+    /**
+     * Change the maximum number of players of the lobby.
+     * @param new_max_players the new maximum number of players of the lobby.
+     * @returns if the operation was successful or not and the error messages if any.
+     */
+    public changeMaxPlayers(new_max_players: number): any {
+        const errors = [];
+
+        if (new_max_players < Lobby.MIN_LOBBY_PLAYERS) {
+            errors.push(`The maximum number of players must be at least ${Lobby.MIN_LOBBY_PLAYERS}.`);
+        }
+        if (new_max_players > Lobby.MAX_LOBBY_PLAYERS) {
+            errors.push(`The maximum number of players must be at most ${Lobby.MAX_LOBBY_PLAYERS}.`);
+        }
+
+        if (errors.length > 0) {
+            return {
+                success: false,
+                messages: errors
+            };
+        }
+
+        this._max_players = new_max_players;
+        this.onMaxPlayersChanged(new_max_players);
+
+        //if the lobby is now full, kick the last players that joined the lobby.
+        if (this._connections.size > this._max_players) {
+            const connections = Array.from(this._connections.keys());
+            const kick_count = this._connections.size - this._max_players;
+            let kicked = 0;
+
+            //kick the last players that joined the lobby.
+            for (let index = this._connections.size - 1; index < this._connections.size; index--) {
+                if (kicked === kick_count) {
+                    break;
+                }
+
+                //don't kick the owner.
+                if (this.owner_id === connections[index]) {
+                    continue;
+                }
+
+                //kick the player.
+                //if the kick fails, log it and continue.
+                if (!this.kickUser(connections[index]))
+                {
+                    const connection = this._connections.get(connections[index]);
+                    console.log(`[!] Failed to kick user : ${connection.connection_data.user.userId} from lobby : ${this._id}`);
+                    continue;
+                }
+
+                kicked++;
+            }
+        }
+
+        return {
+            success: true
         };
     }
     /**
@@ -312,6 +467,18 @@ export default class Lobby {
         this.onNameChange.notify(name);
     }
     /**
+     * On the max player of the lobby changed.
+     * @param max_player 
+     */
+    private onMaxPlayersChanged(max_player: number) {
+        const paquet = {
+            new_max_player: max_player
+        };
+
+        this.sendMessageToAllConnections("lobby-max-player-change", paquet);
+        this.onMaxPlayersChange.notify(max_player);
+    }
+    /**
      * On the owner of the lobby changed.
      * @param owner 
      */
@@ -323,13 +490,41 @@ export default class Lobby {
         this.sendMessageToAllConnections("lobby-owner-change", paquet);
         this.onOwnerChange.notify(owner);
     }
+    /**
+     * Called when the password of the lobby changed.
+     * @param new_password_hash the new password hash.
+     */
+    private onPasswordChanged(new_password_hash: string) {
+        this.onPasswordChange.notify(new_password_hash);
+    }
 
+    /**
+     * Bind all the message events to the connection.
+     * @param connection 
+     */
     private bindMessageEvents(connection: ConnectionHandler) {
+        
+        //on user send a request to leave the lobby.
+        connection.socket.on("lobby-leave", (data: any) => {
+            //check if the user is in the lobby.
+            if (!this._connections.has(connection.connection_data.user.userId)) {
+                connection.socket.emit("lobby-leave-response", {
+                    success: false,
+                    messages: ["You are not in the lobby."]
+                });
+            }
+
+            const result = this.disconnect(connection);
+            connection.socket.emit("lobby-leave-response", {
+                success: result
+            });
+        });
+        
         //on user send a request to change the name of the lobby.
         connection.socket.on("lobby-change-name", (data: any) => {
             if (connection.connection_data.user.userId !== this._owner_id) {
                 connection.socket.emit("lobby-change-name-response", {
-                    sucess: false,
+                    success: false,
                     messages: ["You are not the owner of the lobby."]
                 });
                 return;
@@ -342,7 +537,7 @@ export default class Lobby {
         connection.socket.on("lobby-change-owner", (data: any) => {
             if (connection.connection_data.user.userId !== this._owner_id) {
                 connection.socket.emit("lobby-change-owner-response", {
-                    sucess: false,
+                    success: false,
                     messages: ["You are not the owner of the lobby."]
                 });
                 return;
@@ -351,7 +546,7 @@ export default class Lobby {
             const new_owner = this._connections.get(data.new_owner_id);
             if (!new_owner) {
                 connection.socket.emit("lobby-change-owner-response", {
-                    sucess: false,
+                    success: false,
                     messages: ["The targeted player is not in the lobby or does not exist."]
                 });
                 return;
@@ -359,7 +554,7 @@ export default class Lobby {
 
             const result = this.setOwner(new_owner);
             connection.socket.emit("lobby-change-owner-response", {
-                sucess: result
+                success: result
             });
         });
 
@@ -367,7 +562,7 @@ export default class Lobby {
         connection.socket.on("lobby-ban-user", (data: any) => {
             if (connection.connection_data.user.userId !== this._owner_id) {
                 connection.socket.emit("lobby-ban-user-response", {
-                    sucess: false,
+                    success: false,
                     messages: ["You are not the owner of the lobby."]
                 });
                 return;
@@ -375,7 +570,7 @@ export default class Lobby {
 
             const result = this.banUser(data.user_id);
             connection.socket.emit("lobby-ban-user-response", {
-                sucess: result
+                success: result
             });
         });
 
@@ -383,7 +578,7 @@ export default class Lobby {
         connection.socket.on("lobby-unban-user", (data: any) => {
             if (connection.connection_data.user.userId !== this._owner_id) {
                 connection.socket.emit("lobby-unban-user-response", {
-                    sucess: false,
+                    success: false,
                     messages: ["You are not the owner of the lobby."]
                 });
                 return;
@@ -391,7 +586,7 @@ export default class Lobby {
 
             this.unbanUser(data.user_id);
             connection.socket.emit("lobby-unban-user-response", {
-                sucess: true
+                success: true
             });
         });
 
@@ -399,7 +594,7 @@ export default class Lobby {
         connection.socket.on("lobby-kick-user", (data: any) => {
             if (connection.connection_data.user.userId !== this._owner_id) {
                 connection.socket.emit("lobby-kick-user-response", {
-                    sucess: false,
+                    success: false,
                     messages: ["You are not the owner of the lobby."]
                 });
                 return;
@@ -407,7 +602,57 @@ export default class Lobby {
 
             const result = this.kickUser(data.user_id);
             connection.socket.emit("lobby-kick-user-response", {
-                sucess: result
+                success: result
+            });
+        });
+
+        //on user send a request to change the password of the lobby.
+        connection.socket.on("lobby-change-password", (data: any) => {
+            if (connection.connection_data.user.userId !== this._owner_id) {
+                connection.socket.emit("lobby-change-password-response", {
+                    success: false,
+                    messages: ["You are not the owner of the lobby."]
+                });
+                return;
+            }
+
+            const result = this.changePassword(data.password);
+            if (!result.success) {
+                connection.socket.emit("lobby-change-password-response", {
+                    success: false,
+                    messages: result.messages
+                });
+
+                return;
+            }
+
+            connection.socket.emit("lobby-change-password-response", {
+                success: true
+            });
+        });
+
+        //on user send a request to change the max player of the lobby.
+        connection.socket.on("lobby-change-max-player", (data: any) => {
+            if (connection.connection_data.user.userId !== this._owner_id) {
+                connection.socket.emit("lobby-change-max-player-response", {
+                    success: false,
+                    messages: ["You are not the owner of the lobby."]
+                });
+                return;
+            }
+
+            const result = this.changeMaxPlayers(data.max_player);
+            if (!result.success) {
+                connection.socket.emit("lobby-change-max-player-response", {
+                    success: false,
+                    messages: result.messages
+                });
+
+                return;
+            }
+
+            connection.socket.emit("lobby-change-max-player-response", {
+                success: true,
             });
         });
     }
