@@ -1,11 +1,13 @@
 import SocketManager from "../class/connection/socket_manager.js";
 import LobbiesManager from "../class/game/lobby/lobbies_manager.js";
+import BanWord from "../class/global_types/ban_word.js";
 
 export function setUpListeningLoggedMessages(){
     // Create a lobby
     SocketManager.listenMessageForLoggedConnections('lobby-create', (connectionHandler, data) => {
-        console.log("lobby-create received");
         const errors = [];
+
+        data.lobby_name = BanWord.clean(data.lobby_name);
 
         if (data.lobby_name == null || data.lobby_name == undefined){
             errors.push("A lobby name must be specified");
@@ -32,10 +34,8 @@ export function setUpListeningLoggedMessages(){
             lobby_id: lobby.id
         });
     });
-
     // Join a lobby
     SocketManager.listenMessageForLoggedConnections('lobby-join', (connectionHandler, data) => {
-        console.log("lobby-join received");
         const lobby = LobbiesManager.getLobby(data.lobby_id);
         
         // Check if lobby exists
@@ -61,5 +61,16 @@ export function setUpListeningLoggedMessages(){
         connectionHandler.socket.emit('lobby-join-response', {
             success: true
         });
+    });
+
+    // Get lobby list
+    SocketManager.listenMessageForLoggedConnections('lobby-list', (connectionHandler, data) => {
+        const lobbies = LobbiesManager.lobbiesData;
+
+        connectionHandler.socket.emit('lobby-list-response', {
+            success: true,
+            lobbies: lobbies
+        });
+
     });
 }

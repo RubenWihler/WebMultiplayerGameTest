@@ -16,6 +16,26 @@ export default class LobbiesManager{
         return LobbiesManager._instance;
     }
 
+    public static get lobbies(): Lobby[]{
+        return Array.from(LobbiesManager.instance._lobbies.values());
+    }
+
+    public static get lobbiesData(): any[]{
+        const datas = [];
+
+        this.lobbies.forEach(lobby => {
+            datas.push({
+                id: lobby.id,
+                name: lobby.name,
+                players_count: lobby.player_count,
+                max_players: lobby.max_players,
+                using_password: lobby.using_password,
+            });
+        });
+
+        return datas;
+    }
+
     private constructor() {
         LobbiesManager._instance = this;
         this._lobbies = new Map<string, Lobby>();

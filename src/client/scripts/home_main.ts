@@ -50,6 +50,8 @@ const element_home_lobby_join_form : HTMLFormElement = document.getElementById('
 const element_home_lobby_join_id : HTMLInputElement = document.getElementById('home-lobby-join-id') as HTMLInputElement;
 const element_home_lobby_join_password : HTMLInputElement = document.getElementById('home-lobby-join-password') as HTMLInputElement;
 
+const element_home_lobby_leave_button : HTMLButtonElement = document.getElementById('home-lobby-leave-button') as HTMLButtonElement;
+
 //#endregion
 
 const element_logout_button : HTMLButtonElement = document.getElementById('logout-button') as HTMLButtonElement;
@@ -141,6 +143,20 @@ view_home.onDisplay.subscribe((view) => {
         ViewsManager.setActiveView('connection');
         return;
     }
+
+    //test
+    LobbiesConnectionManager.getLobbiesList()
+    .then((response) => {
+        if (!response.success){
+            alert('An error occured while getting lobbies :' + response.error);
+            return;
+        }
+
+        console.log(response.lobbies);
+    })
+    .catch((error) => {
+        alert('An error occured while getting lobbies :' + error);
+    });
 });
 
 //views array that will be used by the views manager
@@ -221,7 +237,7 @@ element_home_lobby_creation_form.addEventListener('submit', (event) => {
     LobbiesConnectionManager.createLobby(name, password, max_players)
     .then((result) => {
         if (!result.success) {
-            alert(result.message);
+            alert(`The lobby creation failed :\n${result.messages.join('\n')}`);
             return;
         }
 
@@ -268,6 +284,24 @@ element_home_lobby_join_form.addEventListener('submit', (event) => {
 
     event.preventDefault();
 });
+
+element_home_lobby_leave_button.addEventListener('click', (event) => {
+    if (!checkConnection()) {
+        event.preventDefault();
+        return;
+    }
+
+    LobbiesConnectionManager.leaveLobby()
+    .then((result) => {
+        if (!result.success) {
+            alert('Lobby leave error :\n' + result.messages.join('\n'));
+            return;
+        }
+    });
+
+    event.preventDefault();
+});
+
 
 
 //#endregion

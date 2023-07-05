@@ -26,14 +26,13 @@ export default class Lobby {
     public readonly onUserUnBan: ObservableEvent<number> = new ObservableEvent();
     public readonly onUserKick: ObservableEvent<number> = new ObservableEvent();
 
-
     constructor(id: string, name: string, password: string = null) {
         this._id = id;
         this._name = name;
-        this._password_hash = password;
         this._owner_id = null;
         this._banned_user_ids = new Set<number>();
         this._connections = new Map<number, ConnectionHandler>();
+        if (password != null) this._password_hash = HashTools.hash(password);
     }
 
     /**
@@ -66,6 +65,18 @@ export default class Lobby {
      */
     public get connections(): ConnectionHandler[] {
         return Array.from(this._connections.values());
+    }
+    /**
+     * Returns the number of connections in the lobby.
+     */
+    public get player_count(): number {
+        return this._connections.size;
+    }
+    /**
+     * Returns the maximum number of players in the lobby.
+     */
+    public get max_players(): number {
+        return this._max_players;
     }
     /**
      * Returns the player id of the owner of the lobby.
@@ -190,12 +201,6 @@ export default class Lobby {
             return false;
         }
 
-        //if the owner leaves the lobby, the next player to join the lobby becomes the owner.
-        if (this._owner_id === connection.connection_data.user.userId) {
-            const new_owner = this._connections.values().next().value;
-            this._owner_id = new_owner.connection_data.user.userId;
-        }
-
         this._connections.delete(connection.connection_data.user.userId);
         this.onConnectionLeft(connection);
 
@@ -212,6 +217,13 @@ export default class Lobby {
         //if the lobby is empty, delete it.
         if (this._connections.size === 0) {
             LobbiesManager.deleteLobby(this._id);
+            return true;
+        }
+
+        //if the owner leaves the lobby, the next player to join the lobby becomes the owner.
+        if (this._owner_id === connection.connection_data.user.userId) {
+            const new_owner = this._connections.values().next().value as ConnectionHandler;
+            this.setOwner(new_owner);
         }
 
         return true;
