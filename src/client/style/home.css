@@ -13,8 +13,15 @@ form{
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 300px;
-    width: 200px;
+    height: 600px;
+    width: 500px;
 
     border: solid 1px black;
 }
+
+/* #home-lobby-join-form{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-evenly;
+} */

@@ -2,7 +2,7 @@ import { Pool } from "mysql2";
 import TokenGenerator from "uuid-token-generator";
 import User from "../../connection/connection_types/user.js";
 import DatabaseManager from "../database_connection.js";
-import HashTools from "../hash_tools.js";
+import HashTools from "../../global_types/hash_tools.js";
 import ConnectionData from "../../connection/connection_types/connection_data.js";
 import EventsManager from "../../event_system/events_manager.js";
 
@@ -51,7 +51,7 @@ export default class UserProcessor{
         const queryValues = [
             username,
             email,
-            HashTools.convertToHash(password)
+            HashTools.hash(password)
         ];
         const [result] : any = await pool.promise().query(query, queryValues);
 

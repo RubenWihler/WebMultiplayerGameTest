@@ -38,9 +38,15 @@ export default class ConnectionHandler {
         this.statut = ConnectionStatut.CONNECTED;
         this.socket = socket;
         
-        for (const [message, callback] of SocketManager.listeningMessagesForLoggedConnections.entries()) {            
-            this.socket.on(message, (data) => {
-                callback(this, data);
+        // Add all the listening messages for logged connections.
+        console.log(`Listening messages for logged connections: \n  ${
+            Array.from(SocketManager.listeningMessagesForLoggedConnections.keys()).join('\n  ')
+        }`);
+        for (const [message, callbacks] of SocketManager.listeningMessagesForLoggedConnections.entries()) {            
+            callbacks.forEach(callback => {
+                this.socket.on(message, (data) => {
+                    callback(this, data);
+                });
             });
         }
 
@@ -51,7 +57,6 @@ export default class ConnectionHandler {
     disconnect() {
         if (this.statut == ConnectionStatut.DISCONNECTED) return;
         
-        this.connection_data = null;
         this.statut = ConnectionStatut.DISCONNECTED;
         
         ConnectionsManager.Instance.removeConnection(this);

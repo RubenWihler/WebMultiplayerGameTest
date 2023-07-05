@@ -59,6 +59,40 @@
 
         <div class="view" id="home" style="display: none; visibility: hidden;">
             <h1>Home</h1>
+            <form id="home-lobby-creation-form">
+                <h3>Lobby creation</h3>
+
+                <label for="home-lobby-creation-name">name</label>
+                <input type="text" id="home-lobby-creation-name">
+
+                <label for="home-lobby-creation-password">password</label>
+                <input type="password" id="home-lobby-creation-password" placeholder="leave blank for no password">
+
+                <label for="home-lobby-creation-max-players">max players</label>
+                <input type="number" id="home-lobby-creation-max-players" min="2" max="8" value="8">
+                
+                <button type="submit" id="home-lobby-create-button">create lobby</button>
+            </form>
+
+            <form id="home-lobby-join-form">
+                <h3>Join lobby</h3>
+
+                <label for="home-lobby-join-id">lobby id</label>
+                <input type="text" id="home-lobby-join-id" value="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx">
+                'aaaaaaaa'-'aaaa'-'aaaa'-'aaaa'-'aaaaaaaaaaaa'
+
+                <label for="home-lobby-join-password">password</label>
+                <input type="text" id="home-lobby-join-password" placeholder="leave blank for no password">
+                
+                <button type="submit" id="home-lobby-join-button">join lobby</button>
+            </form>
+
+            <div>
+                <h3>lobbies</h3>
+                <div id="home-lobbies">
+
+                </div>
+            </div>
         </div>
     
         <button id="logout-button" style="display: none; visibility: hidden;">logout</button>

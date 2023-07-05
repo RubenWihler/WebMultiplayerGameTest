@@ -10,6 +10,9 @@ import EventsManager from './class/event_system/events_manager.js';
 import SocketManager from './class/connection/socket_manager.js';
 import ConnectionsManager from './class/connection/connections_manager.js';
 
+import { setUpListeningMessages } from './messages/any_message.js';
+import { setUpListeningLoggedMessages } from './messages/logged_messages.js';
+
 import { router as main_router, __dirname } from './routes/main_routes.js';
 
 dotenv.config();
@@ -27,17 +30,20 @@ server.listen(port);
 console.log('[+] Server started ! listening on port : ' + port);
 
 
-//-------------- Test --------------//
+//-------------- setup --------------//
 const io = new socketIO.Server(server, {});
 const socket_manager = new SocketManager(io);
 const connections_manager = ConnectionsManager.Instance;
 
 //-------------- Socket events --------------//
-//#todo : move this in a file
-SocketManager.listenMessageForLoggedConnections('test', (connectionHandler, data) => {
-    console.log('test received : ' + data + ' from ' + connectionHandler.connection_data.user.username);
-});
+setUpListeningMessages();
+setUpListeningLoggedMessages();
 
+SocketManager.onConnection.subscribe((socket) => {
+    socket.on('lobby-join', (data) => {
+        console.log("lobby-join : " + JSON.stringify(data));
+    });
+});
 
 EventsManager.onUserCreated.subscribe((connectionData) => {
     console.log("User created : " + JSON.stringify(connectionData));

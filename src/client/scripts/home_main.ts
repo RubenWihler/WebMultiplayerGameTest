@@ -3,6 +3,7 @@ import ConnectionManager from './classes/connection/connection_manager.js';
 import View from './classes/views/view.js';
 import ViewsManager from './classes/views/views_manager.js';
 import ConnectionErrorsTraductor from './classes/connection/connection_errors_traductor.js';
+import LobbiesConnectionManager from './classes/connection/lobbies_connection_manager.js';
 
 var refresh_on_disconnect = true;
 
@@ -36,6 +37,20 @@ const element_disconnected_error_message : HTMLSpanElement = document.getElement
 const element_disconnected_error_message_text : HTMLSpanElement = document.getElementById('disconnected-error-message-text') as HTMLSpanElement;
 //#endregion
 
+//#region home view elements
+
+//home lobby creation form
+const element_home_lobby_creation_form : HTMLFormElement = document.getElementById('home-lobby-creation-form') as HTMLFormElement;
+const element_home_lobby_creation_name : HTMLInputElement = document.getElementById('home-lobby-creation-name') as HTMLInputElement;
+const element_home_lobby_creation_password : HTMLInputElement = document.getElementById('home-lobby-creation-password') as HTMLInputElement;
+const element_home_lobby_creation_max_players : HTMLInputElement = document.getElementById('home-lobby-creation-max-players') as HTMLInputElement;
+
+//home lobby join form
+const element_home_lobby_join_form : HTMLFormElement = document.getElementById('home-lobby-join-form') as HTMLFormElement;
+const element_home_lobby_join_id : HTMLInputElement = document.getElementById('home-lobby-join-id') as HTMLInputElement;
+const element_home_lobby_join_password : HTMLInputElement = document.getElementById('home-lobby-join-password') as HTMLInputElement;
+
+//#endregion
 
 const element_logout_button : HTMLButtonElement = document.getElementById('logout-button') as HTMLButtonElement;
 
@@ -126,10 +141,6 @@ view_home.onDisplay.subscribe((view) => {
         ViewsManager.setActiveView('connection');
         return;
     }
-
-    console.log('test emit ...');
-    connection_manager.socket.emit('test', {monObj: {monText2:"test2"}, monText:"test"});
-    console.log('test emit done');
 });
 
 //views array that will be used by the views manager
@@ -192,6 +203,74 @@ element_signup_form.addEventListener('submit', (event) => {
 });
 //#endregion
 
+//#region home view event listeners
+element_home_lobby_creation_form.addEventListener('submit', (event) => {
+    if (!checkConnection()) {
+        event.preventDefault();
+        return;
+    }
+
+    const name = element_home_lobby_creation_name.value;
+    const max_players = Number(element_home_lobby_creation_max_players.value);
+    let password = element_home_lobby_creation_password.value;
+
+    if (password === '') {
+        password = null;
+    }
+
+    LobbiesConnectionManager.createLobby(name, password, max_players)
+    .then((result) => {
+        if (!result.success) {
+            alert(result.message);
+            return;
+        }
+
+        console.log('[+] lobby created : ' + JSON.stringify(result));
+    });
+
+    event.preventDefault();
+});
+
+element_home_lobby_join_form.addEventListener('submit', (event) => {
+    if (!checkConnection()) {
+        event.preventDefault();
+        return;
+    }
+
+    const errors = [];
+    const id = element_home_lobby_join_id.value;
+    let password = element_home_lobby_join_password.value;
+
+    //check if the id is empty
+    if (id === '') {
+        errors.push('Please enter a lobby id');
+    }
+    
+    //if the password is empty, set it to null
+    if (password === '') {
+        password = null;
+    }
+    
+    if (errors.length > 0) {
+        alert('Lobby join error :\n' + errors.join('\n'));
+        return;
+    }
+
+    LobbiesConnectionManager.joinLobby(id, password)
+    .then((result) => {
+        if (!result.success) {
+            alert('Lobby join error :\n' + result.messages.join('\n'));
+            return;
+        }
+
+        console.log('[+] lobby joined : ' + id);
+    });
+
+    event.preventDefault();
+});
+
+
+//#endregion
 
 element_logout_button.addEventListener('click', (event) => {
     if (!checkConnection()) {

@@ -14,8 +14,8 @@ export default class SocketManager {
 
     public static readonly onConnection: ObservableEvent<Socket> = new ObservableEvent();
     public static readonly onDisconnection: ObservableEvent<Socket> = new ObservableEvent();
-    private static readonly listeningMessages: Map<string, (socket: Socket, data) => void> = new Map();
-    public static readonly listeningMessagesForLoggedConnections: Map<string, (connecitonHandler: ConnectionHandler, data: any) => void> = new Map();
+    private static readonly listeningMessages: Map<string, Set<(socket: Socket, data) => void>> = new Map();
+    public static readonly listeningMessagesForLoggedConnections: Map<string, Set<(connecitonHandler: ConnectionHandler, data: any) => void>> = new Map();
 
     public static get Instance(): SocketManager {
         if (SocketManager.instance == null || SocketManager.instance == undefined) {
@@ -42,10 +42,32 @@ export default class SocketManager {
     }
 
     public static listenMessage(message: string, callback: (socket: Socket, data: any) => void){
-        SocketManager.listeningMessages.set(message, callback);
+        if (!SocketManager.listeningMessages.has(message)) {
+            const callbacks = new Set<(socket: Socket, data) => void>();
+            callbacks.add(callback);
+            SocketManager.listeningMessages.set(message, callbacks);
+            console.log('[+] New message listened : ' + message);
+            return;
+        }
+
+        SocketManager.listeningMessages.get(message).add(callback);
+        console.log('[+] New callback added to message : ' + message);
     }
     public static listenMessageForLoggedConnections(message: string, callback: (connection: ConnectionHandler, data: any) => void){
-        SocketManager.listeningMessagesForLoggedConnections.set(message, callback);
+        if (!SocketManager.listeningMessagesForLoggedConnections.has(message)) {
+            const callbacks = new Set<(connection: ConnectionHandler, data) => void>();
+            callbacks.add((connection: ConnectionHandler, data: any) => {
+                console.log('[+] logged message triggered : ' + message + ' for ' + connection.connection_data.user.username);
+            });
+            callbacks.add(callback);
+
+            SocketManager.listeningMessagesForLoggedConnections.set(message, callbacks);
+            console.log('[+] New message listened for logged connections : ' + message);
+            return;
+        }
+        
+        SocketManager.listeningMessagesForLoggedConnections.get(message).add(callback);
+        console.log('[+] New callback added to message for logged connections : ' + message);
     }
 
     private onConnection(socket: Socket){
@@ -57,9 +79,11 @@ export default class SocketManager {
     private bindMessages(socket: Socket){
 
         //Bind all messages
-        for(const [message, callback] of SocketManager.listeningMessages.entries()){
-            socket.on(message, (data) => {
-                callback(socket, data);
+        for(const [message, callbacks] of SocketManager.listeningMessages.entries()){
+            callbacks.forEach((callback) => {
+                socket.on(message, (data) => {
+                    callback(socket, data);
+                });
             });
         }
 
