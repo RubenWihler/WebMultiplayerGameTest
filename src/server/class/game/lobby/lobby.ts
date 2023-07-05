@@ -199,13 +199,15 @@ export default class Lobby {
         this._connections.delete(connection.connection_data.user.userId);
         this.onConnectionLeft(connection);
 
-        connection.socket.emit("lobby-left", {
-           success: true,
-            lobby_data: {
-                id: this._id,
-                name: this._name
-            }
-        }); 
+        if (connection.statut === ConnectionStatut.CONNECTED) {
+            connection.socket.emit("lobby-left", {
+                success: true,
+                 lobby_data: {
+                     id: this._id,
+                     name: this._name
+                 }
+             }); 
+        }
 
         //if the lobby is empty, delete it.
         if (this._connections.size === 0) {
