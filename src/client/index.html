@@ -19,28 +19,56 @@
 
         <div class="view" id="signin" style="display: none; visibility: hidden;">
             <form id="signin-form">
-                <h3>sign in</h3>
-                <label for="signin-username">username</label>
-                <input type="text" id="signin-username">
-                <label for="signin-password">password</label>
-                <input type="password" id="signin-password">
+                <h3>Sign in</h3>
+
+                <div id="signin-container-username">
+                    <label for="signin-username">username or email :</label>
+                    <input type="text" id="signin-username">
+                    <span id="signin-errormsg-username" class="form-error-message">error message</span>
+                </div>
+
+                <div id="signin-container-password">
+                    <label for="signin-password">password :</label>
+                    <input type="password" id="signin-password">
+                    <span id="signin-errormsg-password" class="form-error-message">error message</span>
+                </div>
+
                 <button type="submit" id="signin-button">sign in</button>
             </form>
+            <button id="signin-signup-button">Don't have an account ? sign up</button>
         </div>
         
         <div class="view" id="signup" style="display: none; visibility: hidden;">
             <form id="signup-form">
-                <h3>sign up</h3>
-                <label for="signup-username">username</label>
-                <input type="text" id="signup-username">
-                <label for="signup-email">email</label>
-                <input type="text" id="signup-email">
-                <label for="signup-password">password</label>
-                <input type="password" id="signup-password">
-                <label for="signup-password-confirm">confirm password</label>
-                <input type="password" id="signup-password-confirm">
+                <h3>Sign up</h3>
+
+                <div id="signup-container-username">
+                    <label for="signup-username">username :</label>
+                    <input type="text" id="signup-username">
+                    <span id="signup-errormsg-username" class="form-error-message">error message</span>
+                </div>
+
+                <div id="signup-container-email">
+                    <label for="signup-email">email :</label>
+                    <input type="text" id="signup-email">
+                    <span id="signup-errormsg-email" class="form-error-message">error message</span>
+                </div>
+
+                <div id="signup-container-password">
+                    <label for="signup-password">password :</label>
+                    <input type="password" id="signup-password">
+                    <span id="signup-errormsg-password" class="form-error-message">error message</span>
+                </div>
+
+                <div id="signup-container-password-confirm">
+                    <label for="signup-password-confirm">confirm password :</label>
+                    <input type="password" id="signup-password-confirm">
+                    <span id="signup-errormsg-password-confirm" class="form-error-message">error message</span>
+                </div>
+
                 <button type="submit" id="signup-button">sign up</button>
             </form>
+            <button id="signup-signin-button">Already have an account ? sign in</button>
         </div>
         
         <div class="view" id="disconnected" style="display: none; visibility: hidden;">
@@ -79,7 +107,6 @@
 
                 <label for="home-lobby-join-id">lobby id</label>
                 <input type="text" id="home-lobby-join-id" value="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx">
-                'aaaaaaaa'-'aaaa'-'aaaa'-'aaaa'-'aaaaaaaaaaaa'
 
                 <label for="home-lobby-join-password">password</label>
                 <input type="password" id="home-lobby-join-password" placeholder="leave blank for no password">

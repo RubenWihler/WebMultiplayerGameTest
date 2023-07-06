@@ -15,9 +15,129 @@ form{
     justify-content: center;
     height: 600px;
     width: 500px;
+    margin: 0;
 
     border: solid 1px black;
 }
+
+#signin, #signup{
+    justify-content: center;
+    background: rgb(255,100,100);
+    background: -moz-linear-gradient(125deg, rgba(255,100,100,1) 0%, rgba(255,197,106,1) 100%);
+    background: -webkit-linear-gradient(125deg, rgba(255,100,100,1) 0%, rgba(255,197,106,1) 100%);
+    background: linear-gradient(125deg, rgba(255,100,100,1) 0%, rgba(255,197,106,1) 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#ff6464",endColorstr="#ffc56a",GradientType=1);
+}
+#signup-form{
+    height: 650px;
+    width: 500px;
+}
+
+#signin-form, #signup-form{
+    padding: 25px;
+    justify-content: space-around;
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 16px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(3.2px);
+    -webkit-backdrop-filter: blur(3.2px);
+    border: 1px solid rgba(255, 255, 255, 0.23);
+}
+#signin-form>h3, #signup-form>h3{
+    font-family: 'Montserrat', sans-serif;
+    font-size: 2rem;
+    font-weight: 600;
+    margin: 0;
+}
+#signin-form>div, #signup-form>div{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-evenly;
+    height: 100px;
+    width: 80%;
+}
+#signin-form>div>label, #signup-form>div>label{
+    height: 20px;
+    width: 100%;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 1.2rem;
+}
+#signin-form>div>input, #signup-form>div>input{
+    height: 20px;
+    width: 100%;
+    margin-top: 15px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 400;
+    font-size: 1.1rem;
+    color: white;
+    background-color: transparent;
+    border: none;
+    outline: none;
+    border-bottom: solid 1px white;
+    transition: all 0.2s ease-in-out;
+}
+#signin-form>div>input:focus, #signup-form>div>input:focus{
+    border-bottom: solid 2px white;
+}
+#signin-form>div.error>input, #signup-form>div.error>input{
+    color: red;
+    border-bottom: solid 1.5px red;
+}
+#signin-form>div.error>input:focus, #signup-form>div.error>input:focus{
+    color: red;
+    border-bottom: solid 2px red;
+}
+
+#signin-form>button, #signup-form>button{
+    height: 50px;
+    width: 80%;
+    color: #ffffff;
+    border-radius: 20px;
+    font-size: 1.2rem;
+    font-weight: 400;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.03);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(3.2px);
+    -webkit-backdrop-filter: blur(3.2px);
+    border: 1.5px solid rgba(255, 255, 255, 0.23);
+    transition: all 0.2s ease-in-out;
+}
+#signin-form>button:hover, #signup-form>button:hover{
+    background: rgba(255, 255, 255, 0.25);
+}
+#signin>button, #signup>button{
+    margin-top: 10px;
+    text-decoration: underline;
+    background-color: transparent;
+    border: none;
+    outline: none;
+    color: white;
+    font-size: 1rem;
+    font-family: 'Sora', sans-serif;
+    font-weight: 300;
+    cursor: pointer;
+}
+
+.form-error-message{
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500;
+    font-size: 0.95rem;
+    color: red;
+    margin: 0;
+    padding: 0;
+}
+#signin-form>div>.form-error-message, #signup-form>div>.form-error-message{
+    display: none;
+    visibility: hidden;
+}
+#signin-form>div.error>.form-error-message, #signup-form>div.error>.form-error-message{
+    display: block;
+    visibility: visible;
+}
+
 
 /* #home-lobby-join-form{
     display: flex;

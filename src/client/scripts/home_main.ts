@@ -4,6 +4,7 @@ import View from './classes/views/view.js';
 import ViewsManager from './classes/views/views_manager.js';
 import ConnectionErrorsTraductor from './classes/connection/connection_errors_traductor.js';
 import LobbiesConnectionManager from './classes/connection/lobbies_connection_manager.js';
+import e from 'express';
 
 var refresh_on_disconnect = true;
 
@@ -20,6 +21,11 @@ const element_connection_signup_button : HTMLButtonElement = document.getElement
 const element_login_form : HTMLFormElement = document.getElementById('signin-form') as HTMLFormElement;
 const element_login_username : HTMLInputElement = document.getElementById('signin-username') as HTMLInputElement;
 const element_login_password : HTMLInputElement = document.getElementById('signin-password') as HTMLInputElement;
+const element_login_container_username : HTMLDivElement = document.getElementById('signin-container-username') as HTMLDivElement;
+const element_login_container_password : HTMLDivElement = document.getElementById('signin-container-password') as HTMLDivElement;
+const element_login_errormsg_username : HTMLSpanElement = document.getElementById('signin-errormsg-username') as HTMLSpanElement;
+const element_login_errormsg_password : HTMLSpanElement = document.getElementById('signin-errormsg-password') as HTMLSpanElement;
+const element_login_signup_button : HTMLButtonElement = document.getElementById('signin-signup-button') as HTMLButtonElement;
 //#endregion
 
 //#region sign up view elements
@@ -28,6 +34,15 @@ const element_signup_email : HTMLInputElement = document.getElementById('signup-
 const element_signup_username : HTMLInputElement = document.getElementById('signup-username') as HTMLInputElement;
 const element_signup_password : HTMLInputElement = document.getElementById('signup-password') as HTMLInputElement;
 const element_signup_password_confirm : HTMLInputElement = document.getElementById('signup-password-confirm') as HTMLInputElement;
+const element_signup_container_email : HTMLDivElement = document.getElementById('signup-container-email') as HTMLDivElement;
+const element_signup_container_username : HTMLDivElement = document.getElementById('signup-container-username') as HTMLDivElement;
+const element_signup_container_password : HTMLDivElement = document.getElementById('signup-container-password') as HTMLDivElement;
+const element_signup_container_password_confirm : HTMLDivElement = document.getElementById('signup-container-password-confirm') as HTMLDivElement;
+const element_signup_errormsg_email : HTMLSpanElement = document.getElementById('signup-errormsg-email') as HTMLSpanElement;
+const element_signup_errormsg_username : HTMLSpanElement = document.getElementById('signup-errormsg-username') as HTMLSpanElement;
+const element_signup_errormsg_password : HTMLSpanElement = document.getElementById('signup-errormsg-password') as HTMLSpanElement;
+const element_signup_errormsg_password_confirm : HTMLSpanElement = document.getElementById('signup-errormsg-password-confirm') as HTMLSpanElement;
+const element_signup_signin_button : HTMLButtonElement = document.getElementById('signup-signin-button') as HTMLButtonElement;
 //#endregion
 
 //#region disconnected view elements
@@ -194,17 +209,33 @@ element_login_form.addEventListener('submit', (event) => {
         return;
     }
 
+    if (AccountConnectionManager.isLogged){
+        ViewsManager.setActiveView('home');
+        event.preventDefault();
+        return;
+    }
+
     const username = element_login_username.value;
     const password = element_login_password.value;
     
     AccountConnectionManager.sendLoginRequest(username, password);
     event.preventDefault();
 });
+
+element_login_signup_button.addEventListener('click', (event) => {
+    ViewsManager.setActiveView('signup');
+});
 //#endregion
 
 //#region sign up view event listeners
 element_signup_form.addEventListener('submit', (event) => {
     if (!checkConnection()) {
+        event.preventDefault();
+        return;
+    }
+
+    if (AccountConnectionManager.isLogged){
+        ViewsManager.setActiveView('home');
         event.preventDefault();
         return;
     }
@@ -216,6 +247,9 @@ element_signup_form.addEventListener('submit', (event) => {
 
     AccountConnectionManager.sendSignupRequest(email, username, password, password_confirm);
     event.preventDefault();
+});
+element_signup_signin_button.addEventListener('click', (event) => {
+    ViewsManager.setActiveView('signin');
 });
 //#endregion
 
@@ -380,31 +414,126 @@ ConnectionManager.onDisconnect.subscribe(() => {
 });
 
 ConnectionManager.onLogin.subscribe((login_response) => {
+    //reset errors messages
+    element_login_errormsg_username.innerText = '';
+    element_login_errormsg_password.innerText = '';
+    element_login_container_username.classList.remove('error');
+    element_login_container_password.classList.remove('error');
+
     if (login_response.success) {
-        alert('Login success');
+        cleanForms();
     }
     else {
-        console.log(JSON.stringify(login_response));
-        let errormsg : string = "login failed : ";
+        //console.log(JSON.stringify(login_response));
         login_response.messages.forEach((error : string) => {
-            errormsg += error + "\n";
+            if (error === 'WRONG_CREDENTIALS') {
+                element_login_container_password.classList.add('error');
+                element_login_errormsg_password.innerText = ConnectionErrorsTraductor.getMessage(error);
+                element_login_password.focus();
+            }
+            else if (error === 'USER_ALREADY_LOGGED_IN') {
+                alert(ConnectionErrorsTraductor.getMessage(error));
+                ViewsManager.setActiveView('home');
+            }
+            else if (error === 'USERNAME_REQUIRED'){
+                element_login_container_username.classList.add('error');
+                element_login_errormsg_username.innerText = ConnectionErrorsTraductor.getMessage(error);
+                element_login_username.focus();
+            }
+            else if (error === 'PASSWORD_REQUIRED'){
+                element_login_container_password.classList.add('error');
+                element_login_errormsg_password.innerText = ConnectionErrorsTraductor.getMessage(error);
+                element_login_password.focus();
+            }
+            else{
+                alert(error);
+            }
         });
-
-        alert(errormsg);
     }
 });
 ConnectionManager.onSignup.subscribe((signup_response) => {
+    //reset errors messages
+    element_signup_errormsg_username.innerText = '';
+    element_signup_errormsg_email.innerText = '';
+    element_signup_errormsg_password.innerText = '';
+    element_signup_errormsg_password_confirm.innerText = '';
+    element_signup_container_username.classList.remove('error');
+    element_signup_container_email.classList.remove('error');
+    element_signup_container_password.classList.remove('error');
+    element_signup_container_password_confirm.classList.remove('error');
+
     if (signup_response.success) {
-        alert('Signup success');
+        cleanForms();
     }
     else {
-        console.log(JSON.stringify(signup_response));
-        let errormsg : string = "Signup failed : ";
+        //console.log(JSON.stringify(signup_response));
         signup_response.messages.forEach((error : string) => {
-            errormsg += error + "\n";
+            if (error === 'USERNAME_ALREADY_USED') {
+                element_signup_container_username.classList.add('error');
+                element_signup_errormsg_username.innerText = ConnectionErrorsTraductor.getMessage(error);
+                element_signup_username.focus();
+            }
+            else if (error === 'EMAIL_ALREADY_USED') {
+                element_signup_container_email.classList.add('error');
+                element_signup_errormsg_email.innerText = ConnectionErrorsTraductor.getMessage(error);
+                element_signup_email.focus();
+            }
+            else if (error === 'PASSWORDS_DO_NOT_MATCH') {
+                element_signup_container_password.classList.add('error');
+                element_signup_container_password_confirm.classList.add('error');
+                element_signup_errormsg_password.innerText = ConnectionErrorsTraductor.getMessage(error);
+                element_signup_errormsg_password_confirm.innerText = ConnectionErrorsTraductor.getMessage(error);
+                element_signup_password.focus();
+            }
+            else if (error === 'USERNAME_TOO_SHORT') {
+                element_signup_container_username.classList.add('error');
+                element_signup_errormsg_username.innerText = ConnectionErrorsTraductor.getMessage(error);
+                element_signup_username.focus();
+            }
+            else if (error === 'USERNAME_TOO_LONG') {
+                element_signup_container_username.classList.add('error');
+                element_signup_errormsg_username.innerText = ConnectionErrorsTraductor.getMessage(error);
+                element_signup_username.focus();
+            }
+            else if (error === 'PASSWORD_TOO_SHORT') {
+                element_signup_container_password.classList.add('error');
+                element_signup_errormsg_password.innerText = ConnectionErrorsTraductor.getMessage(error);
+                element_signup_password.focus();
+            }
+            else if (error === 'PASSWORD_TOO_LONG') {
+                element_signup_container_password.classList.add('error');
+                element_signup_errormsg_password.innerText = ConnectionErrorsTraductor.getMessage(error);
+                element_signup_password.focus();
+            }
+            else if (error === 'USERNAME_REQUIRED'){
+                element_signup_container_username.classList.add('error');
+                element_signup_errormsg_username.innerText = ConnectionErrorsTraductor.getMessage(error);
+                element_signup_username.focus();
+            }
+            else if (error === 'EMAIL_INVALID'){
+                element_signup_container_email.classList.add('error');
+                element_signup_errormsg_email.innerText = ConnectionErrorsTraductor.getMessage(error);
+                element_signup_email.focus();
+            }
+            else if (error === 'EMAIL_REQUIRED'){
+                element_signup_container_email.classList.add('error');
+                element_signup_errormsg_email.innerText = ConnectionErrorsTraductor.getMessage(error);
+                element_signup_email.focus();
+            }
+            else if (error === 'PASSWORD_REQUIRED'){
+                element_signup_container_password.classList.add('error');
+                element_signup_errormsg_password.innerText = ConnectionErrorsTraductor.getMessage(error);
+                element_signup_password.focus();
+            }
+            else if (error === 'PASSWORD_CONFIRM_REQUIRED'){
+                element_signup_container_password_confirm.classList.add('error');
+                element_signup_errormsg_password_confirm.innerText = ConnectionErrorsTraductor.getMessage(error);
+                element_signup_password_confirm.focus();
+            }
+            else{
+                alert(error);
+            }
         });
-
-        alert(errormsg);
     }
 });
 ConnectionManager.onLogout.subscribe((logout_response) => {
@@ -429,6 +558,26 @@ ConnectionManager.onLogin.subscribe(displayLogoutButton);
 ConnectionManager.onLogout.subscribe(displayLogoutButton);
 AccountConnectionManager.onUserLogin.subscribe(displayLogoutButton);
 
+function cleanForms() {
+    element_login_username.value = '';
+    element_login_password.value = '';
+    element_signup_username.value = '';
+    element_signup_email.value = '';
+    element_signup_password.value = '';
+    element_signup_password_confirm.value = '';
+    element_signup_errormsg_username.innerText = '';
+    element_signup_errormsg_email.innerText = '';
+    element_signup_errormsg_password.innerText = '';
+    element_signup_errormsg_password_confirm.innerText = '';
+    element_login_errormsg_username.innerText = '';
+    element_login_errormsg_password.innerText = '';
+    element_signup_container_username.classList.remove('error');
+    element_signup_container_email.classList.remove('error');
+    element_signup_container_password.classList.remove('error');
+    element_signup_container_password_confirm.classList.remove('error');
+    element_login_container_username.classList.remove('error');
+    element_login_container_password.classList.remove('error');
+}
 
 function checkConnection() : boolean {
     if (!ConnectionManager.isConnected) {

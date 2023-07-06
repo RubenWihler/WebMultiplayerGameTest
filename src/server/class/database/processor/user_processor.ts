@@ -24,19 +24,19 @@ export default class UserProcessor{
 
         //checks
         if (!this.isEmailValid(email)){
-            error_messages.push("the email is not valid");
+            error_messages.push("EMAIL_INVALID");
         }
         if (password.length < 5){
-            error_messages.push("the password must be at least 5 characters long");
+            error_messages.push("PASSWORD_TOO_SHORT");
+        }
+        if (username.length > 20){
+            error_messages.push("USERNAME_TOO_LONG");
         }
         if (username.length < 3){
-            error_messages.push("the username must be at least 3 characters long");
+            error_messages.push("USERNAME_TOO_SHORT");
         }
         if (await this.isEmailExist(email)){
-            error_messages.push("the email is already used");
-        }
-        if (await this.isUsernameExist(username)){
-            error_messages.push("the username is already used");
+            error_messages.push("EMAIL_ALREADY_EXISTS");
         }
 
         if (error_messages.length > 0){
@@ -58,7 +58,7 @@ export default class UserProcessor{
         if (result.affectedRows == 0){
             return {
                 statut: false,
-                msg: ["an error occured while creating the user"]
+                msg: ["An error occured while creating the user"]
             };
         }
 
@@ -131,7 +131,7 @@ export default class UserProcessor{
         if (rows.length == 0 || !HashTools.compareHash(password, rows[0].password)){
             return {
                 statut: false,
-                msg: ["the email/username or the password is incorrect"]
+                msg: ["WRONG_CREDENTIALS"]
             };
         }
 
@@ -145,7 +145,7 @@ export default class UserProcessor{
         if (!(await this.setUserTokenAsync(user.userId, token))){
             return {
                 statut: false,
-                msg: ["an error occured"]
+                msg: ["UNKNOWN_ERROR"]
             };
         }
 

@@ -117,7 +117,7 @@ export default class SocketManager {
         if(this.isSocketAlreadyConnected(socket)){
             socket.emit('signup-response', {
                 success: false,
-                messages: ['You are already connected to an account ! please disconnect first.']
+                messages: ['USER_ALREADY_LOGGED_IN']
             });
             return;
         }
@@ -125,16 +125,19 @@ export default class SocketManager {
         //pre-check validity of the signup data
         const errormsgs = [];
         if (signup_data.username == null || signup_data.username == undefined || signup_data.username == ''){
-            errormsgs.push('username is required !');
+            errormsgs.push('USERNAME_REQUIRED');
         }
         if (signup_data.email == null || signup_data.email == undefined || signup_data.email == ''){
-            errormsgs.push('email is required !');
+            errormsgs.push('EMAIL_REQUIRED');
         }
         if (signup_data.password == null || signup_data.password == undefined || signup_data.password == ''){
-            errormsgs.push('password is required !');
+            errormsgs.push('PASSWORD_REQUIRED');
+        }
+        if (signup_data.password_confirm == null || signup_data.password_confirm == undefined || signup_data.password_confirm == ''){
+            errormsgs.push('PASSWORD_CONFIRM_REQUIRED');
         }
         if (signup_data.password_confirm !== signup_data.password){
-            errormsgs.push('password confirmation does not match !');
+            errormsgs.push('PASSWORDS_DO_NOT_MATCH');
         }
 
         //If there is an error
@@ -204,8 +207,30 @@ export default class SocketManager {
         if(this.isSocketAlreadyConnected(socket)){
             socket.emit('login-response', {
                 success: false,
-                messages: ['You are already connected to an account !']
+                messages: ['USER_ALREADY_LOGGED_IN']
             });
+            return;
+        }
+
+        //pre-check validity of the login data
+        const errormsgs = [];
+
+        console.log(JSON.stringify(login_data));
+
+        if (login_data.username == null || login_data.username == undefined || login_data.username.length === 0){
+            errormsgs.push('USERNAME_REQUIRED');
+        }
+        if (login_data.password == null || login_data.password == undefined || login_data.password.length === 0){
+            errormsgs.push('PASSWORD_REQUIRED');
+        }
+
+        //If there is an error
+        if (errormsgs.length > 0){
+            socket.emit('login-response', {
+                success: false,
+                messages: errormsgs
+            });
+
             return;
         }
         
@@ -245,7 +270,7 @@ export default class SocketManager {
         if(!this.isSocketAlreadyConnected(socket)){
             socket.emit('logout-response', {
                 success: false,
-                messages: ['You are not connected to an account !']
+                messages: ['USER_NOT_LOGGED_IN']
             });
         }
     
