@@ -4,10 +4,8 @@ import View from './classes/views/view.js';
 import ViewsManager from './classes/views/views_manager.js';
 import ConnectionErrorsTraductor from './classes/connection/connection_errors_traductor.js';
 import LobbiesConnectionManager from './classes/connection/lobbies_connection_manager.js';
-import e from 'express';
 
 var refresh_on_disconnect = true;
-
 
 
 //#region ----- html elements -----
@@ -55,21 +53,34 @@ const element_disconnected_error_message_text : HTMLSpanElement = document.getEl
 //#region home view elements
 
 //home lobby creation form
-const element_home_lobby_creation_form : HTMLFormElement = document.getElementById('home-lobby-creation-form') as HTMLFormElement;
-const element_home_lobby_creation_name : HTMLInputElement = document.getElementById('home-lobby-creation-name') as HTMLInputElement;
-const element_home_lobby_creation_password : HTMLInputElement = document.getElementById('home-lobby-creation-password') as HTMLInputElement;
-const element_home_lobby_creation_max_players : HTMLInputElement = document.getElementById('home-lobby-creation-max-players') as HTMLInputElement;
 
-//home lobby join form
-const element_home_lobby_join_form : HTMLFormElement = document.getElementById('home-lobby-join-form') as HTMLFormElement;
-const element_home_lobby_join_id : HTMLInputElement = document.getElementById('home-lobby-join-id') as HTMLInputElement;
-const element_home_lobby_join_password : HTMLInputElement = document.getElementById('home-lobby-join-password') as HTMLInputElement;
+//home panel
+const element_home_panel_join_button : HTMLButtonElement = document.getElementById('home-panel-join-button') as HTMLButtonElement;
+const element_home_panel_host_button : HTMLButtonElement = document.getElementById('home-panel-host-button') as HTMLButtonElement;
+const element_home_panel_settings_button : HTMLButtonElement = document.getElementById('home-panel-settings-button') as HTMLButtonElement;
+const element_home_panel_account_button : HTMLButtonElement = document.getElementById('home-panel-account-button') as HTMLButtonElement;
+const element_home_panel_username : HTMLSpanElement = document.getElementById('home-panel-username') as HTMLSpanElement;
 
-const element_home_lobby_leave_button : HTMLButtonElement = document.getElementById('home-lobby-leave-button') as HTMLButtonElement;
+//home views
+const element_home_view_join : HTMLDivElement = document.getElementById('home-view-join') as HTMLDivElement;
+const element_home_view_host : HTMLDivElement = document.getElementById('home-view-host') as HTMLDivElement;
+const element_home_view_settings : HTMLDivElement = document.getElementById('home-view-settings') as HTMLDivElement;
+const element_home_view_account : HTMLDivElement = document.getElementById('home-view-account') as HTMLDivElement;
+
+//home join
+
+//home host
+
+//home settings
+
+//home account
+const element_home_account_id : HTMLSpanElement = document.getElementById('home-account-id') as HTMLSpanElement;
+const element_home_account_username : HTMLSpanElement = document.getElementById('home-account-username') as HTMLSpanElement;
+const element_home_account_email : HTMLSpanElement = document.getElementById('home-account-email') as HTMLSpanElement;
+const element_home_account_logout_button : HTMLButtonElement = document.getElementById('home-account-logout-button') as HTMLButtonElement;
 
 //#endregion
 
-const element_logout_button : HTMLButtonElement = document.getElementById('logout-button') as HTMLButtonElement;
 
 //#endregion
 
@@ -158,6 +169,18 @@ view_home.onDisplay.subscribe((view) => {
         ViewsManager.setActiveView('connection');
         return;
     }
+
+    //set panel-bottom username
+    element_home_panel_username.innerText = AccountConnectionManager.userData.username;
+
+    //set home account view infos
+    console.log(AccountConnectionManager.userData);
+    element_home_account_id.innerText = AccountConnectionManager.userData.userId.toString();
+    element_home_account_username.innerText = AccountConnectionManager.userData.username;
+    element_home_account_email.innerText = AccountConnectionManager.userData.email;
+
+    //dipsplay home join view
+    setHomeViewActive('join');
 
     //test
     LobbiesConnectionManager.getLobbiesList()
@@ -254,116 +277,137 @@ element_signup_signin_button.addEventListener('click', (event) => {
 //#endregion
 
 //#region home view event listeners
-element_home_lobby_creation_form.addEventListener('submit', (event) => {
-    if (!checkConnection()) {
-        event.preventDefault();
-        return;
-    }
 
-    const name = element_home_lobby_creation_name.value;
-    const max_players = Number(element_home_lobby_creation_max_players.value);
-    let password = element_home_lobby_creation_password.value;
+// home views
+const home_views = new Map<string, {view: HTMLDivElement, button: HTMLButtonElement}>([
+    ['join',        { view: element_home_view_join,      button: element_home_panel_join_button}],
+    ['host',        { view: element_home_view_host,      button: element_home_panel_host_button}],
+    ['settings',    { view: element_home_view_settings,  button: element_home_panel_settings_button}],
+    ['account',     { view: element_home_view_account,   button: element_home_panel_account_button}]
+]);
 
-    if (password === '') {
-        password = null;
-    }
-
-    LobbiesConnectionManager.createLobby(name, password, max_players)
-    .then((result) => {
-        if (!result.success) {
-            alert(`The lobby creation failed :\n${result.messages.join('\n')}`);
-            return;
+function setHomeViewActive(viewname: string){
+    home_views.forEach((value, key) => {
+        if (key === viewname){
+            value.view.style.display = 'flex';
+            value.view.style.visibility = 'visible';
+            value.button.classList.add('current');
         }
-
-        console.log('[+] lobby created : ' + JSON.stringify(result));
-    });
-
-    event.preventDefault();
-});
-
-element_home_lobby_join_form.addEventListener('submit', (event) => {
-    if (!checkConnection()) {
-        event.preventDefault();
-        return;
-    }
-
-    const errors = [];
-    const id = element_home_lobby_join_id.value;
-    let password = element_home_lobby_join_password.value;
-
-    //check if the id is empty
-    if (id === '') {
-        errors.push('Please enter a lobby id');
-    }
-    
-    //if the password is empty, set it to null
-    if (password === '') {
-        password = null;
-    }
-    
-    if (errors.length > 0) {
-        alert('Lobby join error :\n' + errors.join('\n'));
-        return;
-    }
-
-    LobbiesConnectionManager.joinLobby(id, password)
-    .then((result) => {
-        if (!result.success) {
-            alert('Lobby join error :\n' + result.messages.join('\n'));
-            return;
-        }
-
-        console.log('[+] lobby joined : ' + id);
-    });
-
-    event.preventDefault();
-});
-
-element_home_lobby_leave_button.addEventListener('click', (event) => {
-    if (!checkConnection()) {
-        event.preventDefault();
-        return;
-    }
-
-    LobbiesConnectionManager.leaveLobby()
-    .then((result) => {
-        if (!result.success) {
-            alert('Lobby leave error :\n' + result.messages.join('\n'));
-            return;
+        else {
+            value.view.style.display = 'none';
+            value.view.style.visibility = 'hidden';
+            value.button.classList.remove('current');
         }
     });
-
-    event.preventDefault();
-});
-
-
-
-//#endregion
-
-element_logout_button.addEventListener('click', (event) => {
-    if (!checkConnection()) {
-        event.preventDefault();
-        return;
-    }
-
-    AccountConnectionManager.sendLogoutRequest();
-    event.preventDefault();
-});
-
-//#endregion
-
-const displayLogoutButton = function() {
-    console.log('[+] logged in : ' + AccountConnectionManager.isLogged);
-
-    if (!AccountConnectionManager.isLogged){
-        element_logout_button.style.display = 'none';
-        element_logout_button.style.visibility = 'hidden';
-        return;
-    }
-
-    element_logout_button.style.display = 'block';
-    element_logout_button.style.visibility = 'visible';
 }
+
+element_home_panel_join_button.addEventListener('click', () => {
+    setHomeViewActive('join');
+});
+element_home_panel_host_button.addEventListener('click', () => {
+    setHomeViewActive('host');
+});
+element_home_panel_settings_button.addEventListener('click', () => {
+    setHomeViewActive('settings');
+});
+element_home_panel_account_button.addEventListener('click', () => {
+    setHomeViewActive('account');
+});
+
+
+// home account view
+element_home_account_logout_button.addEventListener('click', () => {
+    AccountConnectionManager.sendLogoutRequest();
+});
+
+
+// element_home_lobby_creation_form.addEventListener('submit', (event) => {
+//     if (!checkConnection()) {
+//         event.preventDefault();
+//         return;
+//     }
+
+//     const name = element_home_lobby_creation_name.value;
+//     const max_players = Number(element_home_lobby_creation_max_players.value);
+//     let password = element_home_lobby_creation_password.value;
+
+//     if (password === '') {
+//         password = null;
+//     }
+
+//     LobbiesConnectionManager.createLobby(name, password, max_players)
+//     .then((result) => {
+//         if (!result.success) {
+//             alert(`The lobby creation failed :\n${result.messages.join('\n')}`);
+//             return;
+//         }
+
+//         console.log('[+] lobby created : ' + JSON.stringify(result));
+//     });
+
+//     event.preventDefault();
+// });
+
+// element_home_lobby_join_form.addEventListener('submit', (event) => {
+//     if (!checkConnection()) {
+//         event.preventDefault();
+//         return;
+//     }
+
+//     const errors = [];
+//     const id = element_home_lobby_join_id.value;
+//     let password = element_home_lobby_join_password.value;
+
+//     //check if the id is empty
+//     if (id === '') {
+//         errors.push('Please enter a lobby id');
+//     }
+    
+//     //if the password is empty, set it to null
+//     if (password === '') {
+//         password = null;
+//     }
+    
+//     if (errors.length > 0) {
+//         alert('Lobby join error :\n' + errors.join('\n'));
+//         return;
+//     }
+
+//     LobbiesConnectionManager.joinLobby(id, password)
+//     .then((result) => {
+//         if (!result.success) {
+//             alert('Lobby join error :\n' + result.messages.join('\n'));
+//             return;
+//         }
+
+//         console.log('[+] lobby joined : ' + id);
+//     });
+
+//     event.preventDefault();
+// });
+
+// element_home_lobby_leave_button.addEventListener('click', (event) => {
+//     if (!checkConnection()) {
+//         event.preventDefault();
+//         return;
+//     }
+
+//     LobbiesConnectionManager.leaveLobby()
+//     .then((result) => {
+//         if (!result.success) {
+//             alert('Lobby leave error :\n' + result.messages.join('\n'));
+//             return;
+//         }
+//     });
+
+//     event.preventDefault();
+// });
+
+
+
+//#endregion
+
+//#endregion
 
 //#region ----- connection manager events -----
 
@@ -551,12 +595,6 @@ ConnectionManager.onLogout.subscribe((logout_response) => {
 
     alert(errormsg);
 });
-
-// display logout button if logged in or not
-ConnectionManager.onSignup.subscribe(displayLogoutButton);
-ConnectionManager.onLogin.subscribe(displayLogoutButton);
-ConnectionManager.onLogout.subscribe(displayLogoutButton);
-AccountConnectionManager.onUserLogin.subscribe(displayLogoutButton);
 
 function cleanForms() {
     element_login_username.value = '';

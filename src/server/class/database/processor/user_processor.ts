@@ -246,8 +246,20 @@ export default class UserProcessor{
      * @returns If the user doesn't exist, return an object with the statut false and a message
      * If the user is deleted, return an object with the statut true
      */
-    static async deleteUserAsync(userId : number) : Promise<any>{
+    static async deleteUserAsync(userId: number, password: string) : Promise<any>{
+
         const pool : Pool = DatabaseManager.Pool;
+        const password_check_query = "SELECT password FROM Users WHERE userId = ? LIMIT 1";
+        const password_check_queryValues = [userId];
+        const [rows] : any = await pool.promise().query(password_check_query, password_check_queryValues);
+        
+        if (rows.length == 0 || !HashTools.compareHash(password, rows[0])){
+            return {
+                statut: false,
+                msg: ["WRONG_CREDENTIALS"]
+            };
+        }
+
         const query = "DELETE FROM Users WHERE userId = ?";
         const queryValues = [userId];
         const result : any = await pool.promise().query(query, queryValues);

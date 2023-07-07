@@ -93,6 +93,7 @@ export default class SocketManager {
         socket.on('login', (login_data) => this.onLogin(socket, login_data));
         socket.on('token_login', (token_login_data) => this.onTokenLogin(socket, token_login_data));
         socket.on('logout', () => this.onLogout(socket));
+        socket.on('delete-account', (credentials) => this.onDeleteAccount(socket, credentials));
     }
 
     private onDisconnect(socket: Socket){
@@ -192,7 +193,7 @@ export default class SocketManager {
             messages: ['Your account has been created successfully ! You are now logged in.'],
             signup_response_data: {
                 user_data: {
-                    userId: login_response.connection_data.user.user_id,
+                    userId: login_response.connection_data.user.userId,
                     username: login_response.connection_data.user.username,
                     email: login_response.connection_data.user.email
                 },
@@ -258,7 +259,7 @@ export default class SocketManager {
             messages: ['Connected successfully !'],
             login_response_data: {
                 user_data: {
-                    userId: login_response.connection_data.user.user_id,
+                    userId: login_response.connection_data.user.userId,
                     username: login_response.connection_data.user.username,
                     email: login_response.connection_data.user.email
                 },
@@ -321,6 +322,35 @@ export default class SocketManager {
             }
         });
 
+    }
+    private async onDeleteAccount(socket: Socket, credentials: any){
+        //credentials = {id, password}
+
+        if(!this.isSocketAlreadyConnected(socket)){
+            socket.emit('logout-response', {
+                success: false,
+                messages: ['USER_NOT_LOGGED_IN']
+            });
+        }
+
+        //disconnect the user
+        const connection_handler = this.connected_sockets.get(socket.id);
+        connection_handler.disconnect();
+
+        //delete the account
+        const delete_response = await UserProcessor.deleteUserAsync(credentials.id, credentials.password);
+
+        if(!delete_response.statut){
+            socket.emit('delete-account-response', {
+                success: false,
+                messages: [delete_response.msg]
+            });
+            return;
+        }
+
+        socket.emit('delete-account-response', {
+            success: true
+        });
     }
 
     /**

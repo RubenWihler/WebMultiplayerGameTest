@@ -1,5 +1,8 @@
 export default class IdGenerator {
-    //generates random id;
+    /**
+     * Generates a random id of format 'aaaa-aaaa'.
+     * @returns a random id of format 'aaaa-aaaa'
+     */
     public static generate(): string{
         //took from https://learnersbucket.com/examples/javascript/unique-id-generator-in-javascript/
         //generates random string of 4 characters
@@ -9,7 +12,7 @@ export default class IdGenerator {
                 .substring(1);
         }
 
-        //return id of format 'aaaaaaaa'-'aaaa'-'aaaa'-'aaaa'-'aaaaaaaaaaaa'
-        return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
+        //return id of format 'aaaa-aaaa'
+        return s4() + s4();
     }
 }

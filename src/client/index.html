@@ -87,17 +87,17 @@
             </p>
         </div>
 
-        <div class="view" id="home" style="display: flex; visibility: visible;">
+        <div class="view" id="home" style="display: none; visibility: hidden;">
             <section id="home-panel" class="glass-card">
                 <div id="home-panel-top">
                     <img id="home-panel-icon" src="./resources/svg/icon.svg" alt="icon">
                 </div>
 
                 <nav id="home-panel-nav">
-                    <button class="current">Join</button>
-                    <button>Host</button>
-                    <button>Settings</button>
-                    <button>Account</button>
+                    <button id="home-panel-join-button" class="">Join</button>
+                    <button id="home-panel-host-button">Host</button>
+                    <button id="home-panel-settings-button">Settings</button>
+                    <button id="home-panel-account-button">Account</button>
                 </nav>
 
                 <div id="home-panel-bottom">
@@ -106,7 +106,7 @@
             </section>
             <section id="home-view">
 
-                <div id="home-view-join" style="display: none; visibility: hidden">
+                <div id="home-view-join" style="display: flex; visibility: visible">
                     <span></span>
                     <div>
                         <article id="home-join-card-explanation"class="glass-card">
@@ -121,7 +121,7 @@
 
                             <div class="form-field-container">
                                 <label for="home-join-code-code">code :</label>
-                                <input type="text" id="home-join-code-code" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx">
+                                <input type="text" id="home-join-code-code" placeholder="xxxx-xxxx">
                                 <span id="home-join-code-errormsg-code" class="form-error-message">error message</span>
                             </div>
 
@@ -248,7 +248,7 @@
                     <span></span>
                 </div>
 
-                <div id="home-view-host" style="display: flex; visibility: visible">
+                <div id="home-view-host" style="display: none; visibility: hidden">
                     <form id="home-host-form"class="glass-card">
                         <h3>Host a game</h3>
 
@@ -282,6 +282,7 @@
                         </p>
                     </div>
                 </div>
+
                 <div id="home-view-account" style="display: none; visibility: hidden">
                     <div class="glass-card">
                         <h3>Account</h3>
@@ -294,18 +295,14 @@
                         </div>
 
                         <button id="home-account-logout-button" class="fill-button">logout</button>
-
-
-
                     </div>
                 </div>
             </section>
         </div>
     
-        <button id="logout-button" style="display: none; visibility: hidden;">logout</button>
     </div>
 
     <script src="./scripts/glass_card.js"></script>
-    <!--<script type="module" src="./scripts/home_main.js"></script>-->
+    <script type="module" src="./scripts/home_main.js"></script>
 </body>
 </html>

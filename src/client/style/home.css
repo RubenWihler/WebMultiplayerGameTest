@@ -62,6 +62,13 @@ form{
 #signup>button.link-button{
     margin-top: 10px;
 }
+
+/************************* DISCONECT *************************/
+
+
+
+
+
 /************************* HOME *************************/
 
 #home{
@@ -167,7 +174,7 @@ form{
 }
 
 
-/*-------- view --------*/
+/*-------- home views --------*/
 #home-view{
     display: flex;
     flex-direction: column;
@@ -270,7 +277,7 @@ form{
 }
 #home-join-card-code-form>div>input{
     text-align: center;
-    font-size: clamp(0.5rem, 1.2vw, 1.4rem);
+    font-size: clamp(0.5rem, 3vw, 1.4rem);
 }
 #home-join-card-code-form>button{
     margin-top: 5%;
@@ -378,6 +385,7 @@ form{
     width: 90%;
     overflow: hidden;
     overflow-y: auto;
+    border-radius: 16px;
 }
 #home-view-settings>div>h3{
     font-size: clamp(1.4rem, 6vw, 2.5rem);
