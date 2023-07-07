@@ -1,11 +1,19 @@
 body{
     margin: 0;
     padding: 0;
+    overflow: hidden;
     
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    color: var(--primary-color);
+
+    background: rgb(255,95,95);
+    background: -moz-linear-gradient(148deg, rgba(255,95,95,1) 0%, rgba(255,157,106,1) 51%, rgba(255,95,95,1) 100%);
+    background: -webkit-linear-gradient(148deg, rgba(255,95,95,1) 0%, rgba(255,157,106,1) 51%, rgba(255,95,95,1) 100%);
+    background: linear-gradient(148deg, rgba(255,95,95,1) 0%, rgba(255,157,106,1) 51%, rgba(255,95,95,1) 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#ff5f5f",endColorstr="#ff5f5f",GradientType=1);
 }
 
 form{
@@ -22,122 +30,430 @@ form{
 
 #signin, #signup{
     justify-content: center;
-    background: rgb(255,100,100);
-    background: -moz-linear-gradient(125deg, rgba(255,100,100,1) 0%, rgba(255,197,106,1) 100%);
-    background: -webkit-linear-gradient(125deg, rgba(255,100,100,1) 0%, rgba(255,197,106,1) 100%);
-    background: linear-gradient(125deg, rgba(255,100,100,1) 0%, rgba(255,197,106,1) 100%);
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#ff6464",endColorstr="#ffc56a",GradientType=1);
+
 }
 #signup-form{
     height: 650px;
     width: 500px;
 }
 
-#signin-form, #signup-form{
+#signin-form,
+#signup-form{
     padding: 25px;
     justify-content: space-around;
-    background: rgba(255, 255, 255, 0.12);
     border-radius: 16px;
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-    backdrop-filter: blur(3.2px);
-    -webkit-backdrop-filter: blur(3.2px);
-    border: 1px solid rgba(255, 255, 255, 0.23);
 }
-#signin-form>h3, #signup-form>h3{
+#signin-form>h3,
+#signup-form>h3{
     font-family: 'Montserrat', sans-serif;
     font-size: 2rem;
     font-weight: 600;
     margin: 0;
 }
-#signin-form>div, #signup-form>div{
+#signin-form>button,
+#signup-form>button{
+    height: 50px;
+    width: 80%;
+    border-radius: 20px;
+    font-size: 1.2rem;
+    font-weight: 400;
+}
+#signin>.link-button,
+#signup>button.link-button{
+    margin-top: 10px;
+}
+/************************* HOME *************************/
+
+#home{
+    flex-direction: row;
+    justify-content: space-between;
+}
+#home>section{
+}
+
+/*-------- panel --------*/
+#home-panel{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    height: 99.8vh;
+    width: clamp(300px, 20vw, 400px);
+    background-color: rgba(255, 255, 255, 0.4);
+    color: var(--secondary-color);
+}
+#home-panel>*{
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: space-evenly;
-    height: 100px;
-    width: 80%;
+    width: 90%;
 }
-#signin-form>div>label, #signup-form>div>label{
-    height: 20px;
-    width: 100%;
-    font-family: 'Montserrat', sans-serif;
-    font-weight: 600;
-    font-size: 1.2rem;
+#home-panel-top{
+    height: clamp(50px, 10vh, 100px);
 }
-#signin-form>div>input, #signup-form>div>input{
-    height: 20px;
-    width: 100%;
-    margin-top: 15px;
-    font-family: 'Montserrat', sans-serif;
-    font-weight: 400;
-    font-size: 1.1rem;
-    color: white;
-    background-color: transparent;
-    border: none;
-    outline: none;
-    border-bottom: solid 1px white;
-    transition: all 0.2s ease-in-out;
-}
-#signin-form>div>input:focus, #signup-form>div>input:focus{
-    border-bottom: solid 2px white;
-}
-#signin-form>div.error>input, #signup-form>div.error>input{
-    color: red;
-    border-bottom: solid 1.5px red;
-}
-#signin-form>div.error>input:focus, #signup-form>div.error>input:focus{
-    color: red;
-    border-bottom: solid 2px red;
-}
-
-#signin-form>button, #signup-form>button{
-    height: 50px;
-    width: 80%;
-    color: #ffffff;
-    border-radius: 20px;
-    font-size: 1.2rem;
-    font-weight: 400;
+#home-panel-icon{
+    height: clamp(5px, 40%, 50px);
+    width: clamp(10px, 100%, 250px);
     cursor: pointer;
-    background: rgba(255, 255, 255, 0.03);
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-    backdrop-filter: blur(3.2px);
-    -webkit-backdrop-filter: blur(3.2px);
-    border: 1.5px solid rgba(255, 255, 255, 0.23);
-    transition: all 0.2s ease-in-out;
+    z-index: 1;
 }
-#signin-form>button:hover, #signup-form>button:hover{
-    background: rgba(255, 255, 255, 0.25);
+#home-panel-nav, #home-panel-bottom{
+    width: 77%;
 }
-#signin>button, #signup>button{
-    margin-top: 10px;
-    text-decoration: underline;
-    background-color: transparent;
-    border: none;
-    outline: none;
-    color: white;
-    font-size: 1rem;
-    font-family: 'Sora', sans-serif;
-    font-weight: 300;
+#home-panel-nav{
+    height: clamp(150px, 70vh, 350px);
+    min-height: 150px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+}
+#home-panel-nav>button {
+    height: clamp(40px, 40%, 60px);
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    flex-direction: row;
+    align-items: center;
+    background-color: rgba(136, 126, 189, 0.2);
+    color: var(--secondary-color);
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+    font-size: 1.2rem;
+    border-radius: 10px;
     cursor: pointer;
-}
+    border: none;
+    flex-shrink: 0;
 
-.form-error-message{
+    transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+    z-index: 1;
+}
+#home-panel-nav>button:hover{
+    background-color: rgba(136, 126, 189, 0.35);
+    color: var(--primary-color);
+}
+#home-panel-nav>button.current{
+    background-color: rgba(136, 126, 189, 0.35);
+    justify-content: space-between;
+    color: var(--primary-color);
+}
+#home-panel-nav>button.current::before{
+    content: '';
+    height: 100%;
+    width: 10px;
+    background-color: var(--primary-color);
+    border-radius: 10px 0 0 10px;
+    margin-left: -6px;
+    position: relative;
+}
+#home-panel-nav>button.current::after{
+     content: '';
+ }
+
+#home-panel-bottom{
+    height: clamp(50px, 5vh, 100px);
+    display: flex;
+    flex-direction: row;
+    justify-content: start;
+    align-items: center;
+}
+#home-panel-username{
     font-family: 'Montserrat', sans-serif;
     font-weight: 500;
-    font-size: 0.95rem;
-    color: red;
-    margin: 0;
-    padding: 0;
-}
-#signin-form>div>.form-error-message, #signup-form>div>.form-error-message{
-    display: none;
-    visibility: hidden;
-}
-#signin-form>div.error>.form-error-message, #signup-form>div.error>.form-error-message{
-    display: block;
-    visibility: visible;
+    font-size: 1.2rem;
+    color: var(--secondary-color);
+    z-index: 1;
 }
 
+
+/*-------- view --------*/
+#home-view{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    width: 100%;
+    color: var(--secondary-color);
+    overflow-y: auto;
+}
+#home-view>div{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+}
+#home-view-join{
+    flex-direction: row !important;
+    justify-content: space-between !important;
+}
+#home-view-join>div{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 90%;
+    width: 45.5%;
+}
+#home-view-join>span{
+    width: 3%;
+}
+#home-view-join>div:nth-child(2){
+    justify-content: space-between;
+}
+#home-join-card-explanation,
+#home-join-card-code-form,
+#home-join-card-lobby{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-evenly;
+    border-radius: 15px;
+    overflow: hidden;
+    color: var(--primary-color);
+}
+#home-view-join>div>article>*{
+    z-index: 1;
+}
+#home-join-card-explanation{
+    width: 100%;
+    height: 50%;
+}
+#home-join-card-explanation>h3{
+    font-family: 'Montserrat', sans-serif;
+    width: 80%;
+    font-weight: 800;
+    font-size: clamp(1.2rem, 3vw, 2.5rem);
+    margin: 0;
+    margin-left: 5%;
+    padding: 0;
+}
+#home-join-card-explanation>p{
+    position: inherit;
+    width: 80%;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500;
+    font-size: clamp(0.5rem, 1.5vw, 1.3rem);
+    margin: 0;
+    margin-left: 5%;
+    margin-bottom: 5%;
+    padding: 0;
+    white-space: normal;
+}
+#home-join-card-code-form{
+    margin-top: 20px;
+    width: 100%;
+    height: 42.5%;
+}
+#home-join-card-code-form>h3,
+#home-join-lobby-top>h3,
+#home-host-form>h3,
+#home-view-settings>div>h3,
+#home-view-account>div>h3{
+    color: var(--primary-color);
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: clamp(0.8rem, 2vw, 2rem);
+    margin: 0;
+    padding: 0;
+    z-index: 1;
+}
+#home-join-card-code-form>h3{
+    align-self: start;
+    margin-left: 10%;
+}
+#home-join-card-code-form>div>label{
+    font-size: clamp(0.6rem, 1.5vw, 1.6rem);
+}
+#home-join-card-code-form>div>input{
+    text-align: center;
+    font-size: clamp(0.5rem, 1.2vw, 1.4rem);
+}
+#home-join-card-code-form>button{
+    margin-top: 5%;
+}
+
+#home-join-card-lobby{
+    width: 87%;
+    height: 100%;
+    justify-content: space-between;
+}
+#home-join-lobby-top{
+    margin-top: 7%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    height: 10%;
+    width: 80%;
+}
+#home-join-lobby-refresh-button{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    width: 45px;
+    height: 45px;
+    font-size: 1.3rem;
+    border-radius: 10px;
+}
+
+#home-join-lobby-list{
+    width: 80%;
+    height: 80%;
+    min-height: 0;
+
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    justify-content: flex-start;
+    overflow-y: visible;
+    overflow-x: hidden;
+}
+
+.home-join-lobby-list-item{
+    width: 93%;
+    height: 50px;
+    min-height: 50px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    border-radius: 10px;
+    font-weight: 400;
+    margin-bottom: 5%;
+    background-color: rgba(136, 126, 189, 0.25);
+    color: var(--primary-color);
+    cursor: pointer;
+    z-index: 1;
+
+    transition: background-color 0.1s ease-in-out, font-weight 0.1s ease-in-out;
+}
+.home-join-lobby-list-item:hover{
+    background-color: rgba(136, 126, 189, 0.37);
+    font-weight: 600;
+}
+.home-join-lobby-list-item>span{
+    width: 65%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.home-join-lobby-list-item>div{
+    width: 27%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+    margin-right: 3%;
+}
+/*----- home-host -----*/
+#home-host-form{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-evenly;
+    width: clamp(300px, 90%, 800px);
+    height: 90%;
+    border-radius: 16px;
+    overflow: hidden;
+    overflow-y: auto;
+}
+#home-host-form>h3{
+    font-size: clamp(1.4rem, 5vw, 2.2rem);
+}
+
+/*----- home-settings -----*/
+#home-view-settings>div{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-evenly;
+    height: 90%;
+    width: 90%;
+    overflow: hidden;
+    overflow-y: auto;
+}
+#home-view-settings>div>h3{
+    font-size: clamp(1.4rem, 6vw, 2.5rem);
+}
+
+
+/*----- home-settings -----*/
+#home-view-account>div{
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-evenly;
+    height: 90%;
+    width: 90%;
+    overflow: hidden;
+    overflow-y: auto;
+
+}
+#home-view-account>div>*{
+    color: var(--primary-color);
+    z-index: 1;
+}
+#home-view-account>div>h3{
+    font-size: clamp(1.4rem, 6vw, 2.5rem);
+    margin-top: 2%;
+    margin-bottom: 2%;
+}
+#home-view-account>div>div{
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    justify-content: space-evenly;
+    width: clamp(200px, 80%, 400px);
+    border-radius: 16px;
+    height: clamp(200px, 80%, 300px);
+    min-height: 150px;
+    padding: 2%;
+    overflow: hidden;
+}
+#home-view-account>div>div>h3{
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+    padding: 0;
+    margin-bottom: 5%;
+    white-space: nowrap;
+}
+#home-view-account>div>div>span{
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 40px;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 1.2rem;
+    white-space: nowrap;
+}
+#home-view-account>div>div>span>span{
+    font-weight: 800;
+}
+#home-account-logout-button{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    width: clamp(200px, 80%, 450px);
+    height: 50px;
+    padding-left: 2%;
+    padding-right: 2%;
+    border-radius: 7px;
+    font-size: 1.3rem;
+}
+#home-account-logout-button:hover{
+    color: white !important;
+}
 
 /* #home-lobby-join-form{
     display: flex;

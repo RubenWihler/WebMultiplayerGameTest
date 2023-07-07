@@ -2,9 +2,10 @@
 
 :root{
     --bg-color: #353535;
-    --primary-color: #5972ff;
-    --secondary-color: #ff3a7f;
-    --tertiary-color: #46ff4f;
+    --primary-color: #664eff;
+    --secondary-color: #887ebd;
+    --tertiary-color: rgba(205, 198, 255, 0.56);
+    --error-color: #ff0000;
 }
 
 html{
@@ -16,7 +17,6 @@ html{
 body{
     margin: 0;
     padding: 0;
-    background-color: var(--bg-color);
     color: white;
     font-family: 'Sora', sans-serif;
     font-size: 1.2rem;
@@ -31,7 +31,6 @@ h1{
 #wrapper{
     width: 100%;
     height: 99.999vh;
-    background-color: var(--bg-color);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -45,4 +44,96 @@ h1{
     flex-direction: column;
     align-items: center;
     justify-content: space-evenly;
+}
+
+button.fill-button{
+    border: solid 2px var(--primary-color);
+    background-color: transparent;
+    color: var(--primary-color);
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+}
+button.fill-button:hover{
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.form-field-container{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-evenly;
+    height: 100px;
+    width: 80%;
+    z-index: 1;
+}
+.form-field-container>label{
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 1.2rem;
+    color: var(--primary-color);
+    width: 100%;
+    height: 20px;
+    margin: 0;
+    padding: 0;
+}
+.form-field-container>input{
+    background-color: transparent;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 400;
+    height: 20px;
+    margin-top: 15px;
+    font-size: 1.1rem;
+    width: 100%;
+    color: var(--primary-color);
+    border: none;
+    outline: none;
+    border-bottom: solid 1px var(--primary-color);
+}
+.form-field-container>input:focus{
+    border-bottom: solid 2px var(--primary-color);
+}
+.form-field-container.error>input{
+    color: var(--error-color);
+    border-bottom: solid 1.5px var(--error-color);
+}
+.form-field-container.error>input:focus{
+    border-bottom: solid 2px var(--error-color);
+}
+.form-error-message{
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500;
+    width: 100%;
+    font-size: 0.95rem;
+    color: var(--error-color);
+    margin: 0;
+    padding: 0;
+}
+.form-field-container>.form-error-message{
+    visibility: hidden;
+    display: none;
+}
+.form-field-container.error>.form-error-message{
+    visibility: visible;
+    display: block;
+}
+.form-button{
+    height: 50px;
+    width: 80%;
+    border-radius: 20px;
+    font-size: 1.2rem;
+    font-weight: 400;
+    z-index: 1;
+}
+
+.link-button{
+    color: var(--primary-color);
+    text-decoration: underline;
+    background-color: transparent;
+    border: none;
+    outline: none;
+    font-size: 1rem;
+    font-family: 'Sora', sans-serif;
+    font-weight: 300;
+    cursor: pointer;
 }

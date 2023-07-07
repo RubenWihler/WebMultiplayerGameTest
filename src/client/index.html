@@ -6,8 +6,10 @@
     <title>Client</title>
     <link rel="stylesheet" href="./style/main.css">
     <link rel="stylesheet" href="./style/home.css">
+    <link rel="stylesheet" href="./style/glass_card.css">
 </head>
 <body>
+    <script src="https://kit.fontawesome.com/1168815fe0.js" crossorigin="anonymous"></script>
     <script src="/socket.io/socket.io.js"></script>
     
     <div id="wrapper">
@@ -18,57 +20,57 @@
         </div>
 
         <div class="view" id="signin" style="display: none; visibility: hidden;">
-            <form id="signin-form">
+            <form id="signin-form" class="glass-card">
                 <h3>Sign in</h3>
 
-                <div id="signin-container-username">
+                <div id="signin-container-username" class="form-field-container">
                     <label for="signin-username">username or email :</label>
                     <input type="text" id="signin-username">
                     <span id="signin-errormsg-username" class="form-error-message">error message</span>
                 </div>
 
-                <div id="signin-container-password">
+                <div id="signin-container-password" class="form-field-container">
                     <label for="signin-password">password :</label>
                     <input type="password" id="signin-password">
                     <span id="signin-errormsg-password" class="form-error-message">error message</span>
                 </div>
 
-                <button type="submit" id="signin-button">sign in</button>
+                <button type="submit" id="signin-button" class="fill-button">sign in</button>
             </form>
-            <button id="signin-signup-button">Don't have an account ? sign up</button>
+            <button id="signin-signup-button" class="link-button">Don't have an account ? sign up</button>
         </div>
         
         <div class="view" id="signup" style="display: none; visibility: hidden;">
-            <form id="signup-form">
+            <form id="signup-form" class="glass-card">
                 <h3>Sign up</h3>
 
-                <div id="signup-container-username">
+                <div id="signup-container-username" class="form-field-container">
                     <label for="signup-username">username :</label>
                     <input type="text" id="signup-username">
                     <span id="signup-errormsg-username" class="form-error-message">error message</span>
                 </div>
 
-                <div id="signup-container-email">
+                <div id="signup-container-email" class="form-field-container">
                     <label for="signup-email">email :</label>
                     <input type="text" id="signup-email">
                     <span id="signup-errormsg-email" class="form-error-message">error message</span>
                 </div>
 
-                <div id="signup-container-password">
+                <div id="signup-container-password" class="form-field-container">
                     <label for="signup-password">password :</label>
                     <input type="password" id="signup-password">
                     <span id="signup-errormsg-password" class="form-error-message">error message</span>
                 </div>
 
-                <div id="signup-container-password-confirm">
+                <div id="signup-container-password-confirm" class="form-field-container">
                     <label for="signup-password-confirm">confirm password :</label>
                     <input type="password" id="signup-password-confirm">
                     <span id="signup-errormsg-password-confirm" class="form-error-message">error message</span>
                 </div>
 
-                <button type="submit" id="signup-button">sign up</button>
+                <button type="submit" id="signup-button" class="fill-button">sign up</button>
             </form>
-            <button id="signup-signin-button">Already have an account ? sign in</button>
+            <button id="signup-signin-button" class="link-button">Already have an account ? sign in</button>
         </div>
         
         <div class="view" id="disconnected" style="display: none; visibility: hidden;">
@@ -85,48 +87,225 @@
             </p>
         </div>
 
-        <div class="view" id="home" style="display: none; visibility: hidden;">
-            <h1>Home</h1>
-            <form id="home-lobby-creation-form">
-                <h3>Lobby creation</h3>
-
-                <label for="home-lobby-creation-name">name</label>
-                <input type="text" id="home-lobby-creation-name">
-
-                <label for="home-lobby-creation-password">password</label>
-                <input type="password" id="home-lobby-creation-password" placeholder="leave blank for no password">
-
-                <label for="home-lobby-creation-max-players">max players</label>
-                <input type="number" id="home-lobby-creation-max-players" min="2" max="8" value="8">
-                
-                <button type="submit" id="home-lobby-create-button">create lobby</button>
-            </form>
-
-            <form id="home-lobby-join-form">
-                <h3>Join lobby</h3>
-
-                <label for="home-lobby-join-id">lobby id</label>
-                <input type="text" id="home-lobby-join-id" value="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx">
-
-                <label for="home-lobby-join-password">password</label>
-                <input type="password" id="home-lobby-join-password" placeholder="leave blank for no password">
-                
-                <button type="submit" id="home-lobby-join-button">join lobby</button>
-            </form>
-
-            <div>
-                <h3>lobbies</h3>
-                <div id="home-lobbies">
-
+        <div class="view" id="home" style="display: flex; visibility: visible;">
+            <section id="home-panel" class="glass-card">
+                <div id="home-panel-top">
+                    <img id="home-panel-icon" src="./resources/svg/icon.svg" alt="icon">
                 </div>
-            </div>
 
-            <button id="home-lobby-leave-button">Leave current lobby</button>
+                <nav id="home-panel-nav">
+                    <button class="current">Join</button>
+                    <button>Host</button>
+                    <button>Settings</button>
+                    <button>Account</button>
+                </nav>
+
+                <div id="home-panel-bottom">
+                    <span id="home-panel-username">usename</span>
+                </div>
+            </section>
+            <section id="home-view">
+
+                <div id="home-view-join" style="display: none; visibility: hidden">
+                    <span></span>
+                    <div>
+                        <article id="home-join-card-explanation"class="glass-card">
+                            <h3>Join a lobby</h3>
+                            <p>
+                                You can join a lobby by entering the lobby code, or choosing one from the lobby list.<br><br>
+                                You can also join a lobby by clicking on the link sent by the host.
+                            </p>
+                        </article>
+                        <form id="home-join-card-code-form"class="glass-card">
+                            <h3>Join with code</h3>
+
+                            <div class="form-field-container">
+                                <label for="home-join-code-code">code :</label>
+                                <input type="text" id="home-join-code-code" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx">
+                                <span id="home-join-code-errormsg-code" class="form-error-message">error message</span>
+                            </div>
+
+                            <button type="submit" class="fill-button form-button">join</button>
+                        </form>
+                    </div>
+                    <div>
+                        <article id="home-join-card-lobby"class="glass-card">
+                            <div id="home-join-lobby-top">
+                                <h3>Lobby list</h3>
+                                <button id="home-join-lobby-refresh-button" class="fill-button">
+                                    <i class="fas fa-sync-alt"></i>
+                                </button>
+                            </div>
+                            <div id="home-join-lobby-list">
+                                <div class="home-join-lobby-list-item">
+                                    <span>lobby name</span>
+                                    <div>
+                                        <span>8/10</span>
+                                        <i class="fas fa-unlock-alt"></i>
+                                    </div>
+                                </div>
+                                <div class="home-join-lobby-list-item">
+                                    <span>lobby name</span>
+                                    <div>
+                                        <span>8/10</span>
+                                        <i class="fas fa-lock"></i>
+                                    </div>
+                                </div>
+                                <div class="home-join-lobby-list-item">
+                                    <span>lobby name</span>
+                                    <div>
+                                        <span>8/10</span>
+                                        <i class="fas fa-unlock-alt"></i>
+                                    </div>
+                                </div>
+                                <div class="home-join-lobby-list-item">
+                                    <span>lobby name</span>
+                                    <div>
+                                        <span>8/10</span>
+                                        <i class="fas fa-unlock-alt"></i>
+                                    </div>
+                                </div>
+                                <div class="home-join-lobby-list-item">
+                                    <span>lobby name</span>
+                                    <div>
+                                        <span>8/10</span>
+                                        <i class="fas fa-unlock-alt"></i>
+                                    </div>
+                                </div>
+                                <div class="home-join-lobby-list-item">
+                                    <span>lobby name</span>
+                                    <div>
+                                        <span>8/10</span>
+                                        <i class="fas fa-unlock-alt"></i>
+                                    </div>
+                                </div>
+                                <div class="home-join-lobby-list-item">
+                                    <span>lobby name</span>
+                                    <div>
+                                        <span>8/10</span>
+                                        <i class="fas fa-unlock-alt"></i>
+                                    </div>
+                                </div>
+                                <div class="home-join-lobby-list-item">
+                                    <span>lobby name</span>
+                                    <div>
+                                        <span>8/10</span>
+                                        <i class="fas fa-unlock-alt"></i>
+                                    </div>
+                                </div>
+                                <div class="home-join-lobby-list-item">
+                                    <span>lobby name</span>
+                                    <div>
+                                        <span>8/10</span>
+                                        <i class="fas fa-unlock-alt"></i>
+                                    </div>
+                                </div>
+                                <div class="home-join-lobby-list-item">
+                                    <span>lobby name</span>
+                                    <div>
+                                        <span>8/10</span>
+                                        <i class="fas fa-unlock-alt"></i>
+                                    </div>
+                                </div>
+                                <div class="home-join-lobby-list-item">
+                                    <span>lobby name</span>
+                                    <div>
+                                        <span>8/10</span>
+                                        <i class="fas fa-unlock-alt"></i>
+                                    </div>
+                                </div>
+                                <div class="home-join-lobby-list-item">
+                                    <span>lobby name</span>
+                                    <div>
+                                        <span>8/10</span>
+                                        <i class="fas fa-unlock-alt"></i>
+                                    </div>
+                                </div>
+                                <div class="home-join-lobby-list-item">
+                                    <span>lobby name</span>
+                                    <div>
+                                        <span>8/10</span>
+                                        <i class="fas fa-unlock-alt"></i>
+                                    </div>
+                                </div>
+                                <div class="home-join-lobby-list-item">
+                                    <span>lobby name</span>
+                                    <div>
+                                        <span>8/10</span>
+                                        <i class="fas fa-unlock-alt"></i>
+                                    </div>
+                                </div>
+                                <div class="home-join-lobby-list-item">
+                                    <span>lobby name</span>
+                                    <div>
+                                        <span>8/10</span>
+                                        <i class="fas fa-unlock-alt"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+                    <span></span>
+                </div>
+
+                <div id="home-view-host" style="display: flex; visibility: visible">
+                    <form id="home-host-form"class="glass-card">
+                        <h3>Host a game</h3>
+
+                        <div class="form-field-container">
+                            <label for="home-host-name">name :</label>
+                            <input type="text" id="home-host-name" placeholder="lobby name">
+                            <span id="home-host-errormsg-name" class="form-error-message">error message</span>
+                        </div>
+
+                        <div class="form-field-container">
+                            <label for="home-host-passsword">passsword :</label>
+                            <input type="password" id="home-host-password" placeholder="leave blank for no password">
+                            <span id="home-host-errormsg-passsword" class="form-error-message">error message</span>
+                        </div>
+
+                        <div class="form-field-container">
+                            <label for="home-host-maxplayer">max player :</label>
+                            <input type="number" id="home-host-maxplayer" min="2" max="8" value="8">
+                            <span id="home-host-errormsg-maxplayer" class="form-error-message">error message</span>
+                        </div>
+
+                        <button type="submit" class="fill-button form-button">host</button>
+                    </form>
+                </div>
+
+                <div id="home-view-settings" style="display: none; visibility: hidden">
+                    <div class="glass-card">
+                        <h3>Settings</h3>
+                        <p>
+                            There is no settings yet.
+                        </p>
+                    </div>
+                </div>
+                <div id="home-view-account" style="display: none; visibility: hidden">
+                    <div class="glass-card">
+                        <h3>Account</h3>
+
+                        <div class="glass-card">
+                            <h3>Informations :</h3>
+                            <span>user-id : <span id="home-account-id">2</span></span>
+                            <span>username : <span id="home-account-username">user027</span></span>
+                            <span>email : <span id="home-account-email">user@email.com</span></span>
+                        </div>
+
+                        <button id="home-account-logout-button" class="fill-button">logout</button>
+
+
+
+                    </div>
+                </div>
+            </section>
         </div>
     
         <button id="logout-button" style="display: none; visibility: hidden;">logout</button>
     </div>
 
-    <script type="module" src="./scripts/home_main.js"></script>
+    <script src="./scripts/glass_card.js"></script>
+    <!--<script type="module" src="./scripts/home_main.js"></script>-->
 </body>
 </html>

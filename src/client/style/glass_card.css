@@ -1,0 +1,35 @@
+:root{
+    --mouse-x: 0px;
+    --mouse-y: 0px;
+}
+
+.glass-card{
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.23);
+    background-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(3.2px);
+    -webkit-backdrop-filter: blur(3.2px);
+}
+
+.glass-card:hover::before{
+     opacity: 1;
+ }
+
+.glass-card::before{
+    background: radial-gradient(
+            800px circle at var(--mouse-x) var(--mouse-y),
+            rgba(255, 255, 255, 0.22),
+            transparent 40%
+    );
+    border-radius: inherit;
+    content: "";
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    left: 0px;
+    top: 0px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 500ms;
+}
