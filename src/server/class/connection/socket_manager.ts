@@ -331,11 +331,32 @@ export default class SocketManager {
                 success: false,
                 messages: ['USER_NOT_LOGGED_IN']
             });
+
+            return;
+        }
+
+        //check if the credentials are valid
+        const errormsgs = [];
+
+        if (credentials.id == null || credentials.id == undefined){
+            errormsgs.push('ID_REQUIRED');
+        }
+        if (credentials.password == null || credentials.password == undefined || credentials.password.length === 0){
+            errormsgs.push('PASSWORD_REQUIRED');
+        }
+
+        //If there is an error
+        if (errormsgs.length > 0){
+            socket.emit('delete-account-response', {
+                success: false,
+                messages: errormsgs
+            });
+
+            return;
         }
 
         //disconnect the user
         const connection_handler = this.connected_sockets.get(socket.id);
-        connection_handler.disconnect();
 
         //delete the account
         const delete_response = await UserProcessor.deleteUserAsync(credentials.id, credentials.password);
@@ -351,6 +372,8 @@ export default class SocketManager {
         socket.emit('delete-account-response', {
             success: true
         });
+
+        connection_handler.disconnect();
     }
 
     /**

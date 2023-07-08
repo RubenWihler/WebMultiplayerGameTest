@@ -14,6 +14,7 @@ export default class AccountConnectionManager {
     private static isLogging: Boolean = false;
     private static isSigningUp: Boolean = false;
     private static isLoggingOut: Boolean = false;
+    private static isDeletingAccount: Boolean = false;
 
     /**
      * Called when the user logs in and was not logged in before
@@ -42,7 +43,8 @@ export default class AccountConnectionManager {
     private static get isMakingOperation(): Boolean {
         return AccountConnectionManager.isLogging
             || AccountConnectionManager.isSigningUp
-            || AccountConnectionManager.isLoggingOut;
+            || AccountConnectionManager.isLoggingOut
+            || AccountConnectionManager.isDeletingAccount;
     }
 
     constructor(){
@@ -55,7 +57,7 @@ export default class AccountConnectionManager {
         ConnectionManager.onLogin.subscribe((login_response) => this.receiveLoginResponse(login_response));
         ConnectionManager.onSignup.subscribe((signup_response) => this.receiveSignupResponse(signup_response));
         ConnectionManager.onLogout.subscribe((logout_response) => this.receiveLogoutResponse(logout_response));
-
+        ConnectionManager.onAccountDeleted.subscribe((delete_account_response) => this.receiveDeleteAccountResponse(delete_account_response));
     }
 
     public static sendLoginRequest(username: string, password: string){
@@ -95,6 +97,19 @@ export default class AccountConnectionManager {
         this.isLoggingOut = true;
         this.Instance.disconnect();
         ConnectionManager.send('logout', {});
+    }
+    public static sendDeleteAccountRequest(id: number, password: string){
+        if (!this.isLogged
+            || this.isMakingOperation
+            || !ConnectionManager.isConnected) return;
+
+        const paquet = {
+            id: id,
+            password: password
+        };
+
+        this.isDeletingAccount = true;
+        ConnectionManager.send('delete-account', paquet);
     }
 
     /*---------- connection and disconnection ----------*/
@@ -136,6 +151,14 @@ export default class AccountConnectionManager {
         if (!logout_response.success) return;
 
         console.log('[+] logout successfull.');
+
+        this.disconnect();
+    }
+    private receiveDeleteAccountResponse(delete_account_response: any){
+        AccountConnectionManager.isDeletingAccount = false;
+        if (!delete_account_response.success) return;
+
+        console.log('[+] account deleted.');
 
         this.disconnect();
     }

@@ -3,6 +3,7 @@ import ObservableEvent from "../global_types/observable_event.js";
 import UserData from "./types/user_data.js";
 import { LobbyData } from "./types/lobbies_types.js";
 import RequestOperation from "../global_types/request_operation.js";
+import ViewsManager from "../views/views_manager.js";
 
 export default class LobbiesConnectionManager{
     private static _instance: LobbiesConnectionManager;
@@ -10,7 +11,8 @@ export default class LobbiesConnectionManager{
     private _joining_lobby: boolean = false;
     private _creating_lobby: boolean = false;
     private _leaving_lobby: boolean = false;
-
+    
+    private _current_target_lobby_id: string = null;
     private _currentLobbyData: LobbyData;
 
     public readonly onLobbyJoined: ObservableEvent<LobbyData> = new ObservableEvent<LobbyData>();
@@ -33,6 +35,18 @@ export default class LobbiesConnectionManager{
         return this._currentLobbyData != null;
     }
 
+    public get haveTargetLobby(): boolean{
+        return this._current_target_lobby_id != null;
+    }
+
+    public get targetLobbyId(): string{
+        return this._current_target_lobby_id;
+    }
+
+    public set targetLobbyId(value: string){
+        this._current_target_lobby_id = value;
+    }
+
     public get isMakingOperation(): boolean{
         return this._joining_lobby || this._creating_lobby || this._leaving_lobby;
     }
@@ -52,7 +66,7 @@ export default class LobbiesConnectionManager{
         if (inst.isMakingOperation){
             return {
                 success: false,
-                messages: ["Already making an operation on a lobby"]
+                messages: ["ALREADY_MAKING_OPERATION"]
             };
         }
 
@@ -60,7 +74,7 @@ export default class LobbiesConnectionManager{
         if (!ConnectionManager.isConnected){
             return {
                 success: false,
-                messages: ["Not connected to server"]
+                messages: ["NOT_CONNECTED"]
             }
         }
 
@@ -68,15 +82,15 @@ export default class LobbiesConnectionManager{
         if (inst.inLobby){
             return {
                 success: false,
-                messages: ["Already in a lobby"]
+                messages: ["ALREADY_IN_A_LOBBY"]
             }
         }
 
         if (lobby_name == null || lobby_name == undefined || lobby_name == ""){
-            errors.push("A lobby name must be specified");
+            errors.push("LOBBY_NAME_REQUIRED");
         }
         if (max_players == null || max_players == undefined || max_players <= 0){
-            errors.push("A lobby must have at least 2 player");
+            errors.push("LOBBY_MAX_PLAYERS_REQUIRED");
         }
 
         // Check if there are errors
@@ -87,9 +101,11 @@ export default class LobbiesConnectionManager{
             }
         }
 
+        const password = lobby_password == null || lobby_password == undefined || lobby_password == "" ? null : lobby_password;
+
         const paquet = {
             lobby_name: lobby_name,
-            lobby_password: lobby_password,
+            lobby_password: password,
             max_players: max_players
         };
 
@@ -105,7 +121,7 @@ export default class LobbiesConnectionManager{
         if (result == null){
             return {
                 success: false,
-                messages: ["Server error"]
+                messages: ["SERVER_ERROR"]
             }
         }
 
@@ -130,7 +146,7 @@ export default class LobbiesConnectionManager{
         if (inst.isMakingOperation){
             return {
                 success: false,
-                messages: ["Already making an operation on a lobby"]
+                messages: ["ALREADY_MAKING_OPERATION"]
             };
         }
 
@@ -138,7 +154,7 @@ export default class LobbiesConnectionManager{
         if (!ConnectionManager.isConnected){
             return {
                 success: false,
-                messages: ["Not connected to server"]
+                messages: ["NOT_CONNECTED"]
             }
         }
 
@@ -146,13 +162,13 @@ export default class LobbiesConnectionManager{
         if (inst.inLobby){
             return {
                 success: false,
-                messages: ["Already in a lobby"]
+                messages: ["ALREADY_IN_A_LOBBY"]
             }
         }
 
 
         if (lobby_id == null || lobby_id == undefined || lobby_id == ""){
-            errors.push("A lobby id must be specified");
+            errors.push("LOBBY_ID_REQUIRED");
         }
 
         // Check if there are errors
@@ -180,12 +196,35 @@ export default class LobbiesConnectionManager{
         if (result == null){
             return {
                 success: false,
-                messages: ["Server error"]
+                messages: ["SERVER_ERROR"]
             }
         }
 
         // Check if the operation was successful
         if (!result.success){
+
+            //check if error is password required
+            if (result.messages.includes("LOBBY_PASSWORD_REQUIRED")){
+                
+                //check if connect from lobby password view
+                if (lobby_password != null){
+                    return {
+                        success: false,
+                        messages: ["LOBBY_PASSWORD_REQUIRED"]
+                    }
+                }
+
+                //try connect with home view
+                // -> remember the target lobby id and redirect to password view
+                this.instance._current_target_lobby_id = lobby_id;
+                ViewsManager.setActiveView("lobby-password");
+
+                return {
+                    success: true
+                }
+            }
+
+
             return {
                 success: false,
                 messages: result.messages
@@ -295,7 +334,6 @@ export default class LobbiesConnectionManager{
         );
 
         this.onLobbyJoined.notify(this._currentLobbyData);
-        console.log(`[+] joined lobby : ${this._currentLobbyData.name} data : ` + JSON.stringify(this._currentLobbyData));
     }
     private onLobbyLeave(){
         this._currentLobbyData = null;

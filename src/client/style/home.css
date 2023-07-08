@@ -64,10 +64,132 @@ form{
 }
 
 /************************* DISCONECT *************************/
+#disconnected-container{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-evenly;
+    border-radius: 16px;
+    height: clamp(300px, 80%, 800px);
+    width: clamp(400px, 80%, 800px);
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+}
+#disconnected-icon{
+    font-size: clamp(100px, 20%, 200px);
+    margin: 0;
+    padding: 0;
+}
+#disconnected-container>h3{
+    font-family: 'Montserrat', sans-serif;
+    font-size: clamp(1.5rem, 8vw, 2.7rem);
+    font-weight: 800;
+    margin: 0;
+    padding: 0;
+}
+#disconnected-container>p{
+    text-align: center;
+}
 
 
+/************************* DELETE ACCOUNT *************************/
+#delete-account{
+    justify-content: center;
+}
 
+#delete-account-form{
+    justify-content: space-evenly;
+    width: clamp(300px, 50%, 500px);
+    border-radius: 16px;
+    overflow: hidden;
+}
+#delete-account-form>p{
+    width: 80%;
+    text-align: left;
+    font-family: 'Montserrat', sans-serif;
+    font-size: clamp(1rem, 3vw, 1.2rem);
+    font-weight: 500;
+    margin: 0;
+    padding: 0;
+    z-index: 1;
+}
+#delete-account-form>h3{
+    display: flex;
+    flex-direction: row;
+    justify-content: start;
+    align-self: center;
+    width: 80%;
+    font-family: 'Montserrat', sans-serif;
+    font-size: clamp(1.4rem, 4.5vw, 2rem);
+    font-weight: 600;
+    margin: 0;
+    padding: 0;
+    white-space: nowrap;
+    z-index: 1;
+}
+#delete-account-form>h3>i{
+    align-self: center;
+    font-weight: 600;
+    margin-right: 7%;
+    z-index: 1;
+}
+#delete-account-return-button{
+    margin-top: 1%;
+}
+#delete-account-form>button{
+    color: var(--error-color);
+    border: 1.5px solid var(--error-color);
+}
+#delete-account-form>button:hover{
+    color: white !important;
+    background-color: var(--error-color);
+}
 
+/************************* LOBBY PASSWORD *************************/
+#lobby-password{
+    justify-content: center;
+}
+
+#lobby-password-form{
+    justify-content: space-evenly;
+    width: clamp(300px, 50%, 500px);
+    border-radius: 16px;
+}
+#lobby-password-form>p{
+    width: 80%;
+    text-align: left;
+    font-family: 'Montserrat', sans-serif;
+    font-size: clamp(1rem, 3vw, 1.2rem);
+    font-weight: 500;
+    margin: 0;
+    padding: 0;
+    z-index: 1;
+}
+#lobby-password-form>h3>i{
+    font-weight: 600;
+    margin: 0;
+    margin-right: 7%;
+    padding: 0;
+    z-index: 1;
+}
+#lobby-password-form>h3{
+    display: flex;
+    flex-direction: row;
+    justify-content: start;
+    align-self: center;
+    width: 80%;
+    font-family: 'Montserrat', sans-serif;
+    font-size: clamp(1.5rem, 5vw, 2rem);
+    font-weight: 600;
+    margin: 0;
+    padding: 0;
+    white-space: nowrap;
+    z-index: 1;
+}
+#lobby-password-return-button{
+    margin-top: 1%;
+}
 
 /************************* HOME *************************/
 
@@ -461,6 +583,25 @@ form{
 }
 #home-account-logout-button:hover{
     color: white !important;
+}
+#home-account-delete-button{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    width: clamp(200px, 80%, 450px);
+    height: 50px;
+    padding-left: 2%;
+    padding-right: 2%;
+    border-radius: 7px;
+    font-size: 1.3rem;
+    color: var(--error-color) !important;
+    border: solid 2px var(--error-color) !important;
+
+}
+#home-account-delete-button:hover{
+    color: white !important;
+    background-color: var(--error-color);
 }
 
 /* #home-lobby-join-form{

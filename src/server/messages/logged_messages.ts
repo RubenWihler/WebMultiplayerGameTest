@@ -10,10 +10,10 @@ export function setUpListeningLoggedMessages(){
         data.lobby_name = BanWord.clean(data.lobby_name);
 
         if (data.lobby_name == null || data.lobby_name == undefined){
-            errors.push("A lobby name must be specified");
+            errors.push("LOBBY_NAME_REQUIRED");
         }
         if (data.max_players == null || data.max_players == undefined || data.max_players <= 0){
-            errors.push("A lobby must have at least 2 player");
+            errors.push("LOBBY_MAX_PLAYERS_REQUIRED");
         }
 
         if (errors.length > 0){
@@ -26,8 +26,26 @@ export function setUpListeningLoggedMessages(){
         }
 
         const lobby = LobbiesManager.createLobby(data.lobby_name, data.lobby_password);
-        lobby.connect(connectionHandler, data.lobby_password);
-        lobby.changeMaxPlayers(data.max_players);
+        const join_result = lobby.connect(connectionHandler, data.lobby_password);
+
+        if (!join_result.success){
+            connectionHandler.socket.emit('lobby-create-response', {
+                success: false,
+                messages: [join_result.error]
+            });
+
+            return;
+        }
+
+        const change_max_players = lobby.changeMaxPlayers(data.max_players);
+        if (!change_max_players.success){
+            connectionHandler.socket.emit('lobby-create-response', {
+                success: false,
+                messages: change_max_players.error
+            });
+
+            return;
+        }
 
         connectionHandler.socket.emit('lobby-create-response', {
             success: true,
@@ -42,7 +60,7 @@ export function setUpListeningLoggedMessages(){
         if (lobby == null){
             connectionHandler.socket.emit('lobby-join-response', {
                 success: false,
-                messages: ["Lobby not found"]
+                messages: ["LOBBY_NOT_FOUND"]
             });
 
             return;

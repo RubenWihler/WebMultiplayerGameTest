@@ -32,7 +32,7 @@ export default class Lobby {
         this._owner_id = null;
         this._banned_user_ids = new Set<number>();
         this._connections = new Map<number, ConnectionHandler>();
-        if (password != null) this._password_hash = HashTools.hash(password);
+        this._password_hash = password != null ? HashTools.hash(password) : null;
     }
 
     /**
@@ -111,19 +111,19 @@ export default class Lobby {
         if (this._connections.has(connection.connection_data.user.userId)){
             return {
                 success: false,
-                error: "You are already in this lobby."
+                error: "ALLREADY_IN_A_LOBBY"
             };
         }
         if (connection.statut !== ConnectionStatut.CONNECTED) {
             return {
                 success: false,
-                error: "An error occured while joining the lobby! Please try logging out and logging back in."
+                error: "LOBBY_CONNECTION_ERROR"
             };
         }
         if (this._banned_user_ids.has(connection.connection_data.user.userId)) {
             return {
                 success: false,
-                error: "You are banned from this lobby."
+                error: "LOBBY_BANNED"
             };
         }
         //if the lobby has a password, ensure that the password is correct.
@@ -131,14 +131,14 @@ export default class Lobby {
             if (password === null){
                 return {
                     success: false,
-                    error: "This lobby is protected by a password."
+                    error: "LOBBY_PASSWORD_REQUIRED"
                 };
             }
 
             if (!HashTools.compareHash(password, this._password_hash)){
                 return {
                     success: false,
-                    error: "The submitted password is incorrect."
+                    error: "LOBBY_PASSWORD_INCORRECT"
                 };
             }
         }
@@ -146,7 +146,7 @@ export default class Lobby {
         if(this._connections.size >= this._max_players){
             return {
                 success: false,
-                error: "This lobby is full."
+                error: "LOBBY_FULL"
             };
         }
 

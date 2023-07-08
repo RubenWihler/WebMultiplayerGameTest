@@ -13,6 +13,6 @@ export default class IdGenerator {
         }
 
         //return id of format 'aaaa-aaaa'
-        return s4() + s4();
+        return s4() + '-' + s4();
     }
 }

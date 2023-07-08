@@ -4,8 +4,11 @@ import View from './classes/views/view.js';
 import ViewsManager from './classes/views/views_manager.js';
 import ConnectionErrorsTraductor from './classes/connection/connection_errors_traductor.js';
 import LobbiesConnectionManager from './classes/connection/lobbies_connection_manager.js';
+import LobbyListItem from './classes/ui/elements/lobby_list_item.js';
+import { LobbyData } from './classes/connection/types/lobbies_types.js';
 
 var refresh_on_disconnect = true;
+var lobbies_elements_list: LobbyListItem[] = [];
 
 
 //#region ----- html elements -----
@@ -52,7 +55,6 @@ const element_disconnected_error_message_text : HTMLSpanElement = document.getEl
 
 //#region home view elements
 
-//home lobby creation form
 
 //home panel
 const element_home_panel_join_button : HTMLButtonElement = document.getElementById('home-panel-join-button') as HTMLButtonElement;
@@ -68,8 +70,24 @@ const element_home_view_settings : HTMLDivElement = document.getElementById('hom
 const element_home_view_account : HTMLDivElement = document.getElementById('home-view-account') as HTMLDivElement;
 
 //home join
+const element_home_join_lobbies_list : HTMLDivElement = document.getElementById('home-join-lobby-list') as HTMLDivElement;
+const element_home_join_refresh_button : HTMLButtonElement = document.getElementById('home-join-lobby-refresh-button') as HTMLButtonElement;
+const element_home_join_form : HTMLFormElement = document.getElementById('home-join-card-code-form') as HTMLFormElement;
+const element_home_join_code : HTMLInputElement = document.getElementById('home-join-code-code') as HTMLInputElement;
+const element_home_join_container_code : HTMLDivElement = document.getElementById('home-join-container-code') as HTMLDivElement;
+const element_home_join_errormsg_code : HTMLSpanElement = document.getElementById('home-join-code-errormsg-code') as HTMLSpanElement;
 
 //home host
+const element_home_host_form : HTMLFormElement = document.getElementById('home-host-form') as HTMLFormElement;
+const element_home_host_name : HTMLInputElement = document.getElementById('home-host-name') as HTMLInputElement;
+const element_home_host_password : HTMLInputElement = document.getElementById('home-host-password') as HTMLInputElement;
+const element_home_host_max_players : HTMLInputElement = document.getElementById('home-host-maxplayer') as HTMLInputElement;
+const element_home_host_container_name : HTMLDivElement = document.getElementById('home-host-container-name') as HTMLDivElement;
+const element_home_host_container_password : HTMLDivElement = document.getElementById('home-host-container-password') as HTMLDivElement;
+const element_home_host_container_max_players : HTMLDivElement = document.getElementById('home-host-container-maxplayer') as HTMLDivElement;
+const element_home_host_errormsg_name : HTMLSpanElement = document.getElementById('home-host-errormsg-name') as HTMLSpanElement;
+const element_home_host_errormsg_password : HTMLSpanElement = document.getElementById('home-host-errormsg-password') as HTMLSpanElement;
+const element_home_host_errormsg_max_players : HTMLSpanElement = document.getElementById('home-host-errormsg-maxplayer') as HTMLSpanElement;
 
 //home settings
 
@@ -78,17 +96,40 @@ const element_home_account_id : HTMLSpanElement = document.getElementById('home-
 const element_home_account_username : HTMLSpanElement = document.getElementById('home-account-username') as HTMLSpanElement;
 const element_home_account_email : HTMLSpanElement = document.getElementById('home-account-email') as HTMLSpanElement;
 const element_home_account_logout_button : HTMLButtonElement = document.getElementById('home-account-logout-button') as HTMLButtonElement;
+const element_home_account_delete_button : HTMLButtonElement = document.getElementById('home-account-delete-button') as HTMLButtonElement;
 
 //#endregion
 
+//#region delete account view elements
+const element_delete_account_form : HTMLFormElement = document.getElementById('delete-account-form') as HTMLFormElement;
+const element_delete_account_password : HTMLInputElement = document.getElementById('delete-account-password') as HTMLInputElement;
+const element_delete_account_container_password : HTMLDivElement = document.getElementById('delete-account-container-password') as HTMLDivElement;
+const element_delete_account_errormsg_password : HTMLSpanElement = document.getElementById('delete-account-errormsg-password') as HTMLSpanElement;
+const element_delete_account_return_button : HTMLButtonElement = document.getElementById('delete-account-return-button') as HTMLButtonElement;
+//#endregion
+
+//#region lobby password view elements
+const element_lobby_password_form : HTMLFormElement = document.getElementById('lobby-password-form') as HTMLFormElement;
+const element_lobby_password_password : HTMLInputElement = document.getElementById('lobby-password-password') as HTMLInputElement;
+const element_lobby_password_container_password : HTMLDivElement = document.getElementById('lobby-password-container-password') as HTMLDivElement;
+const element_lobby_password_errormsg_password : HTMLSpanElement = document.getElementById('lobby-password-errormsg-password') as HTMLSpanElement;
+const element_lobby_password_return_button : HTMLButtonElement = document.getElementById('lobby-password-return-button') as HTMLButtonElement;
+//#endregion
+
+//#region Lobby
 
 //#endregion
 
+//#endregion
+
+//#region ----- initializations -----
 
 //init socket and connection stuff
 const connection_manager = new ConnectionManager();
 //init account connection system
 const account_connection_manager = new AccountConnectionManager();
+
+//#endregion
 
 //#region ----- views configuration -----
 
@@ -97,12 +138,14 @@ const view_signin = new View('signin', 'signin', 'Sign in', 'flex');
 const view_signup = new View('signup', 'signup', 'Sign up', 'flex');
 const view_disconnected = new View('disconnected', 'disconnected', 'Disconnected', 'flex');
 const view_home = new View('home', 'home', 'Home', 'flex');
+const view_delete_account = new View('delete-account', 'delete-account', 'Delete account', 'flex');
+const view_lobby_password = new View('lobby-password', 'lobby-password', 'Lobby password', 'flex');
+const view_lobby = new View('lobby', 'lobby', 'Lobby', 'flex');
 
 //connection events
 view_connection.onDisplay.subscribe((view) => {
     //be sure that the socket is connected otherwise redirect to connection view
-    if (!checkConnection()){
-        ViewsManager.setActiveView('disconnected');
+    if (!redirectCheck()){
         return;
     }
     
@@ -111,8 +154,7 @@ view_connection.onDisplay.subscribe((view) => {
 //signin events
 view_signin.onDisplay.subscribe((view) => {
     //be sure that the socket is connected otherwise redirect to connection view
-    if (!checkConnection()){
-        ViewsManager.setActiveView('disconnected');
+    if (!redirectCheck()){
         return;
     }
 });
@@ -120,8 +162,7 @@ view_signin.onDisplay.subscribe((view) => {
 //signup events
 view_signup.onDisplay.subscribe((view) => {
     //be sure that the socket is connected otherwise redirect to connection view
-    if (!checkConnection()){
-        ViewsManager.setActiveView('disconnected');
+    if (!redirectCheck()){
         return;
     }
 });
@@ -159,8 +200,7 @@ view_disconnected.onHide.subscribe((view) => {
 //home events
 view_home.onDisplay.subscribe((view) => {
     //be sure that the socket is connected otherwise redirect to connection view
-    if (!checkConnection()){
-        ViewsManager.setActiveView('disconnected');
+    if (!redirectCheck()){
         return;
     }
 
@@ -182,20 +222,51 @@ view_home.onDisplay.subscribe((view) => {
     //dipsplay home join view
     setHomeViewActive('join');
 
-    //test
-    LobbiesConnectionManager.getLobbiesList()
-    .then((response) => {
-        if (!response.success){
-            alert('An error occured while getting lobbies :' + response.error);
-            return;
-        }
-
-        console.log(response.lobbies);
-    })
-    .catch((error) => {
-        alert('An error occured while getting lobbies :' + error);
-    });
+    //refresh lobbies
+    refreshLobbiesList();
 });
+
+//delete account events
+view_delete_account.onDisplay.subscribe((view) => {
+    //be sure that the socket is connected otherwise redirect to connection view
+    if (!redirectCheck()){
+        return;
+    }
+});
+view_delete_account.onHide.subscribe((view) => {
+    //clear form
+    element_delete_account_password.value = '';
+    element_delete_account_errormsg_password.innerText = '';
+    element_delete_account_container_password.classList.remove('error');
+});
+
+//lobby password events
+view_lobby_password.onDisplay.subscribe((view) => {
+    //be sure that the socket is connected otherwise redirect to connection view
+    if (!redirectCheck()){
+        return;
+    }
+});
+view_lobby_password.onHide.subscribe((view) => {
+    //clear form
+    element_lobby_password_password.value = '';
+    element_lobby_password_errormsg_password.innerText = '';
+    element_lobby_password_container_password.classList.remove('error');
+});
+
+//lobby events
+view_lobby.onDisplay.subscribe((view) => {
+    if (!checkConnection()){
+        ViewsManager.setActiveView('disconnected');
+        return;
+    }
+
+    if (!AccountConnectionManager.isLogged){
+        ViewsManager.setActiveView('connection');
+        return;
+    }
+});
+
 
 //views array that will be used by the views manager
 const views = [
@@ -203,14 +274,16 @@ const views = [
     view_signin,
     view_signup,
     view_disconnected,
-    view_home
+    view_home,
+    view_delete_account,
+    view_lobby_password,
+    view_lobby
 ];
 
 //init views manager with created views
 const views_manager = ViewsManager.Initialize(views);
 
 //#endregion
-
 
 //#region ----- event listeners -----
 
@@ -286,21 +359,10 @@ const home_views = new Map<string, {view: HTMLDivElement, button: HTMLButtonElem
     ['account',     { view: element_home_view_account,   button: element_home_panel_account_button}]
 ]);
 
-function setHomeViewActive(viewname: string){
-    home_views.forEach((value, key) => {
-        if (key === viewname){
-            value.view.style.display = 'flex';
-            value.view.style.visibility = 'visible';
-            value.button.classList.add('current');
-        }
-        else {
-            value.view.style.display = 'none';
-            value.view.style.visibility = 'hidden';
-            value.button.classList.remove('current');
-        }
-    });
-}
-
+// home join
+element_home_join_refresh_button.addEventListener('click', () => {
+    refreshLobbiesList();
+});
 element_home_panel_join_button.addEventListener('click', () => {
     setHomeViewActive('join');
 });
@@ -314,10 +376,121 @@ element_home_panel_account_button.addEventListener('click', () => {
     setHomeViewActive('account');
 });
 
+element_home_join_form.addEventListener('submit', async (event) => {
+    if (!checkConnection()) {
+        event.preventDefault();
+        return;
+    }
+
+    if (!AccountConnectionManager.isLogged){
+        ViewsManager.setActiveView('connection');
+        event.preventDefault();
+        return;
+    }
+
+    const id = element_home_join_code.value;
+
+    const result = await LobbiesConnectionManager.joinLobby(id, null);
+    if (!result.success){
+        result.messages.forEach(error => {
+            const error_code = error.toString();
+
+            switch (error_code) {
+                case 'LOBBY_ID_REQUIRED':
+                    element_home_join_errormsg_code.innerText = ConnectionErrorsTraductor.getMessage(error_code);
+                    element_home_join_container_code.classList.add('error');
+                    break;
+
+                case 'LOBBY_NOT_FOUND':
+                    element_home_join_errormsg_code.innerText = ConnectionErrorsTraductor.getMessage(error_code);
+                    element_home_join_container_code.classList.add('error');
+                    break;
+
+                case 'LOBBY_FULL':
+                    element_home_join_errormsg_code.innerText = ConnectionErrorsTraductor.getMessage(error_code);
+                    element_home_join_container_code.classList.add('error');
+                    break;
+                
+                case 'LOBBY_BANNED':
+                    element_home_join_errormsg_code.innerText = ConnectionErrorsTraductor.getMessage(error_code);
+                    element_home_join_container_code.classList.add('error');
+                    break;
+
+                default:
+                    alert(error_code);
+                    break;
+            }
+        });
+
+        event.preventDefault();
+        return;
+    }
+
+    cleanForms();
+    event.preventDefault();
+});
+
+// home host
+element_home_host_form.addEventListener('submit', async (event) => {
+    if (!checkConnection()) {
+        event.preventDefault();
+        return;
+    }
+
+    if (!AccountConnectionManager.isLogged){
+        ViewsManager.setActiveView('connection');
+        event.preventDefault();
+        return;
+    }
+
+    const name = element_home_host_name.value;
+    const max_players = Number(element_home_host_max_players.value);
+    let password = element_home_host_password.value;
+
+    if (password === '') {
+        password = null;
+    }
+
+    const result = await LobbiesConnectionManager.createLobby(name, password, max_players);
+    if (!result.success){
+        result.messages.forEach(error => {
+            const error_code = error.toString();
+
+            switch (error_code) {
+                case 'LOBBY_NAME_REQUIRED':
+                    element_home_host_errormsg_name.innerText = ConnectionErrorsTraductor.getMessage(error_code);
+                    element_home_host_container_name.classList.add('error');
+                    element_home_host_name.focus();
+                    break;
+                
+                case 'LOBBY_MAX_PLAYERS_REQUIRED':
+                    element_home_host_errormsg_max_players.innerText = ConnectionErrorsTraductor.getMessage(error_code);
+                    element_home_host_container_max_players.classList.add('error');
+                    element_home_host_max_players.focus();
+                    break;
+                
+                default:
+                    alert(ConnectionErrorsTraductor.getMessage(error_code));
+                    break;
+            }
+        });
+
+        event.preventDefault();
+        return;
+    }
+
+
+
+    event.preventDefault();
+});
+
 
 // home account view
 element_home_account_logout_button.addEventListener('click', () => {
     AccountConnectionManager.sendLogoutRequest();
+});
+element_home_account_delete_button.addEventListener('click', () => {
+    ViewsManager.setActiveView('delete-account');
 });
 
 
@@ -407,6 +580,104 @@ element_home_account_logout_button.addEventListener('click', () => {
 
 //#endregion
 
+//#region delete account view event listeners
+
+element_delete_account_form.addEventListener('submit', (event) => {
+    if (!checkConnection()) {
+        event.preventDefault();
+        return;
+    }
+
+    //verify that is logged in
+    if (!AccountConnectionManager.isLogged) {
+        ViewsManager.setActiveView('connection');
+        event.preventDefault();
+        return;
+    }
+
+    const id = AccountConnectionManager.userData.userId;
+    const password = element_delete_account_password.value;
+
+    AccountConnectionManager.sendDeleteAccountRequest(id, password);
+});
+element_delete_account_return_button.addEventListener('click', () => {
+    cleanForms();
+    ViewsManager.setActiveView('home');
+});
+
+//#endregion
+
+//#region lobby password view event listeners
+
+element_lobby_password_form.addEventListener('submit', async (event) => {
+    if (!checkConnection()) {
+        event.preventDefault();
+        return;
+    }
+
+    //verify that is logged in
+    if (!AccountConnectionManager.isLogged) {
+        ViewsManager.setActiveView('connection');
+        event.preventDefault();
+        return;
+    }
+
+    const id = LobbiesConnectionManager.instance.targetLobbyId;
+    const password = element_lobby_password_password.value;
+
+    const result = await LobbiesConnectionManager.joinLobby(id, password);
+    if (!result.success) {
+        result.messages.forEach((error) => {
+            const error_code = error.toString();
+
+            switch (error_code) {
+                case 'LOBBY_PASSWORD_REQUIRED':
+                    element_lobby_password_errormsg_password.innerText = ConnectionErrorsTraductor.getMessage(error_code);
+                    element_lobby_password_container_password.classList.add('error');
+                    element_lobby_password_password.focus();
+                    break;
+
+                case 'LOBBY_PASSWORD_INVALID':
+                    element_lobby_password_errormsg_password.innerText = ConnectionErrorsTraductor.getMessage(error_code);
+                    element_lobby_password_container_password.classList.add('error');
+                    element_lobby_password_password.focus();
+                    break;
+
+                case 'LOBBY_NOT_FOUND':
+                    element_lobby_password_errormsg_password.innerText = ConnectionErrorsTraductor.getMessage(error_code);
+                    element_lobby_password_container_password.classList.add('error');
+                    element_lobby_password_password.focus();
+                    break;
+
+                case 'LOBBY_FULL':
+                    element_lobby_password_errormsg_password.innerText = ConnectionErrorsTraductor.getMessage(error_code);
+                    element_lobby_password_container_password.classList.add('error');
+                    element_lobby_password_password.focus();
+                    break;
+
+                default:
+                    element_lobby_password_errormsg_password.innerText = ConnectionErrorsTraductor.getMessage(error_code);
+                    element_lobby_password_container_password.classList.add('error');
+                    element_lobby_password_password.focus();
+                    break;
+            }
+        });
+
+        event.preventDefault();
+        return;
+    }
+
+    event.preventDefault();
+});
+element_lobby_password_return_button.addEventListener('click', () => {
+    cleanForms();
+    ViewsManager.setActiveView('home');
+});
+
+
+//#endregion
+
+
 //#endregion
 
 //#region ----- connection manager events -----
@@ -414,7 +685,6 @@ element_home_account_logout_button.addEventListener('click', () => {
 AccountConnectionManager.onUserLogin.subscribe((user) => {
     ViewsManager.setActiveView('home');   
 });
-
 ConnectionManager.onConnect.subscribe(() => {
     //try to login with credentials in local storage
     AccountConnectionManager.tryLoginWithLocalStorage()
@@ -432,7 +702,6 @@ ConnectionManager.onConnect.subscribe(() => {
         ViewsManager.setActiveView('connection');
     });
 });
-
 ConnectionManager.onConnectionError.subscribe((error) => {
     const code = error.code;
     const message = ConnectionErrorsTraductor.getMessage(code);
@@ -450,13 +719,63 @@ ConnectionManager.onConnectionError.subscribe((error) => {
             break;
     }
 });
+ConnectionManager.onAccountDeleted.subscribe((response) => {
+    if(ViewsManager.activeView.name !== 'delete-account') {
+        return;
+    }
 
-//#endregion
+    //reset errors messages
+    element_delete_account_errormsg_password.innerText = '';
+    element_delete_account_container_password.classList.remove('error');
 
+
+    if (response.success) {
+        cleanForms();
+        return;
+    }
+    
+    response.messages.forEach((error) => {
+        const error_code = error.toString();
+
+        switch (error_code) {
+            case 'WRONG_CREDENTIALS':
+                element_delete_account_container_password.classList.add('error');
+                element_delete_account_errormsg_password.innerText = 'Wrong password';
+                element_delete_account_password.focus();
+                break;
+            
+            case 'USER_DOESNT_EXIST':
+                alert(ConnectionErrorsTraductor.getMessage(error_code));
+                break;
+            
+            case 'DATABASE_ERROR':
+                alert(ConnectionErrorsTraductor.getMessage(error_code));
+                break;
+            
+            case 'NOT_LOGGED_IN':
+                alert(ConnectionErrorsTraductor.getMessage(error_code));
+                break;
+
+            case 'ID_REQUIRED':
+                alert('An error occured, please logout and retry.');
+                break;
+
+            case 'PASSWORD_REQUIRED':
+                element_delete_account_container_password.classList.add('error');
+                element_delete_account_errormsg_password.innerText = ConnectionErrorsTraductor.getMessage(error_code);
+                element_delete_account_password.focus();
+                break;
+
+            default:
+                alert('An error occured, please logout and retry. \nerror code: ' + error_code);
+                break;
+        }
+    });
+
+});
 ConnectionManager.onDisconnect.subscribe(() => {
     ViewsManager.setActiveView('disconnected');
 });
-
 ConnectionManager.onLogin.subscribe((login_response) => {
     //reset errors messages
     element_login_errormsg_username.innerText = '';
@@ -596,6 +915,109 @@ ConnectionManager.onLogout.subscribe((logout_response) => {
     alert(errormsg);
 });
 
+//#endregion
+
+//#region ----- Lobby -----
+LobbiesConnectionManager.instance.onLobbyJoined.subscribe((lobby_data: LobbyData) => {
+    ViewsManager.setActiveView('lobby');
+    console.log('[+] Lobby joined : ' + JSON.stringify(lobby_data));
+});
+LobbiesConnectionManager.instance.onLobbyLeft.subscribe(() => {
+    ViewsManager.setActiveView('home');
+    console.log('[+] Lobby left');
+});
+
+//#endregion
+
+//#region Functions
+
+/**
+ * Set the active tab in the home page
+ * @param viewname 
+ */
+function setHomeViewActive(viewname: string){
+    home_views.forEach((value, key) => {
+        if (key === viewname){
+            value.view.style.display = 'flex';
+            value.view.style.visibility = 'visible';
+            value.button.classList.add('current');
+        }
+        else {
+            value.view.style.display = 'none';
+            value.view.style.visibility = 'hidden';
+            value.button.classList.remove('current');
+        }
+    });
+}
+
+/**
+ * Join a lobby
+ * @param lobbyId 
+ * @param isPrivate 
+ */
+function joinLobby(lobbyId: string, isPrivate: boolean){
+    if (isPrivate){
+        LobbiesConnectionManager.instance.targetLobbyId = lobbyId;
+        ViewsManager.setActiveView('lobby-password');
+    }
+    else {
+        LobbiesConnectionManager.joinLobby(lobbyId, null)
+        .then((result) => {
+            if (!result.success){
+                alert('Joining the lobby failed :\n' + result.messages.join('\n'));
+                return;
+            }
+        })
+        .catch((error) => {
+            alert('Joining the lobby failed : \n' + error);
+        });
+    }
+}
+
+/**
+ * refresh the lobbies list
+ * @returns 
+ */
+async function refreshLobbiesList() : Promise<void>{
+    console.log('refreshing lobbies list...');
+    const result = await LobbiesConnectionManager.getLobbiesList();
+
+    if (!result.success){
+        alert('An error occured while getting lobbies !');
+        return;
+    }
+
+    const lobbies = result.lobbies;
+
+    //clear lobbies list and elements
+    element_home_join_lobbies_list.innerHTML = '';
+    lobbies_elements_list.forEach((item) => {
+        item.delete();
+    });
+    lobbies_elements_list = [];
+
+    
+    lobbies.forEach((lobby) => {
+        const item = new LobbyListItem(
+            lobby.name,
+            lobby.id,
+            lobby.players_count,
+            lobby.max_players,
+            lobby.using_password,
+            element_home_join_lobbies_list
+        );
+
+        item.onClick.subscribe((item) => {
+            joinLobby(item.id, item.is_private);
+        });
+
+        lobbies_elements_list.push(item);
+    });
+}
+
+/**
+ * Clean all forms (login, signup, delete account, ...)
+ */
 function cleanForms() {
     element_login_username.value = '';
     element_login_password.value = '';
@@ -609,14 +1031,28 @@ function cleanForms() {
     element_signup_errormsg_password_confirm.innerText = '';
     element_login_errormsg_username.innerText = '';
     element_login_errormsg_password.innerText = '';
+    element_delete_account_errormsg_password.innerText = '';
+    element_home_host_errormsg_name.innerText = '';
+    element_home_host_errormsg_password.innerText = '';
+    element_home_host_errormsg_max_players.innerText = '';
+    element_home_join_errormsg_code.innerText = '';
     element_signup_container_username.classList.remove('error');
     element_signup_container_email.classList.remove('error');
     element_signup_container_password.classList.remove('error');
     element_signup_container_password_confirm.classList.remove('error');
     element_login_container_username.classList.remove('error');
     element_login_container_password.classList.remove('error');
+    element_delete_account_container_password.classList.remove('error');
+    element_home_host_container_name.classList.remove('error');
+    element_home_host_container_password.classList.remove('error');
+    element_home_host_container_max_players.classList.remove('error');
+    element_home_join_container_code.classList.remove('error');
 }
 
+/**
+ * Check if the socket is connected
+ * @returns 
+ */
 function checkConnection() : boolean {
     if (!ConnectionManager.isConnected) {
         alert('an error occured ...');
@@ -626,3 +1062,19 @@ function checkConnection() : boolean {
 
     return true;
 }
+
+function redirectCheck(): boolean{
+    if (!checkConnection()) {
+        ViewsManager.setActiveView('disconnected');
+        return false;
+    }
+    if (!AccountConnectionManager.isLogged) {
+        ViewsManager.setActiveView('connection');
+        return false;
+    }
+
+    return true;
+}
+
+
+//#endregion

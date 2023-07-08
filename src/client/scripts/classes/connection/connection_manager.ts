@@ -15,6 +15,7 @@ export default class ConnectionManager {
     public static onTokenLogin : ObservableEvent<any> = new ObservableEvent();
     public static onSignup : ObservableEvent<any> = new ObservableEvent();
     public static onLogout : ObservableEvent<any> = new ObservableEvent();
+    public static onAccountDeleted : ObservableEvent<any> = new ObservableEvent();
     public static onConnectionError : ObservableEvent<any> = new ObservableEvent();
 
 
@@ -49,6 +50,7 @@ export default class ConnectionManager {
         this.socket.on('token-login-response', (login_response) => this.onReceiveTokenLoginResponse(login_response));
         this.socket.on('signup-response', (signup_response) => this.onReceiveSignupResponse(signup_response));
         this.socket.on('logout-response', (logout_response) => this.onReceiveLogoutResponse(logout_response));
+        this.socket.on('delete-account-response', (data) => this.onReceiveAccountDeleted(data));
         this.socket.on('connection-error', (data) => this.onReceivConnectionError(data));
     }
     
@@ -75,6 +77,9 @@ export default class ConnectionManager {
     }
     private onReceivConnectionError(data: any){
         ConnectionManager.onConnectionError.notify(data);
+    }
+    private onReceiveAccountDeleted(data: any){
+        ConnectionManager.onAccountDeleted.notify(data);
     }
 
 }

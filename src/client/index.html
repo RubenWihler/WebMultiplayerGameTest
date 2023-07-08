@@ -74,17 +74,22 @@
         </div>
         
         <div class="view" id="disconnected" style="display: none; visibility: hidden;">
-            <h1>disconnected</h1>
-            <p>
-                you have been disconnected from the server.<br>
-                <span id="disconnected-countdown-message" style="display: none; visibility: hidden;">
-                    the page will automatically refresh in <span id="disconnected-countdown">3</span> seconds.
-                </span>
-                <br>
-                <span id="disconnected-error-message" style="display: none; visibility: hidden;">
-                    <b><span id="disconnected-error-message-text"></span></b>
-                </span>
-            </p>
+            <div id="disconnected-container" class="glass-card">
+                <i id="disconnected-icon" class="fas fa-exclamation-triangle"></i>
+                <h3>Disconnected</h3>
+                <p>
+                    you have been disconnected from the server.<br>
+                    <span id="disconnected-countdown-message" style="display: none; visibility: hidden;">
+                        the page will automatically refresh in <span id="disconnected-countdown">3</span> seconds.
+                    </span>
+                    <br>
+                    <span id="disconnected-error-message" style="display: flex; visibility: visible;">
+                        <b><span id="disconnected-error-message-text">
+                            An error occured while trying to connect to the server.
+                        </span></b>
+                    </span>
+                </p>
+            </div>
         </div>
 
         <div class="view" id="home" style="display: none; visibility: hidden;">
@@ -119,7 +124,7 @@
                         <form id="home-join-card-code-form"class="glass-card">
                             <h3>Join with code</h3>
 
-                            <div class="form-field-container">
+                            <div id="home-join-container-code" class="form-field-container">
                                 <label for="home-join-code-code">code :</label>
                                 <input type="text" id="home-join-code-code" placeholder="xxxx-xxxx">
                                 <span id="home-join-code-errormsg-code" class="form-error-message">error message</span>
@@ -137,111 +142,6 @@
                                 </button>
                             </div>
                             <div id="home-join-lobby-list">
-                                <div class="home-join-lobby-list-item">
-                                    <span>lobby name</span>
-                                    <div>
-                                        <span>8/10</span>
-                                        <i class="fas fa-unlock-alt"></i>
-                                    </div>
-                                </div>
-                                <div class="home-join-lobby-list-item">
-                                    <span>lobby name</span>
-                                    <div>
-                                        <span>8/10</span>
-                                        <i class="fas fa-lock"></i>
-                                    </div>
-                                </div>
-                                <div class="home-join-lobby-list-item">
-                                    <span>lobby name</span>
-                                    <div>
-                                        <span>8/10</span>
-                                        <i class="fas fa-unlock-alt"></i>
-                                    </div>
-                                </div>
-                                <div class="home-join-lobby-list-item">
-                                    <span>lobby name</span>
-                                    <div>
-                                        <span>8/10</span>
-                                        <i class="fas fa-unlock-alt"></i>
-                                    </div>
-                                </div>
-                                <div class="home-join-lobby-list-item">
-                                    <span>lobby name</span>
-                                    <div>
-                                        <span>8/10</span>
-                                        <i class="fas fa-unlock-alt"></i>
-                                    </div>
-                                </div>
-                                <div class="home-join-lobby-list-item">
-                                    <span>lobby name</span>
-                                    <div>
-                                        <span>8/10</span>
-                                        <i class="fas fa-unlock-alt"></i>
-                                    </div>
-                                </div>
-                                <div class="home-join-lobby-list-item">
-                                    <span>lobby name</span>
-                                    <div>
-                                        <span>8/10</span>
-                                        <i class="fas fa-unlock-alt"></i>
-                                    </div>
-                                </div>
-                                <div class="home-join-lobby-list-item">
-                                    <span>lobby name</span>
-                                    <div>
-                                        <span>8/10</span>
-                                        <i class="fas fa-unlock-alt"></i>
-                                    </div>
-                                </div>
-                                <div class="home-join-lobby-list-item">
-                                    <span>lobby name</span>
-                                    <div>
-                                        <span>8/10</span>
-                                        <i class="fas fa-unlock-alt"></i>
-                                    </div>
-                                </div>
-                                <div class="home-join-lobby-list-item">
-                                    <span>lobby name</span>
-                                    <div>
-                                        <span>8/10</span>
-                                        <i class="fas fa-unlock-alt"></i>
-                                    </div>
-                                </div>
-                                <div class="home-join-lobby-list-item">
-                                    <span>lobby name</span>
-                                    <div>
-                                        <span>8/10</span>
-                                        <i class="fas fa-unlock-alt"></i>
-                                    </div>
-                                </div>
-                                <div class="home-join-lobby-list-item">
-                                    <span>lobby name</span>
-                                    <div>
-                                        <span>8/10</span>
-                                        <i class="fas fa-unlock-alt"></i>
-                                    </div>
-                                </div>
-                                <div class="home-join-lobby-list-item">
-                                    <span>lobby name</span>
-                                    <div>
-                                        <span>8/10</span>
-                                        <i class="fas fa-unlock-alt"></i>
-                                    </div>
-                                </div>
-                                <div class="home-join-lobby-list-item">
-                                    <span>lobby name</span>
-                                    <div>
-                                        <span>8/10</span>
-                                        <i class="fas fa-unlock-alt"></i>
-                                    </div>
-                                </div>
-                                <div class="home-join-lobby-list-item">
-                                    <span>lobby name</span>
-                                    <div>
-                                        <span>8/10</span>
-                                        <i class="fas fa-unlock-alt"></i>
-                                    </div>
-                                </div>
                             </div>
                         </article>
                     </div>
@@ -252,19 +152,19 @@
                     <form id="home-host-form"class="glass-card">
                         <h3>Host a game</h3>
 
-                        <div class="form-field-container">
+                        <div id="home-host-container-name" class="form-field-container">
                             <label for="home-host-name">name :</label>
                             <input type="text" id="home-host-name" placeholder="lobby name">
                             <span id="home-host-errormsg-name" class="form-error-message">error message</span>
                         </div>
 
-                        <div class="form-field-container">
-                            <label for="home-host-passsword">passsword :</label>
+                        <div id="home-host-container-password" class="form-field-container">
+                            <label for="home-host-password">passsword :</label>
                             <input type="password" id="home-host-password" placeholder="leave blank for no password">
-                            <span id="home-host-errormsg-passsword" class="form-error-message">error message</span>
+                            <span id="home-host-errormsg-password" class="form-error-message">error message</span>
                         </div>
 
-                        <div class="form-field-container">
+                        <div id="home-host-container-maxplayer" class="form-field-container">
                             <label for="home-host-maxplayer">max player :</label>
                             <input type="number" id="home-host-maxplayer" min="2" max="8" value="8">
                             <span id="home-host-errormsg-maxplayer" class="form-error-message">error message</span>
@@ -295,11 +195,64 @@
                         </div>
 
                         <button id="home-account-logout-button" class="fill-button">logout</button>
+                        <button id="home-account-delete-button" class="fill-button">delete account</button>
                     </div>
                 </div>
             </section>
         </div>
-    
+
+        <div class="view" id="delete-account" style="display: none; visibility: hidden;">
+            <form id="delete-account-form" class="glass-card">
+                <h3>
+                    <i class="fas fa-exclamation-circle"></i>
+                    Delete account
+                </h3>
+
+                <p>
+                    Are you sure you want to delete your account ?<br><br>
+                    This action is irreversible.
+                </p>
+
+                <div id="delete-account-container-password" class="form-field-container">
+                    <label for="delete-account-password">password :</label>
+                    <input type="password" id="delete-account-password">
+                    <span id="delete-account-errormsg-password" class="form-error-message">error message</span>
+                </div>
+
+                <button type="submit" class="fill-button form-button">Delete</button>
+            </form>
+
+            <button id="delete-account-return-button" class="link-button">return to home</button>
+        </div>
+
+        <div class="view" id="lobby-password" style="display: none; visibility: hidden;">
+            <form id="lobby-password-form" class="glass-card">
+
+                <h3>
+                    <i class="fas fa-lock"></i>
+                    Joining Lobby
+                </h3>
+
+                <p>
+                    The lobby you are trying to join is protected by a password.<br><br>
+                </p>
+
+                <div id="lobby-password-container-password" class="form-field-container">
+                    <label for="lobby-password-password">password :</label>
+                    <input type="password" id="lobby-password-password">
+                    <span id="lobby-password-errormsg-password" class="form-error-message">error message</span>
+                </div>
+
+                <button type="submit" class="fill-button form-button">Join</button>
+            </form>
+
+            <button id="lobby-password-return-button" class="link-button">return to home</button>
+        </div>
+
+        <div class="view" id="lobby" style="display: none; visibility: hidden;">
+            <h3>Lobby</h3>
+        </div>
+
     </div>
 
     <script src="./scripts/glass_card.js"></script>

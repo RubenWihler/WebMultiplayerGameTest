@@ -253,7 +253,13 @@ export default class UserProcessor{
         const password_check_queryValues = [userId];
         const [rows] : any = await pool.promise().query(password_check_query, password_check_queryValues);
         
-        if (rows.length == 0 || !HashTools.compareHash(password, rows[0])){
+        if (rows.length === 0){
+            return {
+                statut: false,
+                msg: ["USER_DOESNT_EXIST"]
+            };
+        }
+        if (!HashTools.compareHash(password, rows[0].password)){
             return {
                 statut: false,
                 msg: ["WRONG_CREDENTIALS"]
@@ -267,7 +273,7 @@ export default class UserProcessor{
         if (result[0].affectedRows == 0){
             return {
                 statut: false,
-                msg: ["an error occured"]
+                msg: ["DATABASE_ERROR"]
             };
         }
 
