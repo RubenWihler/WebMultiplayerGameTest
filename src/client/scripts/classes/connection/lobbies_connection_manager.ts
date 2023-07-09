@@ -4,6 +4,7 @@ import UserData from "./types/user_data.js";
 import { LobbyData } from "./types/lobbies_types.js";
 import RequestOperation from "../global_types/request_operation.js";
 import ViewsManager from "../views/views_manager.js";
+import AccountConnectionManager from "./account_connection_manager.js";
 
 export default class LobbiesConnectionManager{
     private static _instance: LobbiesConnectionManager;
@@ -155,6 +156,14 @@ export default class LobbiesConnectionManager{
             return {
                 success: false,
                 messages: ["NOT_CONNECTED"]
+            }
+        }
+
+        // Check if user is logged in. If not logged in, return error
+        if (!AccountConnectionManager.isLogged){
+            return {
+                success: false,
+                messages: ["NOT_LOGGED_IN"]
             }
         }
 

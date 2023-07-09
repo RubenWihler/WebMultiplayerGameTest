@@ -1,4 +1,8 @@
+import AccountConnectionManager from "../connection/account_connection_manager.js";
 import View from "./view.js";
+import ConnectionManager from "../connection/connection_manager.js";
+import LobbiesConnectionManager from "../connection/lobbies_connection_manager.js";
+import Stack from "../global_types/stack.js";
 
 /**
  * Class that manages the views.
@@ -16,7 +20,8 @@ export default class ViewsManager {
     
     public readonly views: Map<string,View>;
 
-    private active_view: View;
+    private _active_view: View;
+    private _view_history: Stack<string>;
 
     public static get Instance(): ViewsManager {
         if (!ViewsManager.instance) {
@@ -35,12 +40,13 @@ export default class ViewsManager {
      * Get the active view. This is the view that is currently displayed.
      */
     public static get activeView(): View {
-        return ViewsManager.Instance.active_view;
+        return ViewsManager.Instance._active_view;
     }
 
     constructor(views: View[] = []) {
+        this._view_history = new Stack<string>();
         this.views = new Map<string,View>();
-        this.active_view = null;
+        this._active_view = null;
 
         // Add the views to the map with the name as the key
         views.forEach(view => {
@@ -51,21 +57,22 @@ export default class ViewsManager {
         // If it doesn't exist, display the previous view
         window.addEventListener('hashchange', (e) => {
             const url = e.newURL;
-            const index = url.lastIndexOf("#");
-            const view_name = url.substring(index + 1);
+            let view_name = "home";
+
+            if (url.includes("#")){
+                const hash_index = url.lastIndexOf("#");
+                view_name = url.substring(hash_index + 1);
+            }
+            
             if (!ViewsManager.setActiveView(view_name)){
-                const old_url_view_name = e.oldURL.substring(e.oldURL.lastIndexOf("#") + 1);
-                ViewsManager.setActiveView(old_url_view_name);
+                let result = false;
+                do {
+                    const last_view = this._view_history.pop();
+                    result = ViewsManager.setActiveView(last_view);
+                }
+                while(!result && !this._view_history.isEmpty);
             }
         });
-        
-        // Add a confirmation message when the user tries to leave the page
-        // window.addEventListener("beforeunload", function (e) {
-        //     var confirmationMessage = "Do you really want to leave? The connection will be lost.";
-            
-        //     (e || window.event).returnValue = confirmationMessage;
-        //     return confirmationMessage;
-        // });
     }
 
     /**
@@ -104,9 +111,6 @@ export default class ViewsManager {
     public static setActiveView(viewName :string): boolean {
         console.log("Setting active view to " + viewName);
 
-        // If the view is already active, return false
-        if (ViewsManager.activeView != null && ViewsManager.activeView.name == viewName) return false;
-        
         // Find the view
         const view : View = ViewsManager.getViewByName(viewName);
         
@@ -121,15 +125,25 @@ export default class ViewsManager {
             ViewsManager.activeView.hide();
         }
 
+        //check form redirection
+        const redirect_result = this.checkRedirect(view);
+        if (redirect_result.redirect){
+            ViewsManager.setActiveView(redirect_result.redirect_view_name);
+            return true;
+        }
+
         // Display the new view and set it as the active view
+        ViewsManager.Instance._active_view = view;
         view.display();
-        ViewsManager.Instance.active_view = view;
 
         // Update the url to have the view name as the hash
         this.updateUrl(view);
 
         // Update the title of the page
         this.updateTitle(view);
+
+        // Add the view name to the view history
+        ViewsManager.Instance._view_history.push(viewName);
 
         console.log("Active view set to " + viewName);
         return true;
@@ -140,18 +154,15 @@ export default class ViewsManager {
      * @param viewName the name of the view (without the #)
      */
     private static updateUrl(view: View): void {
-        var current_url :string = window.location.href;
-        let clean_url :string; // current url + #
-
-        if (!current_url.includes("#")){
-            clean_url = current_url + "#";
-        }
-        else{
+        let current_url :string = window.location.href;
+        let clean_url :string = current_url; // current url + #
+        
+        if (current_url.includes("#")){
             const index = current_url.lastIndexOf("#");
-            clean_url = current_url.substring(0, index + 1);
+            clean_url = current_url.substring(0, index);
         }
 
-        const url = clean_url + view.url_name;
+        const url = clean_url + '#' + view.url_name;
         var obj = { Title: view.url_name, Url: url };
         history.pushState(obj, obj.Title, obj.Url);
     }
@@ -168,5 +179,68 @@ export default class ViewsManager {
         }
 
         document.title = title;
+    }
+    /**
+     * Check if the view needs to be redirected to another view.
+     * @param view the view to check
+     * @returns an object with the redirect boolean and the name of the view to redirect to
+     */
+    private static checkRedirect(view: View): {redirect: boolean, redirect_view_name: string} {
+
+        let redirect_view: string = null;
+
+        switch (view.name) {
+            case "connection":
+                if (!ConnectionManager.isConnected) redirect_view = "disconnected";
+                if (AccountConnectionManager.isLogged) redirect_view = "home";
+                break;
+
+            case "signin":
+                if (!ConnectionManager.isConnected) redirect_view = "disconnected";
+                if (AccountConnectionManager.isLogged) redirect_view = "home";
+                break;
+
+            case "signup":
+                if (!ConnectionManager.isConnected) redirect_view = "disconnected";
+                if (AccountConnectionManager.isLogged) redirect_view = "home";
+                break;
+
+            case "disconnected":
+                if (ConnectionManager.isConnected) redirect_view = "connection";
+                break;
+
+            case "home":
+                if (!ConnectionManager.isConnected) redirect_view = "disconnected";
+                if (!AccountConnectionManager.isLogged) redirect_view = "connection";
+                if (LobbiesConnectionManager.instance.inLobby) redirect_view = "lobby";
+                break;
+
+            case "delete-account":
+                if (!ConnectionManager.isConnected) redirect_view = "disconnected";
+                if (!AccountConnectionManager.isLogged) redirect_view = "connection";
+                if (LobbiesConnectionManager.instance.inLobby) redirect_view = "lobby";
+
+                break;
+
+            case "lobby-password":
+                if (!ConnectionManager.isConnected) redirect_view = "disconnected";
+                if (!AccountConnectionManager.isLogged) redirect_view = "connection";
+                if (LobbiesConnectionManager.instance.inLobby) redirect_view = "lobby";
+                break;
+            
+            case "lobby":
+                if (!ConnectionManager.isConnected) redirect_view = "disconnected";
+                if (!AccountConnectionManager.isLogged) redirect_view = "connection";
+                if (!LobbiesConnectionManager.instance.inLobby) redirect_view = "home";
+                break;
+            
+            default:
+                break;
+        }
+
+        return {
+            redirect: redirect_view != null,
+            redirect_view_name: redirect_view
+        }
     }
 }

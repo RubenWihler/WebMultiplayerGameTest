@@ -7,9 +7,10 @@ import LobbiesConnectionManager from './classes/connection/lobbies_connection_ma
 import LobbyListItem from './classes/ui/elements/lobby_list_item.js';
 import { LobbyData } from './classes/connection/types/lobbies_types.js';
 
+var trying_to_join_lobby: boolean = false;
 var refresh_on_disconnect = true;
 var lobbies_elements_list: LobbyListItem[] = [];
-
+var disconnected_refresh_interval: any = null;
 
 //#region ----- html elements -----
 
@@ -144,27 +145,17 @@ const view_lobby = new View('lobby', 'lobby', 'Lobby', 'flex');
 
 //connection events
 view_connection.onDisplay.subscribe((view) => {
-    //be sure that the socket is connected otherwise redirect to connection view
-    if (!redirectCheck()){
-        return;
-    }
     
 });
 
 //signin events
 view_signin.onDisplay.subscribe((view) => {
-    //be sure that the socket is connected otherwise redirect to connection view
-    if (!redirectCheck()){
-        return;
-    }
+    
 });
 
 //signup events
 view_signup.onDisplay.subscribe((view) => {
-    //be sure that the socket is connected otherwise redirect to connection view
-    if (!redirectCheck()){
-        return;
-    }
+    
 });
 
 //disconnected events
@@ -176,12 +167,12 @@ view_disconnected.onDisplay.subscribe((view) => {
         element_disconnected_countdown_message.style.visibility = 'visible';
         element_disconnected_countdown.innerText = time_left.toString();
 
-        const interval = setInterval(() => {
+        disconnected_refresh_interval = setInterval(() => {
             time_left--;
             element_disconnected_countdown.innerText = time_left.toString();
     
             if (time_left <= 0){
-                clearInterval(interval);
+                clearInterval(disconnected_refresh_interval);
                 window.location.reload();
             }
         }, 1000);
@@ -189,6 +180,9 @@ view_disconnected.onDisplay.subscribe((view) => {
     
 });
 view_disconnected.onHide.subscribe((view) => {
+    if (disconnected_refresh_interval != null)
+        clearInterval(disconnected_refresh_interval);
+
     element_disconnected_countdown_message.style.display = 'none';
     element_disconnected_countdown_message.style.visibility = 'hidden';
     element_disconnected_error_message.style.display = 'none';
@@ -199,15 +193,9 @@ view_disconnected.onHide.subscribe((view) => {
 
 //home events
 view_home.onDisplay.subscribe((view) => {
-    //be sure that the socket is connected otherwise redirect to connection view
-    if (!redirectCheck()){
-        return;
-    }
 
-    //be sure that the user is connected otherwise redirect to connection view
-    if (!AccountConnectionManager.isLogged){
-        ViewsManager.setActiveView('connection');
-        return;
+    if (trying_to_join_lobby){
+        LobbiesConnectionManager.joinLobby(LobbiesConnectionManager.instance.targetLobbyId, null);   
     }
 
     //set panel-bottom username
@@ -228,10 +216,7 @@ view_home.onDisplay.subscribe((view) => {
 
 //delete account events
 view_delete_account.onDisplay.subscribe((view) => {
-    //be sure that the socket is connected otherwise redirect to connection view
-    if (!redirectCheck()){
-        return;
-    }
+    
 });
 view_delete_account.onHide.subscribe((view) => {
     //clear form
@@ -242,10 +227,7 @@ view_delete_account.onHide.subscribe((view) => {
 
 //lobby password events
 view_lobby_password.onDisplay.subscribe((view) => {
-    //be sure that the socket is connected otherwise redirect to connection view
-    if (!redirectCheck()){
-        return;
-    }
+    
 });
 view_lobby_password.onHide.subscribe((view) => {
     //clear form
@@ -256,15 +238,7 @@ view_lobby_password.onHide.subscribe((view) => {
 
 //lobby events
 view_lobby.onDisplay.subscribe((view) => {
-    if (!checkConnection()){
-        ViewsManager.setActiveView('disconnected');
-        return;
-    }
-
-    if (!AccountConnectionManager.isLogged){
-        ViewsManager.setActiveView('connection');
-        return;
-    }
+    
 });
 
 
@@ -671,6 +645,8 @@ element_lobby_password_form.addEventListener('submit', async (event) => {
 });
 element_lobby_password_return_button.addEventListener('click', () => {
     cleanForms();
+    trying_to_join_lobby = false;
+    removeParamFromUrl('lobby');
     ViewsManager.setActiveView('home');
 });
 
@@ -918,14 +894,36 @@ ConnectionManager.onLogout.subscribe((logout_response) => {
 //#endregion
 
 //#region ----- Lobby -----
+
+//check if the url contains a lobby id
+
+function checkLobbyIdFromUrl() : void{
+    const result = checkForParam('lobby');
+
+    if (result === null) return;
+
+    console.log('Lobby id found in url : ' + result);
+    trying_to_join_lobby = true;
+    LobbiesConnectionManager.instance.targetLobbyId = result;
+}
+
 LobbiesConnectionManager.instance.onLobbyJoined.subscribe((lobby_data: LobbyData) => {
+    trying_to_join_lobby = false;
     ViewsManager.setActiveView('lobby');
+
+    //add the lobby id to the url
+    addParamToUrl('lobby', lobby_data.id);
+    
     console.log('[+] Lobby joined : ' + JSON.stringify(lobby_data));
 });
 LobbiesConnectionManager.instance.onLobbyLeft.subscribe(() => {
     ViewsManager.setActiveView('home');
+    trying_to_join_lobby = false;
+    removeParamFromUrl('lobby');
     console.log('[+] Lobby left');
 });
+
+
 
 //#endregion
 
@@ -972,6 +970,37 @@ function joinLobby(lobbyId: string, isPrivate: boolean){
             alert('Joining the lobby failed : \n' + error);
         });
     }
+}
+
+/**
+ * Add a parameter to the url or replace it if it already exists
+ * @param paramName  the name of the parameter
+ * @param paramValue the value of the parameter
+ */
+function addParamToUrl(paramName: string, paramValue: string){
+    const urlParams = new URLSearchParams(window.location.search);
+    urlParams.set(paramName, paramValue);
+    window.history.replaceState({}, '', `${location.pathname}?${urlParams}${location.hash}`);
+}
+/**
+ * Remove a parameter from the url
+ * @param paramName the name of the parameter
+ */
+function removeParamFromUrl(paramName: string){
+    const urlParams = new URLSearchParams(window.location.search);
+    urlParams.delete(paramName);
+    window.history.replaceState({}, '', `${location.pathname}?${urlParams}${location.hash}`);
+}
+
+/**
+ * Check if the url contains a parameter and return its value
+ * @param paramName the name of the parameter
+ * @returns the value of the parameter or null if it doesn't exist
+ */
+function checkForParam(paramName: string) : string | null{
+    const urlParams = new URLSearchParams(window.location.search);
+    const param = urlParams.get(paramName);
+    return param;
 }
 
 /**
@@ -1063,18 +1092,8 @@ function checkConnection() : boolean {
     return true;
 }
 
-function redirectCheck(): boolean{
-    if (!checkConnection()) {
-        ViewsManager.setActiveView('disconnected');
-        return false;
-    }
-    if (!AccountConnectionManager.isLogged) {
-        ViewsManager.setActiveView('connection');
-        return false;
-    }
-
-    return true;
-}
-
 
 //#endregion
+
+
+checkLobbyIdFromUrl();
