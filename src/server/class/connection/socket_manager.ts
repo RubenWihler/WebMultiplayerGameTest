@@ -66,7 +66,7 @@ export default class SocketManager {
     private onConnection(socket: Socket){
         this.not_connected_sockets.push(socket);
         this.bindMessages(socket);
-        console.log('[+] new socket connected : ' + socket.id);
+        console.log(`[+] new socket connected. id: ${socket.id} ip: ${socket.handshake.address}`);
     }
 
     private bindMessages(socket: Socket){
