@@ -39,9 +39,6 @@ export default class ConnectionHandler {
         this.socket = socket;
         
         // Add all the listening messages for logged connections.
-        console.log(`Listening messages for logged connections: \n  ${
-            Array.from(SocketManager.listeningMessagesForLoggedConnections.keys()).join('\n  ')
-        }`);
         for (const [message, callbacks] of SocketManager.listeningMessagesForLoggedConnections.entries()) {            
             callbacks.forEach(callback => {
                 this.socket.on(message, (data) => {

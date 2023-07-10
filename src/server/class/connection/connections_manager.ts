@@ -32,11 +32,13 @@ export default class ConnectionsManager{
             }
         });
 
-        connections_to_remove.forEach(async (connection) => {
+        connections_to_remove.forEach((connection) => {
             connection.socket.emit("connection-error", {
                 code: "OTHER_DEVICE_LOGGED_IN",
             });
-            await setTimeout(() => {}, 1000);
+
+            // await setTimeout(() => {}, 1000);
+            console.log(`[!] disconnecting user: ${connection.connection_data.user.userId} because of a new connection from the same user: ${connection_handler.connection_data.user.userId}`);
             connection.disconnect();
         });
 

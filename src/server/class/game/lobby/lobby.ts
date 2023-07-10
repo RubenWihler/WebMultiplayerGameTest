@@ -186,7 +186,9 @@ export default class Lobby {
         }
 
         connection.socket.emit("lobby-joined", paquet);
-
+        
+        console.log(`[+] ${connection.connection_data.user.username} joined lobby : ${this._name}`);
+        
         return {
             success: true
         };

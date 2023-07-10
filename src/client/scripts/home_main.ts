@@ -364,6 +364,9 @@ element_home_join_form.addEventListener('submit', async (event) => {
 
     const id = element_home_join_code.value;
 
+    //prevent default before async call
+    event.preventDefault();
+
     const result = await LobbiesConnectionManager.joinLobby(id, null);
     if (!result.success){
         result.messages.forEach(error => {
@@ -396,12 +399,10 @@ element_home_join_form.addEventListener('submit', async (event) => {
             }
         });
 
-        event.preventDefault();
         return;
     }
 
     cleanForms();
-    event.preventDefault();
 });
 
 // home host
@@ -424,6 +425,9 @@ element_home_host_form.addEventListener('submit', async (event) => {
     if (password === '') {
         password = null;
     }
+
+    //prevent default before await
+    event.preventDefault();
 
     const result = await LobbiesConnectionManager.createLobby(name, password, max_players);
     if (!result.success){
@@ -449,13 +453,8 @@ element_home_host_form.addEventListener('submit', async (event) => {
             }
         });
 
-        event.preventDefault();
         return;
     }
-
-
-
-    event.preventDefault();
 });
 
 
@@ -599,6 +598,9 @@ element_lobby_password_form.addEventListener('submit', async (event) => {
     const id = LobbiesConnectionManager.instance.targetLobbyId;
     const password = element_lobby_password_password.value;
 
+    //prevent the form from being sent before async call
+    event.preventDefault();
+
     const result = await LobbiesConnectionManager.joinLobby(id, password);
     if (!result.success) {
         result.messages.forEach((error) => {
@@ -637,11 +639,8 @@ element_lobby_password_form.addEventListener('submit', async (event) => {
             }
         });
 
-        event.preventDefault();
         return;
     }
-
-    event.preventDefault();
 });
 element_lobby_password_return_button.addEventListener('click', () => {
     cleanForms();

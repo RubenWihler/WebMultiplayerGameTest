@@ -55,12 +55,12 @@ export default class ConnectionManager {
     }
     
     private onReceiveConnect(){
-        console.log('[+] New socket connected');
+        console.log(`[+] Socket connected: ${this.socket.id}`);
         ConnectionManager.onConnect.notify();
         this.bindMessages();
     }
     private onReceiveDisconnect(){
-        console.log('[-] Socket disconnected');
+        console.warn('[!] Socket disconnected');
         ConnectionManager.onDisconnect.notify();
     }
     private onReceiveLoginResponse(login_response: any){
