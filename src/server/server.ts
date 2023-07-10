@@ -39,12 +39,6 @@ const connections_manager = ConnectionsManager.Instance;
 setUpListeningMessages();
 setUpListeningLoggedMessages();
 
-SocketManager.onConnection.subscribe((socket) => {
-    socket.on('lobby-join', (data) => {
-        console.log("lobby-join : " + JSON.stringify(data));
-    });
-});
-
 EventsManager.onUserCreated.subscribe((connectionData) => {
     console.log("User created : " + JSON.stringify(connectionData));
 });

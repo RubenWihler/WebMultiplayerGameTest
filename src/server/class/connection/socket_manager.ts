@@ -46,34 +46,27 @@ export default class SocketManager {
             const callbacks = new Set<(socket: Socket, data) => void>();
             callbacks.add(callback);
             SocketManager.listeningMessages.set(message, callbacks);
-            console.log('[+] New message listened : ' + message);
             return;
         }
 
         SocketManager.listeningMessages.get(message).add(callback);
-        console.log('[+] New callback added to message : ' + message);
     }
     public static listenMessageForLoggedConnections(message: string, callback: (connection: ConnectionHandler, data: any) => void){
         if (!SocketManager.listeningMessagesForLoggedConnections.has(message)) {
             const callbacks = new Set<(connection: ConnectionHandler, data) => void>();
-            callbacks.add((connection: ConnectionHandler, data: any) => {
-                console.log('[+] logged message triggered : ' + message + ' for ' + connection.connection_data.user.username);
-            });
             callbacks.add(callback);
 
             SocketManager.listeningMessagesForLoggedConnections.set(message, callbacks);
-            console.log('[+] New message listened for logged connections : ' + message);
             return;
         }
         
         SocketManager.listeningMessagesForLoggedConnections.get(message).add(callback);
-        console.log('[+] New callback added to message for logged connections : ' + message);
     }
 
     private onConnection(socket: Socket){
         this.not_connected_sockets.push(socket);
         this.bindMessages(socket);
-        console.log('[+] New socket connected : ' + socket.id);
+        console.log('[+] new socket connected : ' + socket.id);
     }
 
     private bindMessages(socket: Socket){
@@ -100,7 +93,7 @@ export default class SocketManager {
         //When the socket is not associated with a connection
         if(this.not_connected_sockets.find((s) => s.id == socket.id) != null){
             this.not_connected_sockets.splice(this.not_connected_sockets.indexOf(socket), 1);
-            console.log('[+] not-connected-socket disconnected : ' + socket.id);
+            console.log('[+] socket disconnected : ' + socket.id);
             return;
         }
         
@@ -110,7 +103,7 @@ export default class SocketManager {
         connection_handler.disconnect();
         this.connected_sockets.delete(socket.id);
 
-        console.log('[+] connected-socket disconnected : ' + socket.id);
+        console.log('[+] socket disconnected : ' + socket.id);
     }
     private async onSignup(socket: Socket, signup_data: any){
         
@@ -215,8 +208,6 @@ export default class SocketManager {
 
         //pre-check validity of the login data
         const errormsgs = [];
-
-        console.log(JSON.stringify(login_data));
 
         if (login_data.username == null || login_data.username == undefined || login_data.username.length === 0){
             errormsgs.push('USERNAME_REQUIRED');
@@ -384,23 +375,4 @@ export default class SocketManager {
     private isSocketAlreadyConnected(socket: Socket): Boolean{
         return this.connected_sockets.get(socket.id) != null;
     }
-    // private printTest(){
-    //     console.log('');
-    //     console.log('');
-    //     console.log('[+] connected users: ');
-    //     this.connected_sockets.forEach((connection_handler, id) => {
-    //         console.log('  ' + id);
-    //     });
-    //     console.log('');
-    //     console.log('[+] not connected users: ');
-    //     this.not_connected_sockets.forEach((socket) => {
-    //         console.log('  ' + socket.id);
-    //     });
-    //     console.log('');
-    //     console.log('');
-    //     console.log('[+] current connection: ');
-    //     ConnectionsManager.CurrentConnections.forEach((connection_handler) => {
-    //         console.log('  ' + connection_handler.connection_data.user.userId + ' : ' + connection_handler.socket.id);
-    //     });
-    // }
 }

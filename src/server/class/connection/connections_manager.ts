@@ -38,7 +38,7 @@ export default class ConnectionsManager{
             });
 
             // await setTimeout(() => {}, 1000);
-            console.log(`[!] disconnecting user: ${connection.connection_data.user.userId} because of a new connection from the same user: ${connection_handler.connection_data.user.userId}`);
+            console.warn(`[!] disconnecting user: ${connection.connection_data.user.userId} because of a new connection from the same user: ${connection_handler.connection_data.user.userId}`);
             connection.disconnect();
         });
 

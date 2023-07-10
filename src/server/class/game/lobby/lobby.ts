@@ -187,8 +187,6 @@ export default class Lobby {
 
         connection.socket.emit("lobby-joined", paquet);
         
-        console.log(`[+] ${connection.connection_data.user.username} joined lobby : ${this._name}`);
-        
         return {
             success: true
         };
@@ -351,7 +349,7 @@ export default class Lobby {
                 if (!this.kickUser(connections[index]))
                 {
                     const connection = this._connections.get(connections[index]);
-                    console.log(`[!] Failed to kick user : ${connection.connection_data.user.userId} from lobby : ${this._id}`);
+                    console.warn(`[!] Failed to kick user : ${connection.connection_data.user.userId} from lobby : ${this._id}`);
                     continue;
                 }
 
