@@ -938,6 +938,10 @@ function checkLobbyIdFromUrl() : void{
     LobbiesConnectionManager.instance.targetLobbyId = result;
 }
 
+function refreshPlayersList(users: {id: number, name: string, status: string}[]) {
+    //todo : refresh the players list
+}
+
 LobbiesConnectionManager.instance.onLobbyJoined.subscribe((lobby_data: LobbyData) => {
     trying_to_join_lobby = false;
     ViewsManager.setActiveView('lobby');

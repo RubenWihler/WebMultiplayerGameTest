@@ -1,4 +1,4 @@
-import ConnectionHandler, { ConnectionStatut } from "../../connection/connection_handler.js";
+import ConnectionHandler, { ConnectionStatus } from "../../connection/connection_handler.js";
 import HashTools from "../../global_types/hash_tools.js";
 import ObservableEvent from "../../event_system/observable_event.js";
 import BanWord from "../../global_types/ban_word.js";
@@ -26,6 +26,7 @@ export default class Lobby {
     public readonly onUserBan: ObservableEvent<number> = new ObservableEvent();
     public readonly onUserUnBan: ObservableEvent<number> = new ObservableEvent();
     public readonly onUserKick: ObservableEvent<number> = new ObservableEvent();
+    public readonly onUserStatusChange: ObservableEvent<ConnectionHandler> = new ObservableEvent();
 
     constructor(id: string, name: string, password: string = null) {
         this._id = id;
@@ -101,15 +102,19 @@ export default class Lobby {
     /**
      * Returns the list of users
      */
-    public get users(): { id: number, name: string }[] {
+    public get users(): { id: number, name: string, status: ConnectionStatus }[] {
         return this.connections.map((connection: ConnectionHandler) => {
             return {
                 id: connection.connection_data.user.userId,
-                name: connection.connection_data.user.username
+                name: connection.connection_data.user.username,
+                status: connection.status
             };
         });
     }
 
+    public startGame(): any {
+        console.log("[+] starting game ...");
+    }
     /**
      * Disconnects all connections from the lobby and dispose its events.
      */
@@ -137,7 +142,7 @@ export default class Lobby {
                 error: "ALLREADY_IN_A_LOBBY"
             };
         }
-        if (connection.statut !== ConnectionStatut.CONNECTED) {
+        if (connection.status !== ConnectionStatus.CONNECTED) {
             return {
                 success: false,
                 error: "LOBBY_CONNECTION_ERROR"
@@ -185,6 +190,8 @@ export default class Lobby {
             this._owner_id = connection.connection_data.user.userId;
         }
 
+        connection.status = ConnectionStatus.LOBBY_NOT_READY;
+
         this._connections.set(connection.connection_data.user.userId, connection);
         this.onNewConnection(connection);
 
@@ -227,7 +234,7 @@ export default class Lobby {
         this._connections.delete(connection.connection_data.user.userId);
         this.onConnectionLeft(connection);
 
-        if (connection.statut === ConnectionStatut.CONNECTED) {
+        if (connection.status === ConnectionStatus.CONNECTED) {
             connection.socket.emit("lobby-left", {
                 success: true,
                  lobby_data: {
@@ -447,6 +454,31 @@ export default class Lobby {
         this.disconnect(connection);
         this.onUserBan.notify(user_id);
     }
+    public setReady(user_id: number, ready: boolean): void {
+        if (!this._connections.has(user_id)) {
+            return;
+        }
+
+        const connection = this._connections.get(user_id);
+        connection.status = ready ? ConnectionStatus.LOBBY_READY : ConnectionStatus.LOBBY_NOT_READY;
+        this.onUserStatusChange.notify(connection);
+        this.sendMessageToAllConnections(Messages.LOBBY_USERS_CHANGED, this.users);
+        this.checkForStart();
+    }
+
+    private checkForStart(): void {
+        if (this._connections.size < Lobby.MIN_LOBBY_PLAYERS) {
+            return;
+        }
+
+        for (const connection of this._connections.values()) {
+            if (connection.status !== ConnectionStatus.LOBBY_READY) {
+                return;
+            }
+        }
+
+        this.startGame();
+    }
 
     /**
      * On a new user joined the lobby.
@@ -454,6 +486,7 @@ export default class Lobby {
      */
     private onNewConnection(connection: ConnectionHandler) {
         this.sendMessageToAllConnections(Messages.LOBBY_USERS_CHANGED, this.users);
+        this.checkForStart();
         this.onConnectionAdd.notify(connection);
     }
     /**
@@ -462,6 +495,7 @@ export default class Lobby {
      */
     private onConnectionLeft(connection: ConnectionHandler) {
         this.sendMessageToAllConnections(Messages.LOBBY_USERS_CHANGED, this.users);
+        this.checkForStart();
         this.onConnectionRemove.notify(connection);
     }
     /**
@@ -495,6 +529,7 @@ export default class Lobby {
     private onPasswordChanged(new_password_hash: string) {
         this.onPasswordChange.notify(new_password_hash);
     }
+    
 
     /**
      * Bind all the message events to the connection.
@@ -653,6 +688,11 @@ export default class Lobby {
                 success: true,
             });
         });
+
+        //on user send a request to set if is ready or not.
+        connection.socket.on(Messages.LOBBY_SET_READY, (data: {ready: boolean}) => {
+            this.setReady(connection.connection_data.user.userId, data.ready);
+        });
     }
     /**
      * Unbind all the message events to the connection.
@@ -670,6 +710,7 @@ export default class Lobby {
         socket.removeAllListeners(Messages.LOBBY_KICK_USER);
         socket.removeAllListeners(Messages.LOBBY_CHANGE_PASSWORD);
         socket.removeAllListeners(Messages.LOBBY_CHANGE_MAX_PLAYERS);
+        socket.removeAllListeners(Messages.LOBBY_SET_READY);
     }
     /**
      * Send a message to all the connections in the lobby.

@@ -6,9 +6,12 @@ import SocketManager from './socket_manager.js';
 import LobbiesManager from '../game/lobby/lobbies_manager.js';
 import Messages from './messages.js';
 
-export class ConnectionStatut {
+export class ConnectionStatus {
     static readonly CONNECTED = "CONNECTED";
     static readonly DISCONNECTED = "DISCONNECTED";
+    static readonly LOBBY_READY = "LOBBY_READY";
+    static readonly LOBBY_NOT_READY = "LOBBY_NOT_READY";
+    static readonly IN_GAME = "IN_GAME";
 }
 
 /**
@@ -16,17 +19,18 @@ export class ConnectionStatut {
  */
 export default class ConnectionHandler {
     connection_data: ConnectionData;
-    statut : ConnectionStatut;
+    private _status : ConnectionStatus;
     socket : socketIO.Socket;
 
     onConnect : ObservableEvent<ConnectionHandler> = new ObservableEvent();
     onDisconnect : ObservableEvent<ConnectionHandler> = new ObservableEvent();
+    onStatutChanged : ObservableEvent<ConnectionStatus> = new ObservableEvent();
 
     private _hardCodedMessages: Map<string, (data: any) => void>;
 
     constructor() {
         this.connection_data = null;
-        this.statut = ConnectionStatut.DISCONNECTED;
+        this._status = ConnectionStatus.DISCONNECTED;
         this.socket = null;
 
         this._hardCodedMessages = new Map<string, (data: any) => void>([
@@ -41,6 +45,15 @@ export default class ConnectionHandler {
         ]);
     }
 
+    public get status() : ConnectionStatus {
+        return this._status;
+    }
+
+    public set status(statut : ConnectionStatus) {
+        this._status = statut;
+        this.onStatutChanged.notify(this._status);
+    }
+
     /**
      * Set the connection data and change the statut to connected.
      * @param connection_data the connection data to set.
@@ -48,9 +61,9 @@ export default class ConnectionHandler {
      * @returns 
      */
     connect(connection_data: ConnectionData, socket: socketIO.Socket) {
-        if (this.statut == ConnectionStatut.CONNECTED) return;
+        if (this._status == ConnectionStatus.CONNECTED) return;
         this.connection_data = connection_data;
-        this.statut = ConnectionStatut.CONNECTED;
+        this._status = ConnectionStatus.CONNECTED;
         this.socket = socket;
         
         // Add all the listening messages for logged connections.
@@ -65,9 +78,9 @@ export default class ConnectionHandler {
      * Also make a call to the ConnectionsManager to remove the connection.
      */
     disconnect() {
-        if (this.statut == ConnectionStatut.DISCONNECTED) return;
+        if (this._status == ConnectionStatus.DISCONNECTED) return;
         
-        this.statut = ConnectionStatut.DISCONNECTED;
+        this._status = ConnectionStatus.DISCONNECTED;
 
         this.removeListeningMessage();
         

@@ -65,6 +65,8 @@ export default class Messages{
     public static readonly LOBBY_CHANGE_MAX_PLAYERS = "lobby-change-max-player";
     public static readonly LOBBY_CHANGE_MAX_PLAYERS_RESPONSE = "lobby-change-max-players-response";
 
+    public static readonly LOBBY_SET_READY = "lobby-set-ready";
+
     //#endregion
 
     
