@@ -3,6 +3,7 @@ import HashTools from "../../global_types/hash_tools.js";
 import ObservableEvent from "../../event_system/observable_event.js";
 import BanWord from "../../global_types/ban_word.js";
 import LobbiesManager from "./lobbies_manager.js";
+import Messages from "../../connection/messages.js";
 
 export default class Lobby {
     public static readonly MIN_LOBBY_PLAYERS = 2;
@@ -85,6 +86,28 @@ export default class Lobby {
      */
     public get owner_id(): number {
         return this._owner_id;
+    }
+    /**
+     * Returns the current's lobby settings.
+     */
+    public get settings(): { id: string, name: string, max_players: number, owner_id: number } {
+        return {
+            id: this._id,
+            name: this._name,
+            max_players: this._max_players,
+            owner_id: this._owner_id
+        };
+    }
+    /**
+     * Returns the list of users
+     */
+    public get users(): { id: number, name: string }[] {
+        return this.connections.map((connection: ConnectionHandler) => {
+            return {
+                id: connection.connection_data.user.userId,
+                name: connection.connection_data.user.username
+            };
+        });
     }
 
     /**
@@ -214,6 +237,9 @@ export default class Lobby {
              }); 
         }
 
+        // unbind messages of the connection to the lobby.
+        this.unbindMessageEvents(connection);
+
         //if the lobby is empty, delete it.
         if (this._connections.size === 0) {
             LobbiesManager.deleteLobby(this._id);
@@ -239,13 +265,13 @@ export default class Lobby {
         const errors = [];
 
         if (new_name.trim().length === 0) {
-            errors.push("The name must not be only spaces.");
+            errors.push("NAME_REQUIRED");
         }
         if (new_name.length < 3) {
-            errors.push("The name must be at least 3 characters long.");
+            errors.push("NAME_TOO_SHORT");
         }
         if (new_name.length > 25) {
-            errors.push("The name must be at most 25 characters long.");
+            errors.push("NAME_TOO_LONG");
         }
 
         //clean the name from bad words.
@@ -282,10 +308,10 @@ export default class Lobby {
         }
 
         if (new_password.length < 3) {
-            errors.push("The password must be at least 3 characters long.");
+            errors.push("PASSWORD_TOO_SHORT");
         }
         if (new_password.length > 25) {
-            errors.push("The password must be at most 25 characters long.");
+            errors.push("PASSWORD_TOO_LONG");
         }
 
         if (errors.length > 0) {
@@ -311,10 +337,10 @@ export default class Lobby {
         const errors = [];
 
         if (new_max_players < Lobby.MIN_LOBBY_PLAYERS) {
-            errors.push(`The maximum number of players must be at least ${Lobby.MIN_LOBBY_PLAYERS}.`);
+            errors.push(`MAX_PLAYERS_TOO_LOW`);
         }
         if (new_max_players > Lobby.MAX_LOBBY_PLAYERS) {
-            errors.push(`The maximum number of players must be at most ${Lobby.MAX_LOBBY_PLAYERS}.`);
+            errors.push(`MAX_PLAYERS_TOO_HIGH`);
         }
 
         if (errors.length > 0) {
@@ -391,7 +417,7 @@ export default class Lobby {
 
         if(this._connections.has(user_id)){
             const connection = this._connections.get(user_id);
-            connection.socket.emit("lobby-banned", {});
+            connection.socket.emit(Messages.LOBBY_BANNED, {});
             this.disconnect(connection);
         }
 
@@ -417,7 +443,7 @@ export default class Lobby {
         }
 
         const connection = this._connections.get(user_id);
-        connection.socket.emit("lobby-kicked", {});
+        connection.socket.emit(Messages.LOBBY_KICKED, {});
         this.disconnect(connection);
         this.onUserBan.notify(user_id);
     }
@@ -427,22 +453,7 @@ export default class Lobby {
      * @param connection 
      */
     private onNewConnection(connection: ConnectionHandler) {
-        const users = [];
-        for (let connection of this._connections.values()) {
-            users.push({
-                user_id: connection.connection_data.user.userId,
-                username: connection.connection_data.user.username
-            });
-        }
-        const paquet = {
-            new_user: {
-                user_id: connection.connection_data.user.userId,
-                username: connection.connection_data.user.username
-            },
-            users: users
-        };
-
-        this.sendMessageToAllConnections("lobby-connection-add", paquet);
+        this.sendMessageToAllConnections(Messages.LOBBY_USERS_CHANGED, this.users);
         this.onConnectionAdd.notify(connection);
     }
     /**
@@ -450,22 +461,7 @@ export default class Lobby {
      * @param connection 
      */
     private onConnectionLeft(connection: ConnectionHandler) {
-        const users = [];
-        for (let connection of this._connections.values()) {
-            users.push({
-                user_id: connection.connection_data.user.userId,
-                username: connection.connection_data.user.username
-            });
-        }
-        const paquet = {
-            leaved_user: {
-                user_id: connection.connection_data.user.userId,
-                username: connection.connection_data.user.username
-            },
-            users: users
-        };
-
-        this.sendMessageToAllConnections("lobby-connection-remove", paquet);
+        this.sendMessageToAllConnections(Messages.LOBBY_USERS_CHANGED, this.users);
         this.onConnectionRemove.notify(connection);
     }
     /**
@@ -473,11 +469,7 @@ export default class Lobby {
      * @param name 
      */
     private onNameChanged(name: string) {
-        const paquet = {
-            new_name: name
-        };
-
-        this.sendMessageToAllConnections("lobby-name-change", paquet);
+        this.sendMessageToAllConnections(Messages.LOBBY_SETTINGS_CHANGED, this.settings);
         this.onNameChange.notify(name);
     }
     /**
@@ -485,11 +477,7 @@ export default class Lobby {
      * @param max_player 
      */
     private onMaxPlayersChanged(max_player: number) {
-        const paquet = {
-            new_max_player: max_player
-        };
-
-        this.sendMessageToAllConnections("lobby-max-player-change", paquet);
+        this.sendMessageToAllConnections(Messages.LOBBY_SETTINGS_CHANGED, this.settings);
         this.onMaxPlayersChange.notify(max_player);
     }
     /**
@@ -497,11 +485,7 @@ export default class Lobby {
      * @param owner 
      */
     private onOwnerChanged(owner: ConnectionHandler) {
-        const paquet = {
-            new_owner_id: owner.connection_data.user.userId,
-        };
-
-        this.sendMessageToAllConnections("lobby-owner-change", paquet);
+        this.sendMessageToAllConnections(Messages.LOBBY_SETTINGS_CHANGED, this.settings);
         this.onOwnerChange.notify(owner);
     }
     /**
@@ -519,120 +503,120 @@ export default class Lobby {
     private bindMessageEvents(connection: ConnectionHandler) {
         
         //on user send a request to leave the lobby.
-        connection.socket.on("lobby-leave", (data: any) => {
+        connection.socket.on(Messages.LOBBY_LEAVE, (data: any) => {
             //check if the user is in the lobby.
             if (!this._connections.has(connection.connection_data.user.userId)) {
-                connection.socket.emit("lobby-leave-response", {
+                connection.socket.emit(Messages.LOBBY_LEAVE_RESPONSE, {
                     success: false,
-                    messages: ["You are not in the lobby."]
+                    messages: ["NOT_IN_LOBBY"]
                 });
             }
 
             const result = this.disconnect(connection);
-            connection.socket.emit("lobby-leave-response", {
+            connection.socket.emit(Messages.LOBBY_LEAVE_RESPONSE, {
                 success: result
             });
         });
         
         //on user send a request to change the name of the lobby.
-        connection.socket.on("lobby-change-name", (data: any) => {
+        connection.socket.on(Messages.LOBBY_CHANGE_NAME, (data: any) => {
             if (connection.connection_data.user.userId !== this._owner_id) {
-                connection.socket.emit("lobby-change-name-response", {
+                connection.socket.emit(Messages.LOBBY_CHANGE_NAME_RESPONSE, {
                     success: false,
-                    messages: ["You are not the owner of the lobby."]
+                    messages: ["NOT_OWNER"]
                 });
                 return;
             }
             const result = this.changeName(data.name);
-            connection.socket.emit("lobby-change-name-response", result);
+            connection.socket.emit(Messages.LOBBY_CHANGE_NAME_RESPONSE, result);
         });
 
         //on user send a request to change the owner of the lobby.
-        connection.socket.on("lobby-change-owner", (data: any) => {
+        connection.socket.on(Messages.LOBBY_CHANGE_OWNER, (data: any) => {
             if (connection.connection_data.user.userId !== this._owner_id) {
-                connection.socket.emit("lobby-change-owner-response", {
+                connection.socket.emit(Messages.LOBBY_CHANGE_OWNER_RESPONSE, {
                     success: false,
-                    messages: ["You are not the owner of the lobby."]
+                    messages: ["NOT_OWNER"]
                 });
                 return;
             }
 
             const new_owner = this._connections.get(data.new_owner_id);
             if (!new_owner) {
-                connection.socket.emit("lobby-change-owner-response", {
+                connection.socket.emit(Messages.LOBBY_CHANGE_OWNER_RESPONSE, {
                     success: false,
-                    messages: ["The targeted player is not in the lobby or does not exist."]
+                    messages: ["USER_NOT_IN_LOBBY"]
                 });
                 return;
             }
 
             const result = this.setOwner(new_owner);
-            connection.socket.emit("lobby-change-owner-response", {
+            connection.socket.emit(Messages.LOBBY_CHANGE_OWNER_RESPONSE, {
                 success: result
             });
         });
 
         //on user send a request to ban a user from the lobby.
-        connection.socket.on("lobby-ban-user", (data: any) => {
+        connection.socket.on(Messages.LOBBY_BAN_USER, (data: any) => {
             if (connection.connection_data.user.userId !== this._owner_id) {
-                connection.socket.emit("lobby-ban-user-response", {
+                connection.socket.emit(Messages.LOBBY_BAN_USER_RESPONSE, {
                     success: false,
-                    messages: ["You are not the owner of the lobby."]
+                    messages: ["NOT_OWNER"]
                 });
                 return;
             }
 
             const result = this.banUser(data.user_id);
-            connection.socket.emit("lobby-ban-user-response", {
+            connection.socket.emit(Messages.LOBBY_BAN_USER_RESPONSE, {
                 success: result
             });
         });
 
         //on user send a request to unban a user from the lobby.
-        connection.socket.on("lobby-unban-user", (data: any) => {
+        connection.socket.on(Messages.LOBBY_UNBAN_USER, (data: any) => {
             if (connection.connection_data.user.userId !== this._owner_id) {
-                connection.socket.emit("lobby-unban-user-response", {
+                connection.socket.emit(Messages.LOBBY_UNBAN_USER_RESPONSE, {
                     success: false,
-                    messages: ["You are not the owner of the lobby."]
+                    messages: ["NOT_OWNER"]
                 });
                 return;
             }
 
             this.unbanUser(data.user_id);
-            connection.socket.emit("lobby-unban-user-response", {
+            connection.socket.emit(Messages.LOBBY_UNBAN_USER_RESPONSE, {
                 success: true
             });
         });
 
         //on user send a request to kick a user from the lobby.
-        connection.socket.on("lobby-kick-user", (data: any) => {
+        connection.socket.on(Messages.LOBBY_KICK_USER, (data: any) => {
             if (connection.connection_data.user.userId !== this._owner_id) {
-                connection.socket.emit("lobby-kick-user-response", {
+                connection.socket.emit(Messages.LOBBY_KICK_USER_RESPONSE, {
                     success: false,
-                    messages: ["You are not the owner of the lobby."]
+                    messages: ["NOT_OWNER"]
                 });
                 return;
             }
 
             const result = this.kickUser(data.user_id);
-            connection.socket.emit("lobby-kick-user-response", {
+            connection.socket.emit(Messages.LOBBY_KICK_USER_RESPONSE, {
                 success: result
             });
         });
 
         //on user send a request to change the password of the lobby.
-        connection.socket.on("lobby-change-password", (data: any) => {
+        connection.socket.on(Messages.LOBBY_CHANGE_PASSWORD, (data: any) => {
             if (connection.connection_data.user.userId !== this._owner_id) {
-                connection.socket.emit("lobby-change-password-response", {
+                connection.socket.emit(Messages.LOBBY_CHANGE_PASSWORD_RESPONSE, {
                     success: false,
-                    messages: ["You are not the owner of the lobby."]
+                    messages: ["NOT_OWNER"]
                 });
                 return;
             }
 
             const result = this.changePassword(data.password);
             if (!result.success) {
-                connection.socket.emit("lobby-change-password-response", {
+                connection.socket.emit(Messages.LOBBY_CHANGE_PASSWORD_RESPONSE, {
                     success: false,
                     messages: result.messages
                 });
@@ -646,18 +630,18 @@ export default class Lobby {
         });
 
         //on user send a request to change the max player of the lobby.
-        connection.socket.on("lobby-change-max-player", (data: any) => {
+        connection.socket.on(Messages.LOBBY_CHANGE_MAX_PLAYERS, (data: any) => {
             if (connection.connection_data.user.userId !== this._owner_id) {
-                connection.socket.emit("lobby-change-max-player-response", {
+                connection.socket.emit(Messages.LOBBY_CHANGE_MAX_PLAYERS_RESPONSE, {
                     success: false,
-                    messages: ["You are not the owner of the lobby."]
+                    messages: ["NOT_OWNER"]
                 });
                 return;
             }
 
             const result = this.changeMaxPlayers(data.max_player);
             if (!result.success) {
-                connection.socket.emit("lobby-change-max-player-response", {
+                connection.socket.emit(Messages.LOBBY_CHANGE_MAX_PLAYERS_RESPONSE, {
                     success: false,
                     messages: result.messages
                 });
@@ -665,10 +649,27 @@ export default class Lobby {
                 return;
             }
 
-            connection.socket.emit("lobby-change-max-player-response", {
+            connection.socket.emit(Messages.LOBBY_CHANGE_MAX_PLAYERS_RESPONSE, {
                 success: true,
             });
         });
+    }
+    /**
+     * Unbind all the message events to the connection.
+     * @param connection the connection to unbind the message events.
+     */
+    private unbindMessageEvents(connection: ConnectionHandler) {
+        if (connection.socket === null) return;
+        const socket = connection.socket;
+
+        socket.removeAllListeners(Messages.LOBBY_LEAVE);
+        socket.removeAllListeners(Messages.LOBBY_CHANGE_NAME);
+        socket.removeAllListeners(Messages.LOBBY_CHANGE_OWNER);
+        socket.removeAllListeners(Messages.LOBBY_BAN_USER);
+        socket.removeAllListeners(Messages.LOBBY_UNBAN_USER);
+        socket.removeAllListeners(Messages.LOBBY_KICK_USER);
+        socket.removeAllListeners(Messages.LOBBY_CHANGE_PASSWORD);
+        socket.removeAllListeners(Messages.LOBBY_CHANGE_MAX_PLAYERS);
     }
     /**
      * Send a message to all the connections in the lobby.

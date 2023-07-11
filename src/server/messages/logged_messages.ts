@@ -7,9 +7,7 @@ export function setUpListeningLoggedMessages(){
     SocketManager.listenMessageForLoggedConnections('lobby-create', (connectionHandler, data) => {
         const errors = [];
 
-        data.lobby_name = BanWord.clean(data.lobby_name);
-
-        if (data.lobby_name == null || data.lobby_name == undefined){
+        if (data.lobby_name == null || data.lobby_name == undefined || data.lobby_name.trim().length === 0){
             errors.push("LOBBY_NAME_REQUIRED");
         }
         if (data.max_players == null || data.max_players == undefined || data.max_players <= 0){
@@ -24,6 +22,8 @@ export function setUpListeningLoggedMessages(){
 
             return;
         }
+
+        data.lobby_name = BanWord.clean(data.lobby_name);
 
         const lobby = LobbiesManager.createLobby(data.lobby_name, data.lobby_password);
         const join_result = lobby.connect(connectionHandler, data.lobby_password);
@@ -46,6 +46,8 @@ export function setUpListeningLoggedMessages(){
 
             return;
         }
+
+        LobbiesManager.onLobbyCreated.notify(lobby);
 
         connectionHandler.socket.emit('lobby-create-response', {
             success: true,

@@ -33,6 +33,7 @@ export default class ConnectionErrorsTraductor {
         ["LOBBY_FULL", "This lobby is full"],
         ["LOBBY_PASSWORD_INCORRECT", "Incorrect password"],
         ["LOBBY_PASSWORD_REQUIRED", "Password is required"],
+        ["NOT_IN_A_LOBBY", "You are not in a lobby"],
     ]);
 
     public static getMessage(error_code: string): string {
@@ -40,6 +41,6 @@ export default class ConnectionErrorsTraductor {
             return ConnectionErrorsTraductor.errors.get(error_code) as string;
         }
 
-        return "Unknown error";
+        return `Unknown error : ${error_code}`;
     }
 }

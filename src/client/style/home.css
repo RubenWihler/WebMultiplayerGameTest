@@ -604,9 +604,372 @@ form{
     background-color: var(--error-color);
 }
 
-/* #home-lobby-join-form{
+/************************ LOBBY ************************/
+#lobby{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    overflow-y: auto;
+    padding: 2%;
+}
+
+/*----- lobby-players -----*/
+#lobby-players{
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: space-evenly;
-} */
+    width: clamp(300px, 30%, 500px);
+    height: 90%;
+    border-radius: 16px;
+    overflow: hidden;
+    overflow-y: auto;
+    margin-right: 2%;
+    margin-left: 2%;
+}
+#lobby-players-list{
+    container-type: inline-size;
+    container-name: lobby-players-list;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: start;
+    width: 100%;
+    height: 90%;
+    overflow: hidden;
+    overflow-y: auto;
+    min-height: 0;
+}
+.lobby-player-item{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    height: 70px;
+    min-height: 70px;
+    width: 80%;
+    padding-left: 2%;
+    padding-right: 2%;
+    height: 50px;
+    border-radius: 7px;
+    margin-bottom: 3%;
+    color: var(--primary-color);
+    overflow: hidden;
+}
+.lobby-player-name{
+    font-size: 0.9rem;
+    width: 35%;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+}
+.lobby-player-status{
+    font-size: 1rem;
+    white-space: nowrap;
+    font-weight: 400;
+}
+.lobby-player-item>div{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+    height: 100%;
+}
+.lobby-player-item>div>button:first-child{
+    margin-right: 5%;
+}
+.lobby-player-kick-button,
+.lobby-player-ban-button
+{
+    width:  42px;
+    height: 42px;
+    border-radius: 7px;
+    color: var(--error-color) !important;
+    border: solid 2px var(--error-color) !important;
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+.lobby-player-kick-button:hover,
+.lobby-player-ban-button:hover{
+    color: white !important;
+    background-color: var(--error-color) !important;
+}
+
+@container lobby-players-list (max-width: 350px){
+    .lobby-player-name{
+        font-size: 0.7rem;
+    }
+    .lobby-player-status{
+        font-size: 0.8rem;
+    }
+    .lobby-player-kick-button,
+    .lobby-player-ban-button
+    {
+        width:  32px;
+        height: 33px;
+        font-size: 1rem;
+    }
+    @container lobby-players-list (max-width: 250px){
+        .lobby-player-name{
+            font-size: 0.7rem;
+        }
+        .lobby-player-status{
+            font-size: 0.6rem;
+        }
+        .lobby-player-kick-button,
+        .lobby-player-ban-button
+        {
+            width:  26px;
+            height: 26px;
+            font-size: 0.8rem;
+        }
+    }
+}
+
+/*----- lobby-main -----*/
+#lobby-main{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    width: 65%;
+    height: 90%;
+    border-radius: 16px;
+    overflow: hidden;
+    overflow-y: auto;
+    margin-right: 2%;
+    margin-left: 2%;
+}
+/*----- lobby-main-main -----*/
+#lobby-main>div{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-evenly;
+    width: 100%;
+    height: 70%;
+    margin-top: 5%;
+}
+#lobby-main>div>article{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-evenly;
+    width: 45%;
+    height: 100%;
+}
+.lobby-explanations{
+    display: flex;
+    flex-direction: column;
+    align-items: start !important;
+    justify-content: space-evenly;
+    margin-left: 2%;
+    width: 40% !important;
+    min-width: 240px;
+}
+.lobby-explanations>h4{
+    font-size: clamp(1.2rem, 2vw, 1.7rem);
+    margin: 0;
+    padding: 0;
+    margin-bottom: 2%;
+}
+#lobby-explanations-text{
+    font-size: clamp(0.9rem, 1.5vw, 1.2rem);
+    margin: 0;
+    padding: 0;
+    margin-bottom: 2%;
+}
+.lobby-settings{
+    border-radius: 16px;
+    width: 40% !important;
+    padding-left: 2.5%;
+    padding-right: 2.5%;
+}
+.lobby-settings>div{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+.lobby-setting-container{
+    height: 35px;
+    min-height: 35px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 80%;
+    margin-bottom: 2%;
+}
+.lobby-setting-container>span{
+    white-space: nowrap;
+    font-size: clamp(0.8rem, 1.5vw, 1.2rem);
+}
+.lobby-setting-container.readonly>button,
+.lobby-setting-container.readonly>input{
+    color: #887ebd !important;
+}
+.lobby-setting-container.toogle>button{
+    background-color: transparent;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    font-size: 1.5rem;
+    color: var(--primary-color);
+}
+.lobby-setting-container.number>input{
+    background-color: transparent;
+    border: solid 1.5px var(--primary-color);
+    outline: none;
+    cursor: pointer;
+    font-size: 1rem;
+    width: 60px;
+    text-align: center;
+    color: var(--primary-color);
+}
+.lobby-setting-container.text>input,
+.lobby-setting-container.password>input{
+    background-color: transparent;
+    border: solid 1.5px var(--primary-color);
+    outline: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    width: 150px;
+    text-align: left;
+    color: var(--primary-color);
+}
+
+/*----- lobby-main-footer -----*/
+#lobby-main>footer{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-evenly;
+    width: 100%;
+    height: 15%;
+}
+#lobby-main>footer>div{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 45%;
+    height: 100%;
+}
+#lobby-main>footer>div:first-child{
+    min-width: 240px;
+    margin-right: 2%;
+}
+#lobby-main>footer>div:last-child{
+    margin-left: 2%;
+}
+#lobby-code-container{
+    display: flex;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    justify-content: space-evenly !important;
+    width: 40% !important;
+    padding-left: 2%;
+}
+#lobby-code-container>span{
+    font-size: 1.2rem;
+    color: var(--primary-color);
+}
+#lobby-copy-code-button{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-evenly;
+    width: 250px;
+    height: 50px;
+    padding-left: 2%;
+    padding-right: 2%;
+    border-radius: 7px;
+    font-size: 1.3rem;
+    cursor: pointer;
+    background-color: transparent;
+    color: var(--primary-color) !important;
+    border: solid 2px var(--primary-color) !important;
+    transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out;
+}
+#lobby-copy-code-button:hover{
+    color: white !important;
+    background-color: var(--primary-color);
+}
+#lobby-leave-button{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    width: 28%;
+    height: 50px;
+    padding-left: 2%;
+    padding-right: 2%;
+    border-radius: 7px;
+    font-size: 1.3rem;
+    color: var(--error-color) !important;
+    border: solid 2px var(--error-color) !important;
+}
+#lobby-leave-button:hover{
+    color: white !important;
+    background-color: var(--error-color);
+}
+#lobby-ready-button{
+    container-type: inline-size;
+    container-name: lobby-ready-button;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-evenly;
+    width: 68%;
+    height: 50px;
+    padding-left: 2%;
+    padding-right: 2%;
+    border-radius: 7px;
+    font-size: 1.3rem;
+    white-space: nowrap;
+    overflow: hidden;
+}
+#lobby-ready-button>div{
+    display: none;
+    visibility: hidden;
+}
+#lobby-ready-button>div,
+#lobby-ready-button>div::before,
+#lobby-ready-button>div::after{
+    transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out;
+}
+#lobby-ready-button.waiting>div{
+    display: flex;
+    visibility: visible;
+}
+#lobby-ready-button.waiting:hover>div{
+    background-color: white;
+    color: white;
+}
+#lobby-ready-button.waiting:hover>div::before,
+#lobby-ready-button.waiting:hover>div::after{
+    background-color: white;
+    color: white;
+}
+
+@container lobby-ready-button (max-width: 250px) {
+    #lobby-ready-button>span>span{
+        display: none;
+        visibility: hidden;
+    }
+
+    @container lobby-ready-button (max-width: 130px) {
+        #lobby-ready-button>span{
+            display: none;
+            visibility: hidden;
+        }
+    }
+}

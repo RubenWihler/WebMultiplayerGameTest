@@ -1,3 +1,4 @@
+import ObservableEvent from "../../event_system/observable_event.js";
 import IdGenerator from "../../global_types/id_generator.js";
 import Lobby from "./lobby.js";
 
@@ -7,6 +8,9 @@ import Lobby from "./lobby.js";
 export default class LobbiesManager{
     private static _instance: LobbiesManager;
     private readonly _lobbies: Map<string, Lobby>;
+
+    public static readonly onLobbyCreated = new ObservableEvent<Lobby>();
+    public static readonly onLobbyDeleted = new ObservableEvent<void>();
 
     public static get instance(): LobbiesManager {
         if (!LobbiesManager._instance) {
@@ -67,6 +71,7 @@ export default class LobbiesManager{
         const lobby = LobbiesManager.instance._lobbies.get(id);
         lobby.delete();
         LobbiesManager.instance._lobbies.delete(id);
+        LobbiesManager.onLobbyDeleted.notify();
         return true;
     }
     /**

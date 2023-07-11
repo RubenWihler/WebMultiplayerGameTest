@@ -1,9 +1,9 @@
 import { Socket, Server } from 'socket.io';
 import UserProcessor from '../database/processor/user_processor.js';
 import ConnectionHandler from './connection_handler.js';
-import ConnectionsManager from './connections_manager.js';
 import ObservableEvent from '../event_system/observable_event.js';
 import { json } from 'express';
+import Messages from './messages.js';
 
 export default class SocketManager {
     private static instance: SocketManager;
@@ -38,7 +38,7 @@ export default class SocketManager {
         this.not_connected_sockets = [];
         this.connected_sockets = new Map();
         this.io = io;
-        io.on('connection', (socket) => this.onConnection(socket));
+        io.on(Messages.CONNECTION, (socket) => this.onConnection(socket));
     }
 
     public static listenMessage(message: string, callback: (socket: Socket, data: any) => void){
@@ -80,16 +80,30 @@ export default class SocketManager {
             });
         }
 
-        socket.on('test', (data) => {});
-        socket.on('disconnect', () => this.onDisconnect(socket));
-        socket.on('signup', (signup_data) => this.onSignup(socket, signup_data));
-        socket.on('login', (login_data) => this.onLogin(socket, login_data));
-        socket.on('token_login', (token_login_data) => this.onTokenLogin(socket, token_login_data));
-        socket.on('logout', () => this.onLogout(socket));
-        socket.on('delete-account', (credentials) => this.onDeleteAccount(socket, credentials));
+        socket.on(Messages.DISCONNECT, () => this.onDisconnect(socket));
+        socket.on(Messages.SIGNUP, (signup_data) => this.onSignup(socket, signup_data));
+        socket.on(Messages.LOGIN, (login_data) => this.onLogin(socket, login_data));
+        socket.on(Messages.TOKEN_LOGIN, (token_login_data) => this.onTokenLogin(socket, token_login_data));
+        socket.on(Messages.LOGOUT, () => this.onLogout(socket));
+        socket.on(Messages.DELETE_ACCOUNT, (credentials) => this.onDeleteAccount(socket, credentials));
+    }
+    private unbindMessages(socket: Socket){
+        SocketManager.listeningMessages.forEach((callbacks, message) => {
+            socket.removeAllListeners(message);
+        });
+
+        socket.removeAllListeners(Messages.DISCONNECT);
+        socket.removeAllListeners(Messages.SIGNUP);
+        socket.removeAllListeners(Messages.LOGIN);
+        socket.removeAllListeners(Messages.TOKEN_LOGIN);
+        socket.removeAllListeners(Messages.LOGOUT);
+        socket.removeAllListeners(Messages.DELETE_ACCOUNT);
     }
 
     private onDisconnect(socket: Socket){
+
+        this.unbindMessages(socket);
+
         //When the socket is not associated with a connection
         if(this.not_connected_sockets.find((s) => s.id == socket.id) != null){
             this.not_connected_sockets.splice(this.not_connected_sockets.indexOf(socket), 1);
@@ -109,7 +123,7 @@ export default class SocketManager {
         
         //If the socket is already associated with a connection
         if(this.isSocketAlreadyConnected(socket)){
-            socket.emit('signup-response', {
+            socket.emit(Messages.SIGNUP_RESPONSE, {
                 success: false,
                 messages: ['USER_ALREADY_LOGGED_IN']
             });
@@ -136,7 +150,7 @@ export default class SocketManager {
 
         //If there is an error
         if (errormsgs.length > 0){
-            socket.emit('signup-response', {
+            socket.emit(Messages.SIGNUP_RESPONSE, {
                 success: false,
                 messages: errormsgs
             });
@@ -148,7 +162,7 @@ export default class SocketManager {
         
         // If the signup is not successful
         if (!signup_response.statut){
-            socket.emit('signup-response', {
+            socket.emit(Messages.SIGNUP_RESPONSE, {
                 success: false,
                 messages: signup_response.msg
             });
@@ -165,7 +179,7 @@ export default class SocketManager {
         const login_response = await UserProcessor.signInAsync(login_data.username, login_data.password);
         
         if (!login_response.statut){
-            socket.emit('signup-response', {
+            socket.emit(Messages.SIGNUP_RESPONSE, {
                 success: false,
                 messages: ['Your account has been created successfully but an error occured while trying to login you. Please try to login manually.']
             });
@@ -193,13 +207,13 @@ export default class SocketManager {
                 token: login_response.connection_data.token
             }
         }
-        socket.emit('signup-response', response);
+        socket.emit(Messages.SIGNUP_RESPONSE, response);
     }
     private async onLogin(socket: Socket, login_data: any){
 
         //If the socket is already associated with a connection
         if(this.isSocketAlreadyConnected(socket)){
-            socket.emit('login-response', {
+            socket.emit(Messages.LOGIN_RESPONSE, {
                 success: false,
                 messages: ['USER_ALREADY_LOGGED_IN']
             });
@@ -218,7 +232,7 @@ export default class SocketManager {
 
         //If there is an error
         if (errormsgs.length > 0){
-            socket.emit('login-response', {
+            socket.emit(Messages.LOGIN_RESPONSE, {
                 success: false,
                 messages: errormsgs
             });
@@ -230,7 +244,7 @@ export default class SocketManager {
         
         // If the login is not successful
         if (!login_response.statut){
-            socket.emit('login-response', {
+            socket.emit(Messages.LOGIN_RESPONSE, {
                 success: false,
                 messages: login_response.msg
             });
@@ -245,7 +259,7 @@ export default class SocketManager {
         this.connected_sockets.set(socket.id, connection_handler);
         connection_handler.socket = socket;
 
-        socket.emit('login-response', {
+        socket.emit(Messages.LOGIN_RESPONSE, {
             success: true,
             messages: ['Connected successfully !'],
             login_response_data: {
@@ -260,7 +274,7 @@ export default class SocketManager {
     }
     private async onLogout(socket: Socket){
         if(!this.isSocketAlreadyConnected(socket)){
-            socket.emit('logout-response', {
+            socket.emit(Messages.LOGOUT_RESPONSE, {
                 success: false,
                 messages: ['USER_NOT_LOGGED_IN']
             });
@@ -268,15 +282,15 @@ export default class SocketManager {
     
         const connection_handler = this.connected_sockets.get(socket.id);
         connection_handler.disconnect();
-        socket.emit('logout-response', {success: true});
+        socket.emit(Messages.LOGOUT_RESPONSE, {success: true});
         return;
     }
     private async onTokenLogin(socket: Socket, credentials: any){
         //If the socket is already associated with a connection
         if(this.isSocketAlreadyConnected(socket)){
-            socket.emit('token-login-response', {
+            socket.emit(Messages.TOKEN_LOGIN_RESPONSE, {
                 success: false,
-                messages: ['You are already connected to an account !']
+                messages: ['ALREADY_LOGGED_IN']
             });
             return;
         }
@@ -285,7 +299,7 @@ export default class SocketManager {
 
         // If the login is not successful
         if (!login_response.statut){
-            socket.emit('token-login-response', {
+            socket.emit(Messages.TOKEN_LOGIN_RESPONSE, {
                 success: false,
                 messages: login_response.msg
             });
@@ -300,7 +314,7 @@ export default class SocketManager {
         this.connected_sockets.set(socket.id, connection_handler);
         connection_handler.socket = socket;
 
-        socket.emit('token-login-response', {
+        socket.emit(Messages.TOKEN_LOGIN_RESPONSE, {
             success: true,
             messages: ['Connected successfully !'],
             login_response_data: {
@@ -318,7 +332,7 @@ export default class SocketManager {
         //credentials = {id, password}
 
         if(!this.isSocketAlreadyConnected(socket)){
-            socket.emit('logout-response', {
+            socket.emit(Messages.LOGOUT_RESPONSE, {
                 success: false,
                 messages: ['USER_NOT_LOGGED_IN']
             });
@@ -338,7 +352,7 @@ export default class SocketManager {
 
         //If there is an error
         if (errormsgs.length > 0){
-            socket.emit('delete-account-response', {
+            socket.emit(Messages.DELETE_ACCOUNT_RESPONSE, {
                 success: false,
                 messages: errormsgs
             });
@@ -353,14 +367,14 @@ export default class SocketManager {
         const delete_response = await UserProcessor.deleteUserAsync(credentials.id, credentials.password);
 
         if(!delete_response.statut){
-            socket.emit('delete-account-response', {
+            socket.emit(Messages.DELETE_ACCOUNT_RESPONSE, {
                 success: false,
                 messages: [delete_response.msg]
             });
             return;
         }
 
-        socket.emit('delete-account-response', {
+        socket.emit(Messages.DELETE_ACCOUNT_RESPONSE, {
             success: true
         });
 

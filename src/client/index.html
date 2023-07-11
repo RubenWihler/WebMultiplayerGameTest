@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="./style/main.css">
     <link rel="stylesheet" href="./style/home.css">
     <link rel="stylesheet" href="./style/glass_card.css">
+    <link rel="stylesheet" href="./style/dot_pulse.css">
 </head>
 <body>
     <script src="https://kit.fontawesome.com/1168815fe0.js" crossorigin="anonymous"></script>
@@ -250,7 +251,178 @@
         </div>
 
         <div class="view" id="lobby" style="display: none; visibility: hidden;">
-            <h3>Lobby</h3>
+            <section id="lobby-players" class="glass-card">
+                <h3>Players</h3>
+                <div id="lobby-players-list">
+                    <div class="lobby-player-item glass-card">
+                        <span class="lobby-player-name">1 player1</span>
+                        <span class="lobby-player-status">ready</span>
+                        <div>
+                            <button class="lobby-player-kick-button fill-button"><i class="fas fa-sign-out-alt"></i></button>
+                            <button class="lobby-player-ban-button fill-button"><i class="fas fa-ban"></i></button>
+                        </div>
+                    </div>
+                    <div class="lobby-player-item glass-card">
+                        <span class="lobby-player-name">12345678901234567890</span>
+                        <span class="lobby-player-status">not ready</span>
+                        <div>
+                            <button class="lobby-player-kick-button fill-button"><i class="fas fa-sign-out-alt"></i></button>
+                            <button class="lobby-player-ban-button fill-button"><i class="fas fa-ban"></i></button>
+                        </div>
+                    </div>
+                    <div class="lobby-player-item glass-card">
+                        <span class="lobby-player-name">player1</span>
+                        <span class="lobby-player-status">ready</span>
+                        <div>
+                            <button class="lobby-player-kick-button fill-button"><i class="fas fa-sign-out-alt"></i></button>
+                            <button class="lobby-player-ban-button fill-button"><i class="fas fa-ban"></i></button>
+                        </div>
+                    </div>
+                    <div class="lobby-player-item glass-card">
+                        <span class="lobby-player-name">player1</span>
+                        <span class="lobby-player-status">ready</span>
+                        <div>
+                            <button class="lobby-player-kick-button fill-button"><i class="fas fa-sign-out-alt"></i></button>
+                            <button class="lobby-player-ban-button fill-button"><i class="fas fa-ban"></i></button>
+                        </div>
+                    </div>
+                    <div class="lobby-player-item glass-card">
+                        <span class="lobby-player-name">player1</span>
+                        <span class="lobby-player-status">ready</span>
+                        <div>
+                            <button class="lobby-player-kick-button fill-button"><i class="fas fa-sign-out-alt"></i></button>
+                            <button class="lobby-player-ban-button fill-button"><i class="fas fa-ban"></i></button>
+                        </div>
+                    </div>
+                    <div class="lobby-player-item glass-card">
+                        <span class="lobby-player-name">player1</span>
+                        <span class="lobby-player-status">ready</span>
+                        <div>
+                            <button class="lobby-player-kick-button fill-button"><i class="fas fa-sign-out-alt"></i></button>
+                            <button class="lobby-player-ban-button fill-button"><i class="fas fa-ban"></i></button>
+                        </div>
+                    </div>
+                    <div class="lobby-player-item glass-card">
+                        <span class="lobby-player-name">player1</span>
+                        <span class="lobby-player-status">ready</span>
+                        <div>
+                            <button class="lobby-player-kick-button fill-button"><i class="fas fa-sign-out-alt"></i></button>
+                            <button class="lobby-player-ban-button fill-button"><i class="fas fa-ban"></i></button>
+                        </div>
+                    </div>
+                    <div class="lobby-player-item glass-card">
+                        <span class="lobby-player-name">player1</span>
+                        <span class="lobby-player-status">ready</span>
+                        <div>
+                            <button class="lobby-player-kick-button fill-button"><i class="fas fa-sign-out-alt"></i></button>
+                            <button class="lobby-player-ban-button fill-button"><i class="fas fa-ban"></i></button>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+            <section id="lobby-main" class="glass-card">
+                <div>
+                    <article class="lobby-explanations">
+                        <h4>Waiting for game to start</h4>
+                        <p id="lobby-explanations-text">
+                            You are the host of this lobby.<br>
+                            you can customize the game settings.<br><br>
+                            The game will start when all players are ready.
+                        </p>
+                    </article>
+
+                    <article class="glass-card lobby-settings">
+                        <h4>Settings</h4>
+                        <div id="lobby-settings-list">
+                            <div class="lobby-setting-container toogle">
+                                <span>1 setting name :</span>
+                                <button><i class="fas fa-toggle-on"></i></button>
+                            </div>
+                            <div class="lobby-setting-container number">
+                                <span>setting name :</span>
+                                <input type="number" value="2">
+                            </div>
+                            <div class="lobby-setting-container text">
+                                <span>setting name :</span>
+                                <input type="text">
+                            </div>
+                            <div class="lobby-setting-container toogle">
+                                <span>setting name :</span>
+                                <button><i class="fas fa-toggle-off"></i></button>
+                            </div>
+                            <div class="lobby-setting-container password">
+                                <span>setting name :</span>
+                                <input type="password">
+                            </div>
+                            <div class="lobby-setting-container toogle readonly">
+                                <span>setting name :</span>
+                                <button><i class="fas fa-toggle-on"></i></button>
+                            </div>
+                            <div class="lobby-setting-container toogle">
+                                <span>setting name :</span>
+                                <button><i class="fas fa-toggle-on"></i></button>
+                            </div>
+                            <div class="lobby-setting-container toogle">
+                                <span>setting name :</span>
+                                <button><i class="fas fa-toggle-on"></i></button>
+                            </div>
+                            <div class="lobby-setting-container toogle">
+                                <span>setting name :</span>
+                                <button><i class="fas fa-toggle-on"></i></button>
+                            </div>
+                            <div class="lobby-setting-container toogle">
+                                <span>setting name :</span>
+                                <button><i class="fas fa-toggle-on"></i></button>
+                            </div>
+                            <div class="lobby-setting-container toogle">
+                                <span>setting name :</span>
+                                <button><i class="fas fa-toggle-on"></i></button>
+                            </div>
+                            <div class="lobby-setting-container toogle">
+                                <span>setting name :</span>
+                                <button><i class="fas fa-toggle-on"></i></button>
+                            </div>
+                            <div class="lobby-setting-container toogle">
+                                <span>setting name :</span>
+                                <button><i class="fas fa-toggle-on"></i></button>
+                            </div>
+                            <div class="lobby-setting-container toogle">
+                                <span>setting name :</span>
+                                <button><i class="fas fa-toggle-on"></i></button>
+                            </div>
+                            <div class="lobby-setting-container toogle">
+                                <span>setting name :</span>
+                                <button><i class="fas fa-toggle-on"></i></button>
+                            </div>
+                            <div class="lobby-setting-container toogle">
+                                <span>setting name :</span>
+                                <button><i class="fas fa-toggle-on"></i></button>
+                            </div>
+                        </div>
+
+                    </article>
+
+                </div>
+
+                <footer>
+                    <div id="lobby-code-container">
+                        <button id="lobby-copy-code-button">
+                            <span id="lobby-copy-code-span">kowc-dfwe</span>
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                    <div>
+                        <button id="lobby-leave-button" class="fill-button"><i class="fas fa-door-open"></i></button>
+                        <button id="lobby-ready-button" class="fill-button waiting">
+                            <span>waiting <span>for players</span></span>
+                            <div class="dot-pulse"></div>
+                        </button>
+                    </div>
+                </footer>
+
+
+            </section>
         </div>
 
     </div>

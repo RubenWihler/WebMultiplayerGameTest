@@ -1,5 +1,6 @@
 import UserProcessor from "../database/processor/user_processor.js";
 import ConnectionHandler from "./connection_handler.js";
+import Messages from "./messages.js";
 
 export default class ConnectionsManager{
     private static instance: ConnectionsManager;
@@ -33,7 +34,7 @@ export default class ConnectionsManager{
         });
 
         connections_to_remove.forEach((connection) => {
-            connection.socket.emit("connection-error", {
+            connection.socket.emit(Messages.CONNECTION_ERROR, {
                 code: "OTHER_DEVICE_LOGGED_IN",
             });
 
@@ -50,11 +51,4 @@ export default class ConnectionsManager{
         this.current_connections.splice(index, 1);
         return true;
     }
-
-    private async checkConnectionTokenAsync(connection_data: ConnectionHandler): Promise<Boolean> {
-        const userId = connection_data.connection_data.user.userId;
-        const token = connection_data.connection_data.token;
-        return await UserProcessor.checkUserTokenAsync(userId, token);
-    }
-
 }

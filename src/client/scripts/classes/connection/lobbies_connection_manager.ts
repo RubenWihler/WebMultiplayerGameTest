@@ -18,6 +18,7 @@ export default class LobbiesConnectionManager{
 
     public readonly onLobbyJoined: ObservableEvent<LobbyData> = new ObservableEvent<LobbyData>();
     public readonly onLobbyLeft: ObservableEvent<void> = new ObservableEvent<void>();
+    public readonly onLobbiesRefresh: ObservableEvent<any[]> = new ObservableEvent<any[]>();
 
 
     public static get instance(): LobbiesConnectionManager {
@@ -262,7 +263,7 @@ export default class LobbiesConnectionManager{
         if (result == null){
             return {
                 success: false,
-                messages: ["Server error"]
+                messages: ["SERVER_ERROR"]
             };
         }
 
@@ -284,7 +285,7 @@ export default class LobbiesConnectionManager{
         if (LobbiesConnectionManager.instance.isMakingOperation){
             return {
                 success: false,
-                messages: ["Already making an operation on a lobby"]
+                messages: ["ALEADY_MAKING_OPERATION"]
             };
         }
 
@@ -292,7 +293,7 @@ export default class LobbiesConnectionManager{
         if (!ConnectionManager.isConnected){
             return {
                 success: false,
-                messages: ["Not connected to server"]
+                messages: ["NOT_CONNECTED"]
             };
         }
 
@@ -300,7 +301,7 @@ export default class LobbiesConnectionManager{
         if (!LobbiesConnectionManager.instance.inLobby){
             return {
                 success: false,
-                messages: ["Not in a lobby"]
+                messages: ["NOT_IN_A_LOBBY"]
             };
         }
 
@@ -315,7 +316,7 @@ export default class LobbiesConnectionManager{
         if (result == null){
             return {
                 success: false,
-                messages: ["Server error"]
+                messages: ["SERVER_ERROR"]
             };
         }
 
@@ -373,6 +374,11 @@ export default class LobbiesConnectionManager{
 
             inst.onLobbyLeave();
             console.log(`[+] left lobby`);
+        });
+
+        // Lobby list
+        ConnectionManager.Instance.socket.on('lobby-refresh', (data) => {
+            inst.onLobbiesRefresh.notify(data);
         });
     }
 }

@@ -118,6 +118,13 @@ const element_lobby_password_return_button : HTMLButtonElement = document.getEle
 //#endregion
 
 //#region Lobby
+const element_lobby_leave_button : HTMLButtonElement = document.getElementById('lobby-leave-button') as HTMLButtonElement;
+const element_lobby_ready_button : HTMLButtonElement = document.getElementById('lobby-ready-button') as HTMLButtonElement;
+const element_lobby_copy_code_button : HTMLButtonElement = document.getElementById('lobby-copy-code-button') as HTMLButtonElement;
+const element_lobby_copy_code_span : HTMLSpanElement = document.getElementById('lobby-copy-code-span') as HTMLSpanElement;
+
+const element_lobby_players_list : HTMLDivElement = document.getElementById('lobby-players-list') as HTMLDivElement;
+const element_lobby_settings_list : HTMLDivElement = document.getElementById('lobby-settings-list') as HTMLDivElement;
 
 //#endregion
 
@@ -211,7 +218,7 @@ view_home.onDisplay.subscribe((view) => {
     setHomeViewActive('join');
 
     //refresh lobbies
-    refreshLobbiesList();
+    sendRefreshLobbiesList();
 });
 
 //delete account events
@@ -238,7 +245,7 @@ view_lobby_password.onHide.subscribe((view) => {
 
 //lobby events
 view_lobby.onDisplay.subscribe((view) => {
-    
+    element_lobby_copy_code_span.innerText = LobbiesConnectionManager.currentLobbyData.id.toString();
 });
 
 
@@ -335,7 +342,7 @@ const home_views = new Map<string, {view: HTMLDivElement, button: HTMLButtonElem
 
 // home join
 element_home_join_refresh_button.addEventListener('click', () => {
-    refreshLobbiesList();
+    sendRefreshLobbiesList();
 });
 element_home_panel_join_button.addEventListener('click', () => {
     setHomeViewActive('join');
@@ -572,6 +579,7 @@ element_delete_account_form.addEventListener('submit', (event) => {
     const password = element_delete_account_password.value;
 
     AccountConnectionManager.sendDeleteAccountRequest(id, password);
+    event.preventDefault();
 });
 element_delete_account_return_button.addEventListener('click', () => {
     cleanForms();
@@ -652,6 +660,30 @@ element_lobby_password_return_button.addEventListener('click', () => {
 
 //#endregion
 
+//#region lobby view event listeners
+
+element_lobby_leave_button.addEventListener('click', (event) => {
+    if (!LobbiesConnectionManager.instance.inLobby) return;
+    LobbiesConnectionManager.leaveLobby()
+    .then((response) => {
+        if (!response.success) {
+            alert('Lobby leave error :\n' + response.messages.join('\n'));
+        }
+    })
+    .catch((error) => {
+        alert('Lobby leave error :\n' + error);
+    });
+});
+
+element_lobby_copy_code_button.addEventListener('click', (event) => {
+    if (!LobbiesConnectionManager.instance.inLobby) return;
+
+    const url = `${window.location.origin}/?lobby=${LobbiesConnectionManager.currentLobbyData.id}`;
+
+    navigator.clipboard.writeText(url);
+});
+
+//#endregion
 
 //#endregion
 
@@ -921,7 +953,10 @@ LobbiesConnectionManager.instance.onLobbyLeft.subscribe(() => {
     removeParamFromUrl('lobby');
     console.log('[+] Lobby left');
 });
-
+LobbiesConnectionManager.instance.onLobbiesRefresh.subscribe((lobbies: any[]) => {
+    if (lobbies == null || lobbies == undefined) return;
+    refreshLobbiesList(lobbies);
+});
 
 
 //#endregion
@@ -1006,7 +1041,7 @@ function checkForParam(paramName: string) : string | null{
  * refresh the lobbies list
  * @returns 
  */
-async function refreshLobbiesList() : Promise<void>{
+async function sendRefreshLobbiesList() : Promise<void>{
     console.log('refreshing lobbies list...');
     const result = await LobbiesConnectionManager.getLobbiesList();
 
@@ -1015,7 +1050,9 @@ async function refreshLobbiesList() : Promise<void>{
         return;
     }
 
-    const lobbies = result.lobbies;
+    refreshLobbiesList(result.lobbies);
+}
+function refreshLobbiesList(lobbies: any[]){
 
     //clear lobbies list and elements
     element_home_join_lobbies_list.innerHTML = '';
@@ -1093,6 +1130,5 @@ function checkConnection() : boolean {
 
 
 //#endregion
-
 
 checkLobbyIdFromUrl();
