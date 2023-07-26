@@ -20,6 +20,7 @@ export class ConnectionStatus {
 export default class ConnectionHandler {
     connection_data: ConnectionData;
     private _status : ConnectionStatus;
+    private _connected : boolean;
     socket : socketIO.Socket;
 
     onConnect : ObservableEvent<ConnectionHandler> = new ObservableEvent();
@@ -31,6 +32,7 @@ export default class ConnectionHandler {
     constructor() {
         this.connection_data = null;
         this._status = ConnectionStatus.DISCONNECTED;
+        this._connected = false;
         this.socket = null;
 
         this._hardCodedMessages = new Map<string, (data: any) => void>([
@@ -54,6 +56,10 @@ export default class ConnectionHandler {
         this.onStatutChanged.notify(this._status);
     }
 
+    public get connected() : boolean {
+        return this._connected;
+    }
+
     /**
      * Set the connection data and change the statut to connected.
      * @param connection_data the connection data to set.
@@ -61,9 +67,10 @@ export default class ConnectionHandler {
      * @returns 
      */
     connect(connection_data: ConnectionData, socket: socketIO.Socket) {
-        if (this._status == ConnectionStatus.CONNECTED) return;
+        if (this.connected) return;
         this.connection_data = connection_data;
         this._status = ConnectionStatus.CONNECTED;
+        this._connected = true;
         this.socket = socket;
         
         // Add all the listening messages for logged connections.
@@ -78,9 +85,10 @@ export default class ConnectionHandler {
      * Also make a call to the ConnectionsManager to remove the connection.
      */
     disconnect() {
-        if (this._status == ConnectionStatus.DISCONNECTED) return;
+        if (!this.connected) return;
         
         this._status = ConnectionStatus.DISCONNECTED;
+        this._connected = false;
 
         this.removeListeningMessage();
         

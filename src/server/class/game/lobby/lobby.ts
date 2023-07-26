@@ -142,7 +142,7 @@ export default class Lobby {
                 error: "ALLREADY_IN_A_LOBBY"
             };
         }
-        if (connection.status !== ConnectionStatus.CONNECTED) {
+        if (!connection.connected) {
             return {
                 success: false,
                 error: "LOBBY_CONNECTION_ERROR"
@@ -215,7 +215,7 @@ export default class Lobby {
             }
         }
 
-        connection.socket.emit("lobby-joined", paquet);
+        connection.socket.emit(Messages.LOBBY_JOINED, paquet);
         
         return {
             success: true
@@ -234,8 +234,10 @@ export default class Lobby {
         this._connections.delete(connection.connection_data.user.userId);
         this.onConnectionLeft(connection);
 
-        if (connection.status === ConnectionStatus.CONNECTED) {
-            connection.socket.emit("lobby-left", {
+        //if the connection is still connected, send a message to notify it that it left the lobby.
+        //the if statement is here to prevent the server from sending a message to a disconnected socket.
+        if (connection.connected) {
+            connection.socket.emit(Messages.LOBBY_LEFT, {
                 success: true,
                  lobby_data: {
                      id: this._id,
@@ -243,6 +245,9 @@ export default class Lobby {
                  }
              }); 
         }
+
+        //set the connection status to connected or disconnected depending on if the connection is still connected or not.
+        connection.status = connection.connected ? ConnectionStatus.CONNECTED : ConnectionStatus.DISCONNECTED;
 
         // unbind messages of the connection to the lobby.
         this.unbindMessageEvents(connection);

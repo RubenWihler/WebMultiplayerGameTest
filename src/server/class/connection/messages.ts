@@ -31,6 +31,9 @@ export default class Messages{
     public static readonly LOBBY_USERS_CHANGED = "lobby-users-changed";
     public static readonly LOBBY_KICKED = "lobby-kicked";
     public static readonly LOBBY_BANNED = "lobby-banned";
+    
+    public static readonly LOBBY_JOINED = "lobby-joined";
+    public static readonly LOBBY_LEFT = "lobby-left";
 
     public static readonly LOBBY_LIST = "lobby-list";
     public static readonly LOBBY_LIST_RESPONSE = "lobby-list-response";

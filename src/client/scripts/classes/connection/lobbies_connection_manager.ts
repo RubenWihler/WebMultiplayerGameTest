@@ -307,6 +307,8 @@ export default class LobbiesConnectionManager{
 
         LobbiesConnectionManager._instance._leaving_lobby = true;
 
+        console.log('[+] Leaving lobby...');
+
         const operation = new RequestOperation<any, any>("lobby-leave", "lobby-leave-response", {});
         const result : any = await operation.start();
 
