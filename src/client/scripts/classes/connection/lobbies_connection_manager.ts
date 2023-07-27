@@ -19,6 +19,8 @@ export default class LobbiesConnectionManager{
     public readonly onLobbyJoined: ObservableEvent<LobbyData> = new ObservableEvent<LobbyData>();
     public readonly onLobbyLeft: ObservableEvent<void> = new ObservableEvent<void>();
     public readonly onLobbiesRefresh: ObservableEvent<any[]> = new ObservableEvent<any[]>();
+    public readonly onLobbySettingsChanged: ObservableEvent<any> = new ObservableEvent<any>();
+    public readonly onLobbyUsersChanged: ObservableEvent<any[]> = new ObservableEvent<any[]>();
 
 
     public static get instance(): LobbiesConnectionManager {
@@ -307,8 +309,6 @@ export default class LobbiesConnectionManager{
 
         LobbiesConnectionManager._instance._leaving_lobby = true;
 
-        console.log('[+] Leaving lobby...');
-
         const operation = new RequestOperation<any, any>("lobby-leave", "lobby-leave-response", {});
         const result : any = await operation.start();
 
@@ -346,6 +346,8 @@ export default class LobbiesConnectionManager{
         );
 
         this.onLobbyJoined.notify(this._currentLobbyData);
+        this.onLobbySettingsChanged.notify(this._currentLobbyData);
+        this.onLobbyUsersChanged.notify(this._currentLobbyData.users);
     }
     private onLobbyLeave(){
         this._currentLobbyData = null;
@@ -353,12 +355,29 @@ export default class LobbiesConnectionManager{
         console.log('[+] Left lobby with success.');
 
     }
+    private onLobbySettingsChange(settings: any){
+        this._currentLobbyData.owner_id = settings.owner_id;
+        this._currentLobbyData.max_players = settings.max_players;
+        this._currentLobbyData.using_password = settings.using_password;
+        this._currentLobbyData.name = settings.name;
+        
+        //in case of the owner changed for ui etc...
+        // -> ~just refresh the users list
+        this.onLobbyUsersChange(this._currentLobbyData.users);
+
+        this.onLobbySettingsChanged.notify(settings);
+    }
+    private onLobbyUsersChange(users: any[]){
+        this._currentLobbyData.users = users;
+        this.onLobbyUsersChanged.notify(users);
+    }
 
     private bindLobbyMessages(){
         const inst = LobbiesConnectionManager.instance;
 
         // Join a lobby
-        ConnectionManager.Instance.socket.on('lobby-joined', (data) => {
+        ConnectionManager.Instance.socket.on('lobby-joined', 
+        (data) => {
             if (!data.success){
                 console.log(`[!] failed to join lobby : ${data.messages}`);
                 return;
@@ -368,7 +387,8 @@ export default class LobbiesConnectionManager{
         });
 
         // Leave a lobby
-        ConnectionManager.Instance.socket.on('lobby-left', (data) => {
+        ConnectionManager.Instance.socket.on('lobby-left', 
+        (data) => {
             if (!data.success){
                 console.log(`[!] failed to leave lobby : ${data.messages}`);
                 return;
@@ -379,8 +399,24 @@ export default class LobbiesConnectionManager{
         });
 
         // Lobby list
-        ConnectionManager.Instance.socket.on('lobby-refresh', (data) => {
+        ConnectionManager.Instance.socket.on('lobby-refresh', 
+        (data) => {
             inst.onLobbiesRefresh.notify(data);
+        });
+
+        // Lobby settings changed
+        ConnectionManager.Instance.socket.on('lobby-settings-changed', 
+        (data : { id: string, name: string, using_password: boolean, max_players: number, owner_id: number }) => {
+            inst.onLobbySettingsChange(data);
+
+            console.log(`[+] lobby settings changed.`);
+        });
+
+        // Lobby users changed
+        ConnectionManager.Instance.socket.on('lobby-users-changed',
+        (data: any[]) => {
+            inst.onLobbyUsersChange(data);
+            console.log(`[+] lobby users changed.`);
         });
     }
 }

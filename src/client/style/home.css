@@ -667,6 +667,9 @@ form{
     white-space: nowrap;
     overflow: hidden;
 }
+.lobby-player-name.current-client{
+    font-weight: 900;
+}
 .lobby-player-status{
     font-size: 1rem;
     white-space: nowrap;

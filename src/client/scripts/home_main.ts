@@ -6,10 +6,12 @@ import ConnectionErrorsTraductor from './classes/connection/connection_errors_tr
 import LobbiesConnectionManager from './classes/connection/lobbies_connection_manager.js';
 import LobbyListItem from './classes/ui/elements/lobby_list_item.js';
 import { LobbyData } from './classes/connection/types/lobbies_types.js';
+import PlayerListItem from './classes/ui/elements/player_list_item.js';
 
 var trying_to_join_lobby: boolean = false;
 var refresh_on_disconnect = true;
 var lobbies_elements_list: LobbyListItem[] = [];
+var lobby_player_elements_list: PlayerListItem[] = [];
 var disconnected_refresh_interval: any = null;
 
 //#region ----- html elements -----
@@ -939,7 +941,41 @@ function checkLobbyIdFromUrl() : void{
 }
 
 function refreshPlayersList(users: {id: number, name: string, status: string}[]) {
-    //todo : refresh the players list
+    let owner_id = LobbiesConnectionManager.currentLobbyData.owner_id;
+    let client_user_id = AccountConnectionManager.userData.userId;
+    let haveOwnerPrivilege = owner_id === client_user_id;
+
+    //clear players list and elements
+    lobby_player_elements_list.forEach((item) => {
+        item.dispose();
+    });
+
+    lobby_player_elements_list = [];
+    element_lobby_players_list.innerHTML = '';
+
+    users.forEach((user) => {
+        const is_client = user.id === client_user_id;
+
+        const item = new PlayerListItem(
+            user.id,
+            user.name,
+            user.status,
+            is_client,
+            haveOwnerPrivilege,
+            owner_id
+        );
+
+        item.onKick.subscribe((item) => {
+            //#todo kick player
+        });
+
+        item.onBan.subscribe((item) => {
+            //#todo ban player
+        });
+
+        element_lobby_players_list.appendChild(item.element);
+        lobby_player_elements_list.push(item);
+    });
 }
 
 LobbiesConnectionManager.instance.onLobbyJoined.subscribe((lobby_data: LobbyData) => {
@@ -955,11 +991,13 @@ LobbiesConnectionManager.instance.onLobbyLeft.subscribe(() => {
     ViewsManager.setActiveView('home');
     trying_to_join_lobby = false;
     removeParamFromUrl('lobby');
-    console.log('[+] Lobby left');
 });
 LobbiesConnectionManager.instance.onLobbiesRefresh.subscribe((lobbies: any[]) => {
     if (lobbies == null || lobbies == undefined) return;
     refreshLobbiesList(lobbies);
+});
+LobbiesConnectionManager.instance.onLobbyUsersChanged.subscribe((users: {id: number, name: string, status: string}[]) => {
+    refreshPlayersList(users);
 });
 
 

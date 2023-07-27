@@ -91,10 +91,11 @@ export default class Lobby {
     /**
      * Returns the current's lobby settings.
      */
-    public get settings(): { id: string, name: string, max_players: number, owner_id: number } {
+    public get settings(): { id: string, name: string, using_password: boolean, max_players: number, owner_id: number } {
         return {
             id: this._id,
             name: this._name,
+            using_password: this.using_password,
             max_players: this._max_players,
             owner_id: this._owner_id
         };
@@ -103,13 +104,17 @@ export default class Lobby {
      * Returns the list of users
      */
     public get users(): { id: number, name: string, status: ConnectionStatus }[] {
-        return this.connections.map((connection: ConnectionHandler) => {
-            return {
+        const result = [];
+
+        this.connections.forEach((connection: ConnectionHandler) => {
+            result.push({
                 id: connection.connection_data.user.userId,
                 name: connection.connection_data.user.username,
                 status: connection.status
-            };
+            });
         });
+
+        return result;
     }
 
     public startGame(): any {
@@ -196,13 +201,6 @@ export default class Lobby {
         this.onNewConnection(connection);
 
 
-        const users = [];
-        for (let connection of this._connections.values()) {
-            users.push({
-                user_id: connection.connection_data.user.userId,
-                username: connection.connection_data.user.username,
-            });
-        }
         const paquet = {
             success: true,
             lobby_data: {
@@ -211,7 +209,7 @@ export default class Lobby {
                 using_password: this.using_password,
                 max_players: this._max_players,
                 owner_id: this._owner_id,
-                users: users
+                users: this.users
             }
         }
 

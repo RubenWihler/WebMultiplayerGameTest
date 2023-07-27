@@ -112,6 +112,17 @@ export default class AccountConnectionManager {
         ConnectionManager.send('delete-account', paquet);
     }
 
+    /**
+     * Check if the given id is the id of the logged user.
+     * if the user is not logged, return false.
+     * @param id the user id to check
+     * @returns if the given id is the id of the logged user.
+     */
+    public static isClient(id: number): boolean {
+        if (!this.isLogged) return false;
+        return this.userData.userId === id;
+    }
+
     /*---------- connection and disconnection ----------*/
     private connect(UserData: UserData, token: string){
         if (this.isLogged) return;
