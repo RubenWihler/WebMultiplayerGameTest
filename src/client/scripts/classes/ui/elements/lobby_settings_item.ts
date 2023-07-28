@@ -47,22 +47,25 @@ export default class SettingsElement{
                 input = document.createElement('input');
                 input.type = 'number';
                 input.value = this._setting.value;
-                input.addEventListener('focusout', () => {
+                input.addEventListener('blur', () => {
                     this._setting.value = input.value;
                     this.update();
                 });
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter'){
+                        input.blur();
+                    }
+                });
+                input.addEventListener('change', (e) => {
+                    element.classList.toggle('error', !this._setting.checkConstraints(input.value));
+                });
 
                 if (this._setting.constraints !== undefined){
-                    const min = this._setting.constraints.find(c => {
-                        c.constraintsDictionary.find(d => d.name === 'min') !== undefined;
-                    });
+                    const min = this._setting.getConstraint('min');
+                    const max = this._setting.getConstraint('max');
 
-                    const max = this._setting.constraints.find(c => {
-                        c.constraintsDictionary.find(d => d.name === 'max') !== undefined;
-                    });
-
-                    if (min !== undefined) input.min = min.getValue('min');
-                    if (max !== undefined) input.max = max.getValue('max');
+                    if (min !== null) input.min = min.getValue('min') + 1;
+                    if (max !== null) input.max = Number(max.getValue('max') - 1).toString();
                 }
 
                 break;
@@ -72,22 +75,26 @@ export default class SettingsElement{
                 input = document.createElement('input');
                 input.type = 'text';
                 input.value = this._setting.value;
-                input.addEventListener('focusout', () => {
+                input.addEventListener('blur', () => {
                     this._setting.value = input.value;
                     this.update();
                 });
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter'){
+                        input.blur();
+                        e.preventDefault();
+                        return;
+                    }
+
+                    element.classList.toggle('error', !this._setting.checkConstraints(input.value));
+                });
 
                 if (this._setting.constraints !== undefined){
-                    const min = this._setting.constraints.find(c => {
-                        c.constraintsDictionary.find(d => d.name === 'min') !== undefined;
-                    });
+                    const min = this._setting.getConstraint('min');
+                    const max = this._setting.getConstraint('max');
 
-                    const max = this._setting.constraints.find(c => {
-                        c.constraintsDictionary.find(d => d.name === 'max') !== undefined;
-                    });
-
-                    if (min !== undefined) input.minLength = min.getValue('min');
-                    if (max !== undefined) input.maxLength = max.getValue('max');
+                    if (min !== null) input.minLength = min.getValue('min') + 1;
+                    if (max !== null) input.maxLength = max.getValue('max') - 1;
                 }
 
                 break;
@@ -97,22 +104,26 @@ export default class SettingsElement{
                 input = document.createElement('input');
                 input.type = 'password';
                 input.value = this._setting.value;
-                input.addEventListener('focusout', () => {
+                input.addEventListener('blur', () => {
                     this._setting.value = input.value;
                     this.update();
                 });
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter'){
+                        input.blur();
+                        e.preventDefault();
+                        return;
+                    }
+
+                    element.classList.toggle('error', !this._setting.checkConstraints(input.value));
+                });
 
                 if (this._setting.constraints !== undefined){
-                    const min = this._setting.constraints.find(c => {
-                        c.constraintsDictionary.find(d => d.name === 'min') !== undefined;
-                    });
+                    const min = this._setting.getConstraint('min');
+                    const max = this._setting.getConstraint('max');
 
-                    const max = this._setting.constraints.find(c => {
-                        c.constraintsDictionary.find(d => d.name === 'max') !== undefined;
-                    });
-
-                    if (min !== undefined) input.minLength = min.getValue('min');
-                    if (max !== undefined) input.maxLength = max.getValue('max');
+                    if (min !== null) input.minLength = min.getValue('min') + 1;
+                    if (max !== null) input.maxLength = max.getValue('max') - 1;
                 }
 
                 break;
@@ -151,5 +162,7 @@ export default class SettingsElement{
                 input.value = this._setting.value;
                 break;
         }
+
+        this._element.classList.toggle('error', !this._setting.checkConstraints(input.value));
     }
 }

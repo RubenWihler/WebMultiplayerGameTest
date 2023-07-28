@@ -839,6 +839,13 @@ form{
     white-space: nowrap;
     font-size: clamp(0.8rem, 1.5vw, 1.2rem);
 }
+.lobby-setting-container.error>input,
+.lobby-setting-container.error>span{
+    color: var(--error-color) !important;
+}
+.lobby-setting-container.error>input{
+    border: solid 1.5px var(--error-color) !important;
+}
 .lobby-setting-container.readonly>button,
 .lobby-setting-container.readonly>input{
     color: #887ebd !important;
@@ -872,6 +879,16 @@ form{
     text-align: left;
     color: var(--primary-color);
 }
+.lobby-setting-container.number.readonly>input,
+.lobby-setting-container.text.readonly>input,
+.lobby-setting-container.password.readonly>input{
+    border: solid 1.5px #887ebd !important;
+    cursor: not-allowed !important;
+}
+.lobby-setting-container.toogle.readonly>button{
+    cursor: not-allowed !important;
+}
+
 
 /*----- lobby-main-footer -----*/
 #lobby-main>footer{

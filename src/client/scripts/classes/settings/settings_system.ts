@@ -22,9 +22,7 @@ class Setting{
         this.type = type;
         this._value = value;
 
-        if (this.constraints !== undefined && this.constraints !== null) this.constraints = constraints;
-        else this.constraints = [];
-
+        this.constraints = constraints == undefined || constraints == null ? [] : constraints;
         this.onValueChanged = new ObservableEvent<any>();
     }
 
@@ -39,10 +37,27 @@ class Setting{
         }
     }
 
-    private checkConstraints(value: any): boolean{
+    public checkConstraints(value: any): boolean{
         if (this.constraints.length === 0) return true;
 
         return this.constraints.every(c => c.check(value));
+    }
+
+    public getConstraint(name: string): SettingConstraint{
+        let result = null;
+
+        this.constraints.forEach(c => {
+            c.constraintsDictionary.forEach(d => {
+                if (d.name.localeCompare(name) == 0){
+                    console.log(`Founded constraint ${name} in ${c}!`);
+                    result = c;
+                    return;
+                }
+            });
+            if (result != null) return;
+        });
+
+        return result;
     }
 }
 

@@ -1,5 +1,4 @@
 import ConnectionHandler, { ConnectionStatus } from "../../connection/connection_handler.js";
-import HashTools from "../../global_types/hash_tools.js";
 import ObservableEvent from "../../event_system/observable_event.js";
 import BanWord from "../../global_types/ban_word.js";
 import LobbiesManager from "./lobbies_manager.js";
@@ -11,7 +10,7 @@ export default class Lobby {
 
     private readonly _id: string;
     private readonly _connections: Map<number, ConnectionHandler>;
-    private _password_hash: string;
+    private _password: string;
     private _max_players: number;
     private _name: string;
     private _owner_id: number;
@@ -34,7 +33,7 @@ export default class Lobby {
         this._owner_id = null;
         this._banned_user_ids = new Set<number>();
         this._connections = new Map<number, ConnectionHandler>();
-        this._password_hash = password != null ? HashTools.hash(password) : null;
+        this._password = password;
     }
 
     /**
@@ -54,13 +53,13 @@ export default class Lobby {
      * If the lobby has no password, returns null.
      */
     public get password(): string {
-        return this._password_hash;
+        return this._password;
     }
     /**
      * Returns true if the lobby has a password. False otherwise.
      */
     public get using_password(): boolean {
-        return this._password_hash !== null;
+        return this._password !== null;
     }
     /**
      * returns all the connections in the lobby.
@@ -91,11 +90,12 @@ export default class Lobby {
     /**
      * Returns the current's lobby settings.
      */
-    public get settings(): { id: string, name: string, using_password: boolean, max_players: number, owner_id: number } {
+    public get settings(): { id: string, name: string, using_password: boolean, password: string, max_players: number, owner_id: number } {
         return {
             id: this._id,
             name: this._name,
             using_password: this.using_password,
+            password: this._password,
             max_players: this._max_players,
             owner_id: this._owner_id
         };
@@ -168,7 +168,7 @@ export default class Lobby {
                 };
             }
 
-            if (!HashTools.compareHash(password, this._password_hash)){
+            if (password !== this._password){
                 return {
                     success: false,
                     error: "LOBBY_PASSWORD_INCORRECT"
@@ -207,6 +207,7 @@ export default class Lobby {
                 id: this._id,
                 name: this._name,
                 using_password: this.using_password,
+                password: this._password,
                 max_players: this._max_players,
                 owner_id: this._owner_id,
                 users: this.users
@@ -310,7 +311,7 @@ export default class Lobby {
         const errors = [];
 
         if (new_password === null || new_password.length === 0) {
-            this._password_hash = null;
+            this._password = null;
             this.onPasswordChanged(null);
             return {
                 success: true
@@ -331,8 +332,8 @@ export default class Lobby {
             };
         }
 
-        this._password_hash = HashTools.hash(new_password);
-        this.onPasswordChanged(this._password_hash);
+        this._password = new_password;
+        this.onPasswordChanged(this._password);
 
         return {
             success: true

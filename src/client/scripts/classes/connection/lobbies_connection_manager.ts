@@ -661,6 +661,7 @@ export default class LobbiesConnectionManager{
             data.id,
             data.name,
             data.using_password,
+            data.password,
             data.max_players,
             data.owner_id,
             data.users
@@ -685,6 +686,7 @@ export default class LobbiesConnectionManager{
         this._currentLobbyData.owner_id = settings.owner_id;
         this._currentLobbyData.max_players = settings.max_players;
         this._currentLobbyData.using_password = settings.using_password;
+        this._currentLobbyData.password = settings.password;
         this._currentLobbyData.name = settings.name;
         
         //in case of the owner changed for ui etc...

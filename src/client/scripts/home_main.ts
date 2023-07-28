@@ -131,6 +131,8 @@ const element_lobby_copy_code_span : HTMLSpanElement = document.getElementById('
 const element_lobby_players_list : HTMLDivElement = document.getElementById('lobby-players-list') as HTMLDivElement;
 const element_lobby_settings_list : HTMLDivElement = document.getElementById('lobby-settings-list') as HTMLDivElement;
 
+const element_lobby_explanations_text : HTMLParagraphElement = document.getElementById('lobby-explanations-text') as HTMLParagraphElement;
+
 //#endregion
 
 //#endregion
@@ -998,7 +1000,7 @@ function refreshSettingsList(){
     const name = new Setting(
         'Name',
         SettingsType.TEXT,
-        [SettingConstraint.TEXT_RANGE(2, 25)],
+        [SettingConstraint.TEXT_RANGE(2, 26)],
         LobbiesConnectionManager.currentLobbyData.name
     );
 
@@ -1020,7 +1022,7 @@ function refreshSettingsList(){
     const max_players = new Setting(
         'Max players',
         SettingsType.NUMBER,
-        [SettingConstraint.NUMBER_RANGE(2, 8)],
+        [SettingConstraint.NUMBER_RANGE(1, 9)],
         LobbiesConnectionManager.currentLobbyData.max_players
     );
 
@@ -1067,8 +1069,8 @@ function refreshSettingsList(){
         const password = new Setting(
             'Password',
             SettingsType.PASSWORD,
-            [SettingConstraint.TEXT_RANGE(3, 25)],
-            LobbiesConnectionManager.currentLobbyData.using_password ? '********' : '',
+            [SettingConstraint.TEXT_RANGE(2, 26)],
+            LobbiesConnectionManager.currentLobbyData.using_password ? LobbiesConnectionManager.currentLobbyData.password : ''
         );
 
         password.onValueChanged.subscribe(async (value) => {
@@ -1111,6 +1113,11 @@ LobbiesConnectionManager.instance.onLobbiesRefresh.subscribe((lobbies: any[]) =>
 });
 LobbiesConnectionManager.instance.onLobbyUsersChanged.subscribe((users: {id: number, name: string, status: string}[]) => {
     refreshPlayersList(users);
+    const explanations_text = LobbiesConnectionManager.currentLobbyData.owner_id == AccountConnectionManager.userData.userId ? 
+    `You are the owner of this lobby.<br><br> You can promote, kick, or ban players and change the lobby settings.<br><br>The game will start when all players are ready.` 
+    : `You are currently in a lobby.<br><br> You can view the lobby settings but not modify them.<br><br>The game will start when all players are ready.`;
+    element_lobby_explanations_text.innerHTML = explanations_text;
+
 });
 LobbiesConnectionManager.instance.onLobbySettingsChanged.subscribe(() => {
     refreshSettingsList();
