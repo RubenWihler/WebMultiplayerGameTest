@@ -648,7 +648,7 @@ form{
     display: flex;
     flex-direction: row;
     align-items: center;
-    justify-content: space-between;
+    justify-content: space-evenly;
     height: 70px;
     min-height: 70px;
     width: 80%;
@@ -662,12 +662,12 @@ form{
 }
 .lobby-player-name{
     font-size: 0.9rem;
-    width: 35%;
-    font-weight: 700;
+    font-weight: 600;
     white-space: nowrap;
     overflow: hidden;
 }
 .lobby-player-name.current-client{
+    font-size: 1rem;
     font-weight: 900;
 }
 .lobby-player-status{
@@ -682,53 +682,69 @@ form{
     justify-content: flex-end;
     height: 100%;
 }
-.lobby-player-item>div>button:first-child{
+.lobby-player-item>div>button:first-child,
+.lobby-player-item>div>button:nth-child(2){
     margin-right: 5%;
 }
 .lobby-player-kick-button,
-.lobby-player-ban-button
-{
-    width:  42px;
-    height: 42px;
-    border-radius: 7px;
+.lobby-player-ban-button,
+.lobby-player-promote-button{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width:  32px;
+    height: 32px;
+    border-radius: 7.5px;
+    flex-direction: row;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+.lobby-player-kick-button,
+.lobby-player-ban-button{
     color: var(--error-color) !important;
     border: solid 2px var(--error-color) !important;
-    font-size: 1.2rem;
-    font-weight: 700;
+}
+.lobby-player-promote-button{
+    color: var(--primary-color) !important;
+    border: solid 2px var(--primary-color) !important;
 }
 .lobby-player-kick-button:hover,
 .lobby-player-ban-button:hover{
     color: white !important;
     background-color: var(--error-color) !important;
 }
+.lobby-player-promote-button:hover{
+    color: white !important;
+    background-color: var(--primary-color) !important;
+}
 
 @container lobby-players-list (max-width: 350px){
     .lobby-player-name{
         font-size: 0.7rem;
     }
+    .lobby-player-name.current-client{
+        font-size: 0.8rem;
+    }
     .lobby-player-status{
         font-size: 0.8rem;
     }
     .lobby-player-kick-button,
-    .lobby-player-ban-button
-    {
-        width:  32px;
-        height: 33px;
-        font-size: 1rem;
+    .lobby-player-ban-button,
+    .lobby-player-promote-button{
+        width:  25px;
+        height: 25px;
+        font-size: 0.6rem;
     }
     @container lobby-players-list (max-width: 250px){
-        .lobby-player-name{
-            font-size: 0.7rem;
-        }
         .lobby-player-status{
             font-size: 0.6rem;
         }
         .lobby-player-kick-button,
-        .lobby-player-ban-button
-        {
-            width:  26px;
-            height: 26px;
-            font-size: 0.8rem;
+        .lobby-player-ban-button,
+        .lobby-player-promote-button{
+            width:  20px;
+            height: 20px;
+            font-size: 0.5rem;
         }
     }
 }
@@ -787,10 +803,18 @@ form{
     margin-bottom: 2%;
 }
 .lobby-settings{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: start !important;
     border-radius: 16px;
     width: 40% !important;
     padding-left: 2.5%;
     padding-right: 2.5%;
+}
+.lobby-settings>h4{
+    margin-top: 8%;
+    margin-bottom: 13%;
 }
 .lobby-settings>div{
     display: flex;
@@ -871,7 +895,7 @@ form{
     margin-right: 2%;
 }
 #lobby-main>footer>div:last-child{
-    margin-left: 2%;
+    margin-right: 2%;
 }
 #lobby-code-container{
     display: flex;
@@ -911,18 +935,18 @@ form{
     flex-direction: row;
     align-items: center;
     justify-content: center;
-    width: 28%;
+    width: 20%;
     height: 50px;
     padding-left: 2%;
     padding-right: 2%;
     border-radius: 7px;
     font-size: 1.3rem;
-    color: var(--error-color) !important;
-    border: solid 2px var(--error-color) !important;
+    color: var(--primary-color) !important;
+    border: solid 2px var(--primary-color) !important;
 }
 #lobby-leave-button:hover{
     color: white !important;
-    background-color: var(--error-color);
+    background-color: var(--primary-color);
 }
 #lobby-ready-button{
     container-type: inline-size;
@@ -931,7 +955,7 @@ form{
     flex-direction: row;
     align-items: center;
     justify-content: space-evenly;
-    width: 68%;
+    width: 75%;
     height: 50px;
     padding-left: 2%;
     padding-right: 2%;

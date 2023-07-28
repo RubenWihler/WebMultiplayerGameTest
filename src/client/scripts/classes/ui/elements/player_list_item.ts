@@ -11,6 +11,7 @@ export default class PlayerListItem {
 
     public readonly onKick: ObservableEvent<number>;
     public readonly onBan: ObservableEvent<number>;
+    public readonly onPromote: ObservableEvent<number>;
 
     /**
      * Return the HTML element of the player list item.
@@ -26,6 +27,7 @@ export default class PlayerListItem {
         this._isClient = isClient;
         this._ownerId = ownerId;
         this._haveOwnerPrivilege = haveOwnerPrivilege;
+        this.onPromote = new ObservableEvent<number>();
         this.onKick = new ObservableEvent<number>();
         this.onBan = new ObservableEvent<number>();
         this._element = this.createHTMLElement();
@@ -60,7 +62,11 @@ export default class PlayerListItem {
         //span containing the name
         const name = document.createElement('span');
         name.classList.add('lobby-player-name');
-        name.innerText = this._ownerId === this._id ? '👑' + this._name : this._name;
+        
+        if (this._ownerId === this._id) 
+            name.innerHTML = `<i class="fas fa-crown"></i> ${this._name}`;
+        else 
+            name.innerText = this._name;
 
         if (this._isClient) name.classList.add('current-client');
 
@@ -91,6 +97,15 @@ export default class PlayerListItem {
     private createOwnerButtons(): HTMLElement {
         const buttons_container = document.createElement('div');
         
+        //promote button
+        const promote_button = document.createElement('button');
+        promote_button.classList.add('lobby-player-promote-button', 'fill-button');
+        promote_button.innerHTML = '<i class="fas fa-crown"></i>';
+        promote_button.addEventListener('click', () => {
+            this.onPromote.notify(this._id);
+        });
+
+        //kick button
         const kick_button = document.createElement('button');
         kick_button.classList.add('lobby-player-kick-button', 'fill-button');
         kick_button.innerHTML = '<i class="fas fa-sign-out-alt"></i>';
@@ -98,6 +113,7 @@ export default class PlayerListItem {
             this.onKick.notify(this._id);
         });
 
+        //ban button
         const ban_button = document.createElement('button');
         ban_button.classList.add('lobby-player-ban-button', 'fill-button');
         ban_button.innerHTML = '<i class="fas fa-ban"></i>';
@@ -105,6 +121,7 @@ export default class PlayerListItem {
             this.onBan.notify(this._id);
         });
 
+        buttons_container.appendChild(promote_button);
         buttons_container.appendChild(kick_button);
         buttons_container.appendChild(ban_button);
 

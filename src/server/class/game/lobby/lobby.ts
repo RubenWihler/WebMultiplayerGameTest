@@ -309,7 +309,7 @@ export default class Lobby {
     public changePassword(new_password: string): any {
         const errors = [];
 
-        if (new_password === null) {
+        if (new_password === null || new_password.length === 0) {
             this._password_hash = null;
             this.onPasswordChanged(null);
             return {
@@ -361,8 +361,7 @@ export default class Lobby {
         }
 
         this._max_players = new_max_players;
-        this.onMaxPlayersChanged(new_max_players);
-
+        
         //if the lobby is now full, kick the last players that joined the lobby.
         if (this._connections.size > this._max_players) {
             const connections = Array.from(this._connections.keys());
@@ -370,7 +369,7 @@ export default class Lobby {
             let kicked = 0;
 
             //kick the last players that joined the lobby.
-            for (let index = this._connections.size - 1; index < this._connections.size; index--) {
+            for (let index = this._connections.size - 1; index >= 0; index--) {
                 if (kicked === kick_count) {
                     break;
                 }
@@ -380,18 +379,22 @@ export default class Lobby {
                     continue;
                 }
 
-                //kick the player.
-                //if the kick fails, log it and continue.
-                if (!this.kickUser(connections[index]))
-                {
-                    const connection = this._connections.get(connections[index]);
-                    console.warn(`[!] Failed to kick user : ${connection.connection_data.user.userId} from lobby : ${this._id}`);
-                    continue;
-                }
+                // //kick the player.
+                // //if the kick fails, log it and continue.
+                // if (!this.kickUser(connections[index]))
+                // {
+                //     const connection = this._connections.get(connections[index]);
+                //     console.warn(`[!] Failed to kick a user from lobby : ${this._id}`);
+                //     continue;
+                // }
+
+                this.kickUser(connections[index]);
 
                 kicked++;
             }
         }
+
+        this.onMaxPlayersChanged(new_max_players);
 
         return {
             success: true
@@ -415,6 +418,7 @@ export default class Lobby {
 
         this._owner_id = connection.connection_data.user.userId;
         this.onOwnerChanged(connection);
+        console.log(`[+] User: ${connection.connection_data.user.userId} as been promoted to owner of lobby : ${this._id}`);
         return true;
     }
     /**
@@ -432,6 +436,7 @@ export default class Lobby {
         }
 
         this.onUserBan.notify(user_id);
+        console.log(`[+] User: ${user_id} as been banned from lobby : ${this._id} by user: ${this._owner_id}`);
         return true;
     }
     /**
@@ -455,7 +460,8 @@ export default class Lobby {
         const connection = this._connections.get(user_id);
         connection.socket.emit(Messages.LOBBY_KICKED, {});
         this.disconnect(connection);
-        this.onUserBan.notify(user_id);
+        this.onUserKick.notify(user_id);
+        console.log(`[+] User: ${user_id} as been kicked from lobby : ${this._id} by user: ${this._owner_id}`);
     }
     public setReady(user_id: number, ready: boolean): void {
         if (!this._connections.has(user_id)) {
@@ -530,6 +536,7 @@ export default class Lobby {
      * @param new_password_hash the new password hash.
      */
     private onPasswordChanged(new_password_hash: string) {
+        this.sendMessageToAllConnections(Messages.LOBBY_SETTINGS_CHANGED, this.settings);
         this.onPasswordChange.notify(new_password_hash);
     }
     
@@ -638,6 +645,31 @@ export default class Lobby {
 
             const result = this.kickUser(data.user_id);
             connection.socket.emit(Messages.LOBBY_KICK_USER_RESPONSE, {
+                success: result
+            });
+        });
+
+        //on user send a request to promote a user to owner.
+        connection.socket.on(Messages.LOBBY_PROMOTE_USER, (data: any) => {
+            if (connection.connection_data.user.userId !== this._owner_id) {
+                connection.socket.emit(Messages.LOBBY_PROMOTE_USER_RESPONSE, {
+                    success: false,
+                    messages: ["NOT_OWNER"]
+                });
+                return;
+            }
+
+            const new_owner = this._connections.get(data.user_id);
+            if (!new_owner) {
+                connection.socket.emit(Messages.LOBBY_PROMOTE_USER_RESPONSE, {
+                    success: false,
+                    messages: ["USER_NOT_IN_LOBBY"]
+                });
+                return;
+            }
+
+            const result = this.setOwner(new_owner);
+            connection.socket.emit(Messages.LOBBY_PROMOTE_USER_RESPONSE, {
                 success: result
             });
         });

@@ -62,6 +62,9 @@ export default class Messages{
     public static readonly LOBBY_KICK_USER = "lobby-kick-user";
     public static readonly LOBBY_KICK_USER_RESPONSE = "lobby-kick-user-response";
 
+    public static readonly LOBBY_PROMOTE_USER = "lobby-promote-user";
+    public static readonly LOBBY_PROMOTE_USER_RESPONSE = "lobby-promote-user-response";
+
     public static readonly LOBBY_CHANGE_PASSWORD = "lobby-change-password";
     public static readonly LOBBY_CHANGE_PASSWORD_RESPONSE = "lobby-change-password-response";
 

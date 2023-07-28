@@ -334,6 +334,327 @@ export default class LobbiesConnectionManager{
             success: true
         };
     }
+    public static async promoteUser(userId: number): Promise<any>{
+        // Check if already making an operation on a lobby
+        if (LobbiesConnectionManager.instance.isMakingOperation){
+            return {
+                success: false,
+                messages: ["ALEADY_MAKING_OPERATION"]
+            };
+        }
+
+        // Check if connected to server. If not connected, return error
+        if (!ConnectionManager.isConnected){
+            return {
+                success: false,
+                messages: ["NOT_CONNECTED"]
+            };
+        }
+
+        // Check if the user in a lobby
+        if (!LobbiesConnectionManager.instance.inLobby){
+            return {
+                success: false,
+                messages: ["NOT_IN_A_LOBBY"]
+            };
+        }
+
+        const operation = new RequestOperation<any, any>("lobby-promote-user", "lobby-promote-user-response", { user_id: userId });
+        const result : any = await operation.start();
+
+        // Check if the operation was successful
+        if (result == null){
+            return {
+                success: false,
+                messages: ["SERVER_ERROR"]
+            };
+        }
+
+        // Check if the operation was successful
+        if (!result.success){
+            return {
+                success: false,
+                messages: result.messages
+            };
+        }
+
+        return {
+            success: true
+        };
+    }
+    public static async kickUser(userId: number): Promise<any>{
+        // Check if already making an operation on a lobby
+        if (LobbiesConnectionManager.instance.isMakingOperation){
+            return {
+                success: false,
+                messages: ["ALEADY_MAKING_OPERATION"]
+            };
+        }
+
+        // Check if connected to server. If not connected, return error
+        if (!ConnectionManager.isConnected){
+            return {
+                success: false,
+                messages: ["NOT_CONNECTED"]
+            };
+        }
+
+        // Check if the user in a lobby
+        if (!LobbiesConnectionManager.instance.inLobby){
+            return {
+                success: false,
+                messages: ["NOT_IN_A_LOBBY"]
+            };
+        }
+
+        const operation = new RequestOperation<any, any>("lobby-kick-user", "lobby-kick-user-response", { user_id: userId });
+        const result : any = await operation.start();
+
+        // Check if the operation was successful
+        if (result == null){
+            return {
+                success: false,
+                messages: ["SERVER_ERROR"]
+            };
+        }
+
+        // Check if the operation was successful
+        if (!result.success){
+            return {
+                success: false,
+                messages: result.messages
+            };
+        }
+
+        return {
+            success: true
+        };
+
+
+    }
+    public static async banUser(userId: number): Promise<any>{
+        // Check if already making an operation on a lobby
+        if (LobbiesConnectionManager.instance.isMakingOperation){
+            return {
+                success: false,
+                messages: ["ALEADY_MAKING_OPERATION"]
+            };
+        }
+
+        // Check if connected to server. If not connected, return error
+        if (!ConnectionManager.isConnected){
+            return {
+                success: false,
+                messages: ["NOT_CONNECTED"]
+            };
+        }
+
+        // Check if the user in a lobby
+        if (!LobbiesConnectionManager.instance.inLobby){
+            return {
+                success: false,
+                messages: ["NOT_IN_A_LOBBY"]
+            };
+        }
+
+        const operation = new RequestOperation<any, any>("lobby-ban-user", "lobby-unban-user", { user_id: userId });
+        const result : any = await operation.start();
+
+        // Check if the operation was successful
+        if (result == null){
+            return {
+                success: false,
+                messages: ["SERVER_ERROR"]
+            };
+        }
+
+        // Check if the operation was successful
+        if (!result.success){
+            return {
+                success: false,
+                messages: result.messages
+            };
+        }
+
+        return {
+            success: true
+        };
+    }
+    public static async setName(name: string): Promise<any>{
+        // Check if already making an operation on a lobby
+        if (LobbiesConnectionManager.instance.isMakingOperation){
+            return {
+                success: false,
+                messages: ["ALEADY_MAKING_OPERATION"]
+            };
+        }
+
+        // Check if connected to server. If not connected, return error
+        if (!ConnectionManager.isConnected){
+            return {
+                success: false,
+                messages: ["NOT_CONNECTED"]
+            };
+        }
+
+        // Check if the user in a lobby
+        if (!LobbiesConnectionManager.instance.inLobby){
+            return {
+                success: false,
+                messages: ["NOT_IN_A_LOBBY"]
+            };
+        }
+
+        const operation = new RequestOperation<any, any>("lobby-change-name", "lobby-change-name-response", { name: name });
+        const result : any = await operation.start();
+
+        // Check if the operation was successful
+        if (result == null){
+            return {
+                success: false,
+                messages: ["SERVER_ERROR"]
+            };
+        }
+
+        // Check if the operation was successful
+        if (!result.success){
+            return {
+                success: false,
+                messages: result.messages
+            };
+        }
+
+        return {
+            success: true
+        };
+    }
+    public static async setMaxPlayers(maxPlayers: number): Promise<any>{
+        // Check if already making an operation on a lobby
+        if (LobbiesConnectionManager.instance.isMakingOperation){
+            return {
+                success: false,
+                messages: ["ALEADY_MAKING_OPERATION"]
+            };
+        }
+
+        // Check if connected to server. If not connected, return error
+        if (!ConnectionManager.isConnected){
+            return {
+                success: false,
+                messages: ["NOT_CONNECTED"]
+            };
+        }
+
+        // Check if the user in a lobby
+        if (!LobbiesConnectionManager.instance.inLobby){
+            return {
+                success: false,
+                messages: ["NOT_IN_A_LOBBY"]
+            };
+        }
+
+        const operation = new RequestOperation<any, any>("lobby-change-max-player", "lobby-change-max-players-response", { max_player: maxPlayers });
+        const result : any = await operation.start();
+
+        // Check if the operation was successful
+        if (result == null){
+            return {
+                success: false,
+                messages: ["SERVER_ERROR"]
+            };
+        }
+
+        // Check if the operation was successful
+        if (!result.success){
+            return {
+                success: false,
+                messages: result.messages
+            };
+        }
+
+        return {
+            success: true
+        };
+    }
+    public static async setPassword(password: string): Promise<any>{
+        // Check if already making an operation on a lobby
+        if (LobbiesConnectionManager.instance.isMakingOperation){
+            return {
+                success: false,
+                messages: ["ALEADY_MAKING_OPERATION"]
+            };
+        }
+
+        // Check if connected to server. If not connected, return error
+        if (!ConnectionManager.isConnected){
+            return {
+                success: false,
+                messages: ["NOT_CONNECTED"]
+            };
+        }
+
+        // Check if the user in a lobby
+        if (!LobbiesConnectionManager.instance.inLobby){
+            return {
+                success: false,
+                messages: ["NOT_IN_A_LOBBY"]
+            };
+        }
+
+        const operation = new RequestOperation<any, any>("lobby-change-password", "lobby-change-password-response", { password: password });
+        const result : any = await operation.start();
+
+        // Check if the operation was successful
+        if (result == null){
+            return {
+                success: false,
+                messages: ["SERVER_ERROR"]
+            };
+        }
+
+        // Check if the operation was successful
+        if (!result.success){
+            return {
+                success: false,
+                messages: result.messages
+            };
+        }
+
+        return {
+            success: true
+        };
+    }
+    public static setReady(ready: boolean): any{
+        // Check if already making an operation on a lobby
+        if (LobbiesConnectionManager.instance.isMakingOperation){
+            return {
+                success: false,
+                messages: ["ALEADY_MAKING_OPERATION"]
+            };
+        }
+
+        // Check if connected to server. If not connected, return error
+        if (!ConnectionManager.isConnected){
+            return {
+                success: false,
+                messages: ["NOT_CONNECTED"]
+            };
+        }
+
+        // Check if the user in a lobby
+        if (!LobbiesConnectionManager.instance.inLobby){
+            return {
+                success: false,
+                messages: ["NOT_IN_A_LOBBY"]
+            };
+        }
+
+        ConnectionManager.send('lobby-set-ready', { ready: ready });
+
+        return {
+            success: true
+        };
+    }
 
     private onLobbyJoin(data: any){
         this._currentLobbyData = new LobbyData(
@@ -355,7 +676,12 @@ export default class LobbiesConnectionManager{
         console.log('[+] Left lobby with success.');
 
     }
-    private onLobbySettingsChange(settings: any){
+    private async onLobbySettingsChange(settings: any){
+        //wait for the lobby data to be updated
+        while (this._currentLobbyData == null){
+            await new Promise((resolve) => setTimeout(resolve, 100));
+        }
+        
         this._currentLobbyData.owner_id = settings.owner_id;
         this._currentLobbyData.max_players = settings.max_players;
         this._currentLobbyData.using_password = settings.using_password;
@@ -364,10 +690,15 @@ export default class LobbiesConnectionManager{
         //in case of the owner changed for ui etc...
         // -> ~just refresh the users list
         this.onLobbyUsersChange(this._currentLobbyData.users);
-
         this.onLobbySettingsChanged.notify(settings);
+        console.log(`[+] lobby settings changed.\n${JSON.stringify(settings)}`);
     }
-    private onLobbyUsersChange(users: any[]){
+    private async onLobbyUsersChange(users: any[]){
+        //wait for the lobby data to be updated
+        while (this._currentLobbyData == null){
+            await new Promise((resolve) => setTimeout(resolve, 100));
+        }
+
         this._currentLobbyData.users = users;
         this.onLobbyUsersChanged.notify(users);
     }

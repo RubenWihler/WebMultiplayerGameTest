@@ -7,11 +7,14 @@ import LobbiesConnectionManager from './classes/connection/lobbies_connection_ma
 import LobbyListItem from './classes/ui/elements/lobby_list_item.js';
 import { LobbyData } from './classes/connection/types/lobbies_types.js';
 import PlayerListItem from './classes/ui/elements/player_list_item.js';
+import SettingsElement from './classes/ui/elements/lobby_settings_item.js';
+import { Setting, SettingsType, SettingConstraint } from './classes/settings/settings_system.js';
 
 var trying_to_join_lobby: boolean = false;
 var refresh_on_disconnect = true;
 var lobbies_elements_list: LobbyListItem[] = [];
 var lobby_player_elements_list: PlayerListItem[] = [];
+var lobby_settings_elements_list: SettingsElement[] = [];
 var disconnected_refresh_interval: any = null;
 
 //#region ----- html elements -----
@@ -965,16 +968,126 @@ function refreshPlayersList(users: {id: number, name: string, status: string}[])
             owner_id
         );
 
-        item.onKick.subscribe((item) => {
-            //#todo kick player
+        item.onPromote.subscribe(async (id) => {
+            await LobbiesConnectionManager.promoteUser(id);
         });
 
-        item.onBan.subscribe((item) => {
-            //#todo ban player
+        item.onKick.subscribe(async (id) => {
+            await LobbiesConnectionManager.kickUser(id);
+        });
+
+        item.onBan.subscribe(async (id) => {
+            await LobbiesConnectionManager.banUser(id);
         });
 
         element_lobby_players_list.appendChild(item.element);
         lobby_player_elements_list.push(item);
+    });
+}
+
+function refreshSettingsList(){
+    let readonly = LobbiesConnectionManager.currentLobbyData.owner_id !== AccountConnectionManager.userData.userId;
+    let using_a_password = LobbiesConnectionManager.currentLobbyData.using_password;
+
+    //clear settings list and elements
+    lobby_settings_elements_list = [];
+    element_lobby_settings_list.innerHTML = '';
+
+    //#region name
+
+    const name = new Setting(
+        'Name',
+        SettingsType.TEXT,
+        [SettingConstraint.TEXT_RANGE(2, 25)],
+        LobbiesConnectionManager.currentLobbyData.name
+    );
+
+    name.onValueChanged.subscribe(async (value) => {
+        await LobbiesConnectionManager.setName(value);
+    });
+    
+    const name_element = new SettingsElement(
+        name,
+        readonly
+    );
+
+    lobby_settings_elements_list.push(name_element);
+
+    //#endregion
+
+    //#region max players
+
+    const max_players = new Setting(
+        'Max players',
+        SettingsType.NUMBER,
+        [SettingConstraint.NUMBER_RANGE(2, 8)],
+        LobbiesConnectionManager.currentLobbyData.max_players
+    );
+
+    max_players.onValueChanged.subscribe(async (value) => {
+        await LobbiesConnectionManager.setMaxPlayers(value);
+    });
+
+    const max_players_element = new SettingsElement(
+        max_players,
+        readonly
+    );
+
+    lobby_settings_elements_list.push(max_players_element);
+
+    //#endregion
+
+    //#region using password
+
+    const using_password = new Setting(
+        'Using password',
+        SettingsType.BOOLEAN,
+        [],
+        LobbiesConnectionManager.currentLobbyData.using_password
+    );
+
+    using_password.onValueChanged.subscribe(async (value) => {
+        const password = value ? 'default' : '';
+        await LobbiesConnectionManager.setPassword(password);
+    });
+    
+    const using_password_element = new SettingsElement(
+        using_password,
+        readonly
+    );
+
+    lobby_settings_elements_list.push(using_password_element);
+
+    //#endregion
+
+    //#region password
+
+    //only add the password setting if the lobby is using a password
+    if (using_a_password){
+        const password = new Setting(
+            'Password',
+            SettingsType.PASSWORD,
+            [SettingConstraint.TEXT_RANGE(3, 25)],
+            LobbiesConnectionManager.currentLobbyData.using_password ? '********' : '',
+        );
+
+        password.onValueChanged.subscribe(async (value) => {
+            await LobbiesConnectionManager.setPassword(value);
+        });
+
+        const password_element = new SettingsElement(
+            password,
+            readonly
+        );
+
+        lobby_settings_elements_list.push(password_element);
+    }
+
+    //#endregion
+
+    //append elements to the list foreach settings element
+    lobby_settings_elements_list.forEach((element) => {
+        element_lobby_settings_list.appendChild(element.element);
     });
 }
 
@@ -998,6 +1111,9 @@ LobbiesConnectionManager.instance.onLobbiesRefresh.subscribe((lobbies: any[]) =>
 });
 LobbiesConnectionManager.instance.onLobbyUsersChanged.subscribe((users: {id: number, name: string, status: string}[]) => {
     refreshPlayersList(users);
+});
+LobbiesConnectionManager.instance.onLobbySettingsChanged.subscribe(() => {
+    refreshSettingsList();
 });
 
 
