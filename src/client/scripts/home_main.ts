@@ -9,6 +9,8 @@ import { LobbyData } from './classes/connection/types/lobbies_types.js';
 import PlayerListItem from './classes/ui/elements/player_list_item.js';
 import SettingsElement from './classes/ui/elements/lobby_settings_item.js';
 import { Setting, SettingsType, SettingConstraint } from './classes/settings/settings_system.js';
+import { init as initGame, start as startGame } from './classes/game/game_main.js';
+import GameSettings from './classes/game/game_settings.js';
 
 var trying_to_join_lobby: boolean = false;
 var refresh_on_disconnect = true;
@@ -156,6 +158,7 @@ const view_home = new View('home', 'home', 'Home', 'flex');
 const view_delete_account = new View('delete-account', 'delete-account', 'Delete account', 'flex');
 const view_lobby_password = new View('lobby-password', 'lobby-password', 'Lobby password', 'flex');
 const view_lobby = new View('lobby', 'lobby', 'Lobby', 'flex');
+const view_game = new View('game', 'game', 'Game', 'flex');
 
 //connection events
 view_connection.onDisplay.subscribe((view) => {
@@ -255,6 +258,20 @@ view_lobby.onDisplay.subscribe((view) => {
     element_lobby_copy_code_span.innerText = LobbiesConnectionManager.currentLobbyData.id.toString();
 });
 
+//game events
+view_game.onDisplay.subscribe((view) => {
+    document.getElementById('game-container').appendChild(initGame(
+        new GameSettings(
+            2,
+            "map test",
+            1000,
+            1000,
+            '0x40247A',
+            1000,
+        )
+    ));
+    startGame();
+});
 
 //views array that will be used by the views manager
 const views = [
@@ -265,7 +282,8 @@ const views = [
     view_home,
     view_delete_account,
     view_lobby_password,
-    view_lobby
+    view_lobby,
+    view_game
 ];
 
 //init views manager with created views
@@ -662,6 +680,12 @@ element_lobby_password_return_button.addEventListener('click', () => {
     trying_to_join_lobby = false;
     removeParamFromUrl('lobby');
     ViewsManager.setActiveView('home');
+});
+element_lobby_ready_button.addEventListener('click', () => {
+    //TODO: send ready request
+    
+    //tmp:
+    ViewsManager.setActiveView('game');
 });
 
 
