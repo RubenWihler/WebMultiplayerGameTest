@@ -1,10 +1,11 @@
 import * as PIXI from "pixi.js"
-import GameObject from "./game_object.js";
+import Game from "./game.js";
+import GameSettings from "../game_settings.js";
 
 export default class GameManager{
     private static _instance: GameManager = null;
-    private _gameObjects: GameObject[] = [];
-    private _scene: PIXI.Container;
+    private _app: PIXI.Application;
+    private _currentGame: Game;
 
     public static get instance(): GameManager{
         if (GameManager._instance == null)
@@ -13,19 +14,33 @@ export default class GameManager{
         return GameManager._instance;
     }
 
-    public static get scene(): PIXI.Container{
-        return GameManager.instance._scene;
+    public static get app(): PIXI.Application{
+        return GameManager.instance._app;
+    }
+
+    public static get game(): Game{
+        return GameManager.instance._currentGame;
     }
 
 
-    public addGameObject(gameObject: GameObject){
-        this._gameObjects.push(gameObject);
+    
+    public static init(){
+        const game_manager = new GameManager();
+        game_manager._app = GameManager.createApp();
+        GameManager._instance = game_manager;
+    }
+    
+    private static createApp(): PIXI.Application{
+        const app = new PIXI.Application({
+            background: 0x40247A,
+            resizeTo: window
+        });
+
+        return app;
     }
 
-    public static init(scene: PIXI.Container){
-        GameManager._instance = new GameManager();
-        GameManager._instance._scene = scene;
+    public static newGame(settings: GameSettings){
+        const game = new Game(GameManager.app, settings);
+        GameManager.instance._currentGame = game;
     }
-
-
 }

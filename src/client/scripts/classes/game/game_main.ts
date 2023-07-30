@@ -5,16 +5,12 @@ import GameObject from "./engine/game_object.js";
 import Position from "./engine/position.js";
 import Sprite from "./engine/components/sprite.js";
 
-var app: PIXI.Application;
 
 /**
  * Called 1 time when the game is loaded
  */
 export function init(settings: GameSettings) : HTMLCanvasElement{
-    app = new PIXI.Application({
-        background: 0x40247A,
-        resizeTo: window
-    });
+    
 
     GameManager.init(app.stage);
 

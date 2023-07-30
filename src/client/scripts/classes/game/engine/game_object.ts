@@ -31,7 +31,7 @@ export default class GameObject{
     public readonly onPositionChanged: ObservableEvent<Position> = new ObservableEvent<Position>();
 
     constructor(position: Position, components: IComponent[] = [], name: string = "GameObject", rotation: number = 0){
-        GameManager.instance.addGameObject(this);
+        GameManager.game.addGameObject(this);
         
         this._position = position;
         this.name = name;

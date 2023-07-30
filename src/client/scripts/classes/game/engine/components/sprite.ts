@@ -48,9 +48,9 @@ export default class Sprite extends Component {
         this._sprite.width = this._width;
         this._sprite.height = this._height;
         this._sprite.anchor.set(0.5);
-        this._sprite.rotation = this._gameObject.rotation;
-        this._sprite.position.set(this._gameObject.position.x, this._gameObject.position.y);
-        this._gameObject.scene.addChild(this._sprite);
+        this._sprite.rotation = this.gameObject.rotation;
+        this._sprite.position.set(this.gameObject.position.x, this.gameObject.position.y);
+        this.gameObject.scene.addChild(this._sprite);
     }
     update(): void {
         throw new Error("Method not implemented.");
@@ -60,10 +60,10 @@ export default class Sprite extends Component {
     }
 
     private initEvents(){
-        this._gameObject.onPositionChanged.subscribe((position) => {
+        this.gameObject.onPositionChanged.subscribe((position) => {
             this._sprite.position.set(position.x, position.y);
         });
-        this._gameObject.onRotationChanged.subscribe((rotation) => {
+        this.gameObject.onRotationChanged.subscribe((rotation) => {
             this._sprite.rotation = rotation;
         });
     }
