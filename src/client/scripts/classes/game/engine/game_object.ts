@@ -76,7 +76,7 @@ export default class GameObject{
      * Scene where the game object is
      */
     public get scene(){
-        return GameManager.scene;
+        return GameManager.app.stage;
     }
 
     /**

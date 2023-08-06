@@ -15,3 +15,13 @@ export default class UpdatePackage{
     };
 
 }
+
+export class InputPackage{
+    public readonly move_left: boolean;
+    public readonly move_right: boolean;
+
+    constructor(move_left: boolean, move_right: boolean){
+        this.move_left = move_left;
+        this.move_right = move_right;
+    }
+}

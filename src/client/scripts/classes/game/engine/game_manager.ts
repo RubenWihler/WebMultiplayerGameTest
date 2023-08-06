@@ -39,8 +39,8 @@ export default class GameManager{
         return app;
     }
 
-    public static newGame(settings: GameSettings){
-        const game = new Game(GameManager.app, settings);
-        GameManager.instance._currentGame = game;
+    public static newGame(settings: GameSettings): Game{
+        GameManager.instance._currentGame = new Game(GameManager.app, settings);
+        return GameManager.instance._currentGame;
     }
 }
