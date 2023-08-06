@@ -21,6 +21,13 @@ export default class Player extends Entity {
 
     }
 
+    public setTransform(x: number, y: number, rotation: number): void {
+        x -= this._sprite.width / 2;
+        y -= this._sprite.height / 2;
+        this.gameObject.position = { x, y };
+        this.gameObject.rotation = rotation;
+    }
+
     public attach(gameObject: GameObject): void {
         super.attach(gameObject);
         this.initComponents();
@@ -43,8 +50,8 @@ export default class Player extends Entity {
     private createSprite(): Sprite {
         const sprite = new Sprite(
             Texture.white,
-            150,
-            75
+            100,
+            25
         );
 
         const sprite_renderer = sprite.sprite;

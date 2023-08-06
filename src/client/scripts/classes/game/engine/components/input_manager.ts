@@ -1,11 +1,13 @@
+import ObservableEvent from "../../../global_types/observable_event.js";
 import Component from "../component.js";
 import { InputPackage } from "../update_package.js";
 
 export default class InputManager extends Component {
+    public readonly onInputPackage: ObservableEvent<InputPackage>;
     private _inputMap: Map<string, boolean> = null;
     private _listeningKeyboard: boolean = false;
     
-    public get inputPackage(): InputPackage {
+    private get inputPackage(): InputPackage {
         let moving_left = false;
         let moving_right = false;
         
@@ -34,7 +36,7 @@ export default class InputManager extends Component {
 
     constructor(){
         super();
-
+        this.onInputPackage = new ObservableEvent<InputPackage>();
         this._inputMap = new Map<string, boolean>();
         this.bindInputEvents();
     }
@@ -49,22 +51,30 @@ export default class InputManager extends Component {
         this.unbindInputEvents();
     }
 
+    private onInputChanged(): void {
+        this.onInputPackage.notify(this.inputPackage);
+    }
+
     private onKeyDown = (event: KeyboardEvent): void => {
         if (!this._listeningKeyboard) return;
 
         if (event.key == "ArrowLeft" || event.key == "a"){
             this._inputMap.set("move_left", true);
+            this.onInputChanged();
         }
         else if (event.key == "ArrowRight" || event.key == "d"){
             this._inputMap.set("move_right", true);
+            this.onInputChanged();
         }
     }
     private onKeyUp = (event: KeyboardEvent): void => {
         if (event.key == "ArrowLeft" || event.key == "a"){
             this._inputMap.set("move_left", false);
+            this.onInputChanged();
         }
         else if (event.key == "ArrowRight" || event.key == "d"){
             this._inputMap.set("move_right", false);
+            this.onInputChanged();
         }
     }
 

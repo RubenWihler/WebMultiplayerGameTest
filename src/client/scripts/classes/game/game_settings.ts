@@ -4,10 +4,10 @@ export default class GameSettings {
 
     public ball_speed: number;
     public ball_size: number;
-    public ball_color: string;
+    public ball_color: number;
     public player_speed: number;
 
-    constructor(playerDatas: PlayerData[], map_name: string, ball_speed: number, ball_size: number, ball_color: string, player_speed: number) {
+    constructor(playerDatas: PlayerData[], map_name: string, ball_speed: number, ball_size: number, ball_color: number, player_speed: number) {
         this.player_datas = playerDatas;
         this.map_name = map_name;
         this.ball_speed = ball_speed;

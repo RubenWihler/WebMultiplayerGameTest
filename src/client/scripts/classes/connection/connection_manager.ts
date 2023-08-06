@@ -43,6 +43,17 @@ export default class ConnectionManager {
     public static send(message: string, data: any){
         ConnectionManager.Instance.socket.emit(message, data);
     }
+    public static on(message: string, callback: Function){
+        ConnectionManager.Instance.socket.on(message, callback);
+    }
+    public static off(message: string, callback: Function = null){
+        if (callback != null){
+            ConnectionManager.Instance.socket.removeListener(message, callback);
+            return;
+        }
+
+        ConnectionManager.Instance.socket.removeAllListeners(message);
+    }
 
     private bindMessages(){
         this.socket.on('disconnect', () => this.onReceiveDisconnect());

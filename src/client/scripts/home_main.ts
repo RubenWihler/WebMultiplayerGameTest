@@ -10,7 +10,7 @@ import PlayerListItem from './classes/ui/elements/player_list_item.js';
 import SettingsElement from './classes/ui/elements/lobby_settings_item.js';
 import { Setting, SettingsType, SettingConstraint } from './classes/settings/settings_system.js';
 import { init as initGame, start as startGame } from './classes/game/game_main.js';
-import GameSettings from './classes/game/game_settings.js';
+import GameSettings, { PlayerData } from './classes/game/game_settings.js';
 
 var trying_to_join_lobby: boolean = false;
 var refresh_on_disconnect = true;
@@ -260,17 +260,25 @@ view_lobby.onDisplay.subscribe((view) => {
 
 //game events
 view_game.onDisplay.subscribe((view) => {
-    document.getElementById('game-container').appendChild(initGame(
-        new GameSettings(
-            2,
-            "map test",
-            1000,
-            1000,
-            '0x40247A',
-            1000,
-        )
-    ));
-    startGame();
+    //temporarly create settings
+    const settings = new GameSettings(
+        [
+            new PlayerData(1, 'player1', 0x000000, false),
+            new PlayerData(2, 'player1', 0x000000, false),
+            new PlayerData(3, 'player1', 0x000000, false),
+            new PlayerData(4, 'player1', 0x000000, false),
+            new PlayerData(5, 'player1', 0x000000, false),
+        ],
+        "map test",
+        1000,
+        1000,
+        0x40247A,
+        1000,
+    );
+    
+    document.getElementById('game-container').appendChild(initGame());
+    
+    startGame(settings);
 });
 
 //views array that will be used by the views manager

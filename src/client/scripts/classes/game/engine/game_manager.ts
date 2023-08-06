@@ -41,6 +41,7 @@ export default class GameManager{
 
     public static newGame(settings: GameSettings): Game{
         GameManager.instance._currentGame = new Game(GameManager.app, settings);
+        GameManager.instance._currentGame.create();
         return GameManager.instance._currentGame;
     }
 }

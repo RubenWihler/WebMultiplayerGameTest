@@ -14,6 +14,13 @@ export default class Ball extends Entity {
         this._color = color;
     }
 
+    public setTransform(x: number, y: number, rotation: number): void {
+        x -= this._sprite.width / 2;
+        y -= this._sprite.height / 2;
+        this.gameObject.position = { x, y };
+        this.gameObject.rotation = rotation;
+    }
+
     public attach(gameObject: GameObject): void {
         super.attach(gameObject);
         this.initComponents();
@@ -38,8 +45,8 @@ export default class Ball extends Entity {
     private createSprite(): Sprite {
         const sprite = new Sprite(
             Texture.white,
-            35,
-            35
+            20,
+            20
         );
 
         const sprite_renderer = sprite.sprite;

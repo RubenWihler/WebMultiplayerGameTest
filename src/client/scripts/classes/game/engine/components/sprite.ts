@@ -47,16 +47,14 @@ export default class Sprite extends Component {
         this.initEvents();
         this._sprite.width = this._width;
         this._sprite.height = this._height;
-        this._sprite.anchor.set(0.5);
+        this._sprite.anchor.set(0);
         this._sprite.rotation = this.gameObject.rotation;
         this._sprite.position.set(this.gameObject.position.x, this.gameObject.position.y);
         this.gameObject.scene.addChild(this._sprite);
     }
     update(): void {
-        throw new Error("Method not implemented.");
     }
     destroy(): void {
-        throw new Error("Method not implemented.");
     }
 
     private initEvents(){
