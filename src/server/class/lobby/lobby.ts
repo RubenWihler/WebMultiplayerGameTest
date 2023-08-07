@@ -1,8 +1,8 @@
-import ConnectionHandler, { ConnectionStatus } from "../../connection/connection_handler.js";
-import ObservableEvent from "../../event_system/observable_event.js";
-import BanWord from "../../global_types/ban_word.js";
+import ConnectionHandler, { ConnectionStatus } from "../connection/connection_handler.js";
+import ObservableEvent from "../event_system/observable_event.js";
+import BanWord from "../global_types/ban_word.js";
 import LobbiesManager from "./lobbies_manager.js";
-import Messages from "../../connection/messages.js";
+import Messages from "../connection/messages.js";
 
 export default class Lobby {
     public static readonly MIN_LOBBY_PLAYERS = 2;
@@ -63,9 +63,18 @@ export default class Lobby {
     }
     /**
      * returns all the connections in the lobby.
+     * @see connectionsMap
      */
     public get connections(): ConnectionHandler[] {
         return Array.from(this._connections.values());
+    }
+    /**
+     * Returns all the connections in the lobby as a map. 
+     * The key is the user id of the connection and the value is the connection.
+     * @see connections
+     */
+    public get connectionsMap(): Map<number, ConnectionHandler> {
+        return this._connections;
     }
     /**
      * Returns the number of connections in the lobby.

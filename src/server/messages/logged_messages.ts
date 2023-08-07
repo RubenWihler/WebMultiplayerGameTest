@@ -1,5 +1,5 @@
 import SocketManager from "../class/connection/socket_manager.js";
-import LobbiesManager from "../class/game/lobby/lobbies_manager.js";
+import LobbiesManager from "../class/lobby/lobbies_manager.js";
 import BanWord from "../class/global_types/ban_word.js";
 
 export function setUpListeningLoggedMessages(){

@@ -75,6 +75,16 @@ export default class Messages{
 
     //#endregion
 
+    //#region GAME
+
+    public static readonly GAME_START = "game-start";
     
+    public static readonly GAME_END = "game-end";
+
+    public static readonly GAME_UPDATE = "game-update";
+
+    public static readonly GAME_CLIENT_INPUTS = "game-client-inputs";
+
+    //#endregion
 
 }

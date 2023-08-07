@@ -5,8 +5,6 @@ import express from 'express';
 import http from 'http';
 import * as socketIO from 'socket.io';
 import dotenv from 'dotenv';
-import UserProcessor from './class/database/processor/user_processor.js';
-import BanWord from './class/global_types/ban_word.js';
 import EventsManager from './class/event_system/events_manager.js';
 import SocketManager from './class/connection/socket_manager.js';
 import ConnectionsManager from './class/connection/connections_manager.js';

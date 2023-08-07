@@ -25,7 +25,7 @@ export default class GameConnectionManager {
 
 
     public static sendInputPackage(inputPackage: InputPackage): void {
-        ConnectionManager.send("game-inputs", inputPackage);
+        ConnectionManager.send("game-client-inputs", inputPackage);
     }
 
     private bindMessages() {

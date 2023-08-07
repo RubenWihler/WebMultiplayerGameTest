@@ -1,5 +1,5 @@
-import ObservableEvent from "../../event_system/observable_event.js";
-import IdGenerator from "../../global_types/id_generator.js";
+import ObservableEvent from "../event_system/observable_event.js";
+import IdGenerator from "../global_types/id_generator.js";
 import Lobby from "./lobby.js";
 
 /**

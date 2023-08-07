@@ -3,7 +3,7 @@ import ObservableEvent from "../event_system/observable_event.js";
 import ConnectionData from "./connection_types/connection_data.js";
 import ConnectionsManager from "./connections_manager.js";
 import SocketManager from './socket_manager.js';
-import LobbiesManager from '../game/lobby/lobbies_manager.js';
+import LobbiesManager from '../lobby/lobbies_manager.js';
 import Messages from './messages.js';
 
 export class ConnectionStatus {
