@@ -3,6 +3,10 @@ import ObservableEvent from "../event_system/observable_event.js";
 import BanWord from "../global_types/ban_word.js";
 import LobbiesManager from "./lobbies_manager.js";
 import Messages from "../connection/messages.js";
+import GameManager from "../game/game_manager.js";
+import GameSettings from "../game/game_settings.js";
+import GameMap from "../game/map/map.js";
+import EngineConfig from "../game/server_game_engine/engine_config.js";
 
 export default class Lobby {
     public static readonly MIN_LOBBY_PLAYERS = 2;
@@ -128,6 +132,23 @@ export default class Lobby {
 
     public startGame(): any {
         console.log("[+] starting game ...");
+
+        const settings: GameSettings = {
+            map: GameMap.DEFAULT,
+            player_count: this._connections.size,
+            player_size: EngineConfig.DEFAULT_PLAYER_SIZE,
+            player_speed: EngineConfig.DEFAULT_PLAYER_SPEED,
+            ball_size: EngineConfig.DEFAULT_BALL_SIZE,
+            ball_speed : EngineConfig.DEFAULT_BALL_SPEED,
+            player_life: 3
+        }
+
+
+        const game = GameManager.instance.createGame(this, settings);
+
+        for (const connection of this._connections.values()) {
+            game.connectPlayer(connection);
+        }
     }
     /**
      * Disconnects all connections from the lobby and dispose its events.
@@ -762,7 +783,7 @@ export default class Lobby {
      * @param message 
      * @param data 
      */
-    private sendMessageToAllConnections(message: string, data: any) {
+    public sendMessageToAllConnections(message: string, data: any) {
         for (let connection of this._connections.values()) {
             connection.socket.emit(message, data);
         }

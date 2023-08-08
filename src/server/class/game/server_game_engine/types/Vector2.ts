@@ -13,3 +13,10 @@ export function distance(position1, position2) : number {
     const squaredDist = squaredDistance(position1, position2);
     return Math.sqrt(squaredDist);
 }
+
+export function randomVector2(): Vector2 {
+    return {
+        x:  (Math.random() - 0.5) * 2,
+        y:  (Math.random() - 0.5) * 2
+    }
+}

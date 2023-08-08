@@ -56,6 +56,9 @@ export default class ConnectionHandler {
         this.onStatutChanged.notify(this._status);
     }
 
+    /**
+     * Is the connection connected to the server. (socket is connected)
+     */
     public get connected() : boolean {
         return this._connected;
     }

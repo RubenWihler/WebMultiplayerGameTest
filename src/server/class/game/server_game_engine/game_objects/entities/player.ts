@@ -1,5 +1,6 @@
-import EngineConfig from "../../engine_config.js";
-import Vector2, { distance, squaredDistance } from "../../types/Vector2.js";
+import ConnectionHandler from "../../../../connection/connection_handler.js";
+import PlayerInputManager from "../../managers/player_input_manager.js";
+import Vector2, { squaredDistance } from "../../types/Vector2.js";
 import Direction from "../../types/direction.js";
 import Position from "../../types/position.js";
 import Size from "../../types/size.js";
@@ -7,23 +8,40 @@ import { TransformData } from "../../types/transform.js";
 import Entity from "./entity.js";
 
 export default class Player extends Entity{
+    protected _connectionHandler: ConnectionHandler;
     protected _max_positions: {left: Vector2, right: Vector2};
     protected _speed: number;
+    protected _input_manager: PlayerInputManager;
+
+    public get id(): number {
+        return this._connectionHandler.connection_data.user.userId;
+    }
+
+    public get max_positions(): {left: Vector2, right: Vector2} {
+        return this._max_positions;
+    }
+    public set max_positions(value: {left: Vector2, right: Vector2}) {
+        this._max_positions = value;
+    }
     
-    constructor(spawnPosition: Position, spawnRotation: number, size: Size, speed: number, _max_positions: {left: Vector2, right: Vector2}){
+    constructor(connectionHandler: ConnectionHandler, spawnPosition: Position, spawnRotation: number, size: Size, speed: number, _max_positions: {left: Vector2, right: Vector2}){
         super("player", {position: spawnPosition, rotation: spawnRotation}, size);
         this._speed = speed;
         this._max_positions = _max_positions;
+        this._connectionHandler = connectionHandler;
     }
 
     public init(): void {
+        this._input_manager = new PlayerInputManager(this._connectionHandler);
     }
     public start(): void {
         super.start();
     }
     public update(): void {
+        this.tryMove(this._input_manager.movingDirection);
     }
     public destroy(): void {
+        this._input_manager.destroy();
     }
 
     protected onTransformChange(data: TransformData): boolean {
@@ -35,6 +53,10 @@ export default class Player extends Entity{
     }
     protected onSizeChange(newSize: Size): void {}
 
+    protected tryMove(direction: Direction){
+        if (direction == Direction.NONE) return;
+        this.move(direction);
+    }
     protected move(direction: Direction){
         const current_pos = this.position;
 

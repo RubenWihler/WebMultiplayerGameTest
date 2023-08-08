@@ -3,6 +3,7 @@ enum GameStatus {
     LOBBY,
     STARTING,
     RUNNING,
+    IN_ROUND_BREAK,
     ENDING,
     ENDED
 }
