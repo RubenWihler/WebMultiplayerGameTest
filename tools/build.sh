@@ -17,4 +17,10 @@ find dist/ -name "*.ts" -type f -delete;
 echo '[+] Compilation des fichiers TypeScript ...';
 tsc --build tsconfig.json;
 
+echo '[+] Suppression des libs inutiles ...';
+sed -i '1d' dist/client/scripts/classes/game/engine/textures.js;
+sed -i '1d' dist/client/scripts/classes/game/engine/components/sprite.js;
+sed -i '1d' dist/client/scripts/classes/game/engine/game.js;
+sed -i '1d' dist/client/scripts/classes/game/engine/game_manager.js;
+
 echo '[+] Build termine avec succes.';
