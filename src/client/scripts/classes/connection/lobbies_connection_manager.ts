@@ -16,11 +16,14 @@ export default class LobbiesConnectionManager{
     private _current_target_lobby_id: string = null;
     private _currentLobbyData: LobbyData;
 
+    private _is_ready: boolean = false;
+
     public readonly onLobbyJoined: ObservableEvent<LobbyData> = new ObservableEvent<LobbyData>();
     public readonly onLobbyLeft: ObservableEvent<void> = new ObservableEvent<void>();
     public readonly onLobbiesRefresh: ObservableEvent<any[]> = new ObservableEvent<any[]>();
     public readonly onLobbySettingsChanged: ObservableEvent<any> = new ObservableEvent<any>();
     public readonly onLobbyUsersChanged: ObservableEvent<any[]> = new ObservableEvent<any[]>();
+    public readonly onGameStart: ObservableEvent<any> = new ObservableEvent<any>();
 
 
     public static get instance(): LobbiesConnectionManager {
@@ -53,6 +56,10 @@ export default class LobbiesConnectionManager{
 
     public get isMakingOperation(): boolean{
         return this._joining_lobby || this._creating_lobby || this._leaving_lobby;
+    }
+
+    public get isReady(): boolean{
+        return this._is_ready;
     }
 
     constructor(){
@@ -650,6 +657,7 @@ export default class LobbiesConnectionManager{
         }
 
         ConnectionManager.send('lobby-set-ready', { ready: ready });
+        this._instance._is_ready = ready;
 
         return {
             success: true
@@ -750,6 +758,13 @@ export default class LobbiesConnectionManager{
         (data: any[]) => {
             inst.onLobbyUsersChange(data);
             console.log(`[+] lobby users changed.`);
+        });
+
+        // lobby start
+        ConnectionManager.Instance.socket.on('game-init',
+        (data: any) => {
+            console.log(`[+] game starting.`);
+            inst.onGameStart.notify(data);
         });
     }
 }

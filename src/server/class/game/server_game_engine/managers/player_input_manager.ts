@@ -26,15 +26,23 @@ export default class PlayerInputManager{
 
     private bindMessages(): void {
         this.connectionHandler.socket.on(Messages.GAME_CLIENT_INPUTS, (data: InputPackage) => {
-            
             //if the player moving left and right at the same time, the player is not moving
-            if (data.move_left && data.move_right) this._moving_direction = Direction.NONE;
+            if ((data.move_left && data.move_right) || (data.move_down && data.move_up)) this._moving_direction = Direction.NONE;
 
             //if the player is moving left
             else if (data.move_left) this._moving_direction = Direction.LEFT;
 
             //if the player is moving right
             else if (data.move_right) this._moving_direction = Direction.RIGHT;
+
+            //if the player is moving up
+            else if (data.move_up) this._moving_direction = Direction.UP;
+
+            //if the player is moving down
+            else if (data.move_down) this._moving_direction = Direction.DOWN;
+
+            //if the player is not moving
+            else this._moving_direction = Direction.NONE;
         });
     }
 

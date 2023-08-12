@@ -29,11 +29,12 @@ export default class GameManager {
     }
 
     public createGame(lobby: Lobby, settings: GameSettings): Game{
+        console.log(`[+] Creating game with id ${lobby.id}...`);
         const id = lobby.id;
 
         //be sure that the game with the same id doesn't already exists
         if (this._games.has(id)){
-            console.warn(`A game with the same id (${id}) already exists ! Cannot create game !`);
+            console.warn(`[!] A game with the same id (${id}) already exists ! Cannot create game !`);
             return null;
         };
         

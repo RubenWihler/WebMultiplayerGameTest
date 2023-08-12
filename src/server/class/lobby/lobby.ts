@@ -146,8 +146,20 @@ export default class Lobby {
 
         const game = GameManager.instance.createGame(this, settings);
 
+        if (game === null) {
+            return {
+                success: false,
+                error: "GAME_CREATION_ERROR"
+            };
+        }
+
         for (const connection of this._connections.values()) {
             game.connectPlayer(connection);
+        }
+
+        return {
+            success: true,
+            game_id: this._id
         }
     }
     /**

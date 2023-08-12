@@ -1,5 +1,6 @@
 import GameSettings from "./game_settings.js";
 import GameManager from "./engine/game_manager.js";
+import Game from "./engine/game.js";
 
 
 
@@ -14,7 +15,7 @@ export function init() : HTMLCanvasElement{
 /**
  * Called every time the game is started
  */
-export function start(settings: GameSettings) : void{
+export function start(settings: GameSettings) : Game{
     console.log("Game started");
-    const game = GameManager.newGame(settings);
+    return GameManager.newGame(settings);
 }

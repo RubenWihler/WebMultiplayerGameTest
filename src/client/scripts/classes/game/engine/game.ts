@@ -17,7 +17,7 @@ export default class Game{
     private _scene: PIXI.Container;
     private _terrain: PIXI.Container;
     private _gameObjects: GameObject[];
-    private _players: Player[];
+    private _players: Map<number, Player>;
     private _ball: Ball;
     private _inputManager: InputManager;
 
@@ -45,13 +45,10 @@ export default class Game{
 
     public networkUpdate(updatePackage: UpdatePackage){
         // Update players
-        for (const player of this._players){
-            const player_data = updatePackage.positions.players[player.id];
-            
-            player.setTransform(
-                player_data.x, 
-                player_data.y, 
-                player_data.rotation
+        for (const player_pos of updatePackage.positions.players){
+            this._players.get(player_pos.id).setTransform(
+                player_pos.x,
+                player_pos.y,
             );
         }
 
@@ -60,7 +57,6 @@ export default class Game{
         this._ball.setTransform(
             ball_data.x, 
             ball_data.y, 
-            ball_data.rotation
         );
     }
 
@@ -144,15 +140,13 @@ export default class Game{
         return terrain;
     }
     private createPlayers(){
-        this._players = [];
-
-        let tmp_x = this._terrain.width / 2;
-        let tmp_y = 0;
+        this._players = new Map<number, Player>();
 
         for (const player_data of this._settings.player_datas){
             // player component
             const player_component = new Player(
                 player_data.id,
+                player_data.local_id,
                 player_data.name, 
                 player_data.color, 
                 player_data.is_local
@@ -160,25 +154,23 @@ export default class Game{
 
             //player game object
             const player_go = new GameObject(
-                new Position(tmp_x, tmp_y),
+                new Position(player_data.position.x, player_data.position.y),
                 [player_component],
                 `player_${player_data.id}`,
-                0
             );
 
-            this._players.push(player_component);
-            tmp_y += 70;
+            this._players.set(player_data.id, player_component);
         }
     }
     private createBall(){
         // const ball_component = new Ball(this._settings.ball_color);
         const ball_component = new Ball(0xFF0000);
+        const ball_position = this._settings.ball_position;
 
         const ball_go = new GameObject(
-            new Position(0, 0),
+            new Position(ball_position.x, ball_position.y),
             [ball_component],
             "ball",
-            0
         );
 
         this._ball = ball_component;
@@ -189,7 +181,6 @@ export default class Game{
             new Position(0, 0),
             [input_manager_component],
             "input_manager",
-            0
         );
 
         // Send input package to server when input changes

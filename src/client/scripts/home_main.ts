@@ -260,25 +260,8 @@ view_lobby.onDisplay.subscribe((view) => {
 
 //game events
 view_game.onDisplay.subscribe((view) => {
-    //temporarly create settings
-    const settings = new GameSettings(
-        [
-            new PlayerData(1, 'player1', 0x000000, false),
-            new PlayerData(2, 'player1', 0x000000, false),
-            new PlayerData(3, 'player1', 0x000000, false),
-            new PlayerData(4, 'player1', 0x000000, false),
-            new PlayerData(5, 'player1', 0x000000, false),
-        ],
-        "map test",
-        1000,
-        1000,
-        0x40247A,
-        1000,
-    );
-    
-    document.getElementById('game-container').appendChild(initGame());
-    
-    startGame(settings);
+    //clear game container
+    document.getElementById('game-container').innerHTML = '';
 });
 
 //views array that will be used by the views manager
@@ -691,9 +674,24 @@ element_lobby_password_return_button.addEventListener('click', () => {
 });
 element_lobby_ready_button.addEventListener('click', () => {
     //TODO: send ready request
-    
-    //tmp:
-    ViewsManager.setActiveView('game');
+    const ready = !LobbiesConnectionManager.instance.isReady;
+    LobbiesConnectionManager.setReady(ready);
+
+    // <button id="lobby-ready-button" class="fill-button waiting">
+        //     <span>waiting <span>for players</span></span>
+        //     <div class="dot-pulse"></div>
+        // </button>
+
+    if (ready) {
+        element_lobby_ready_button.classList.add('waiting');
+        element_lobby_ready_button.innerHTML = `
+            <span>waiting <span>for players</span></span>
+            <div class="dot-pulse"></div>`;
+    }
+    else{
+        element_lobby_ready_button.classList.remove('waiting');
+        element_lobby_ready_button.innerHTML = '<span>set ready</span>';
+    }
 });
 
 
@@ -1153,6 +1151,36 @@ LobbiesConnectionManager.instance.onLobbyUsersChanged.subscribe((users: {id: num
 });
 LobbiesConnectionManager.instance.onLobbySettingsChanged.subscribe(() => {
     refreshSettingsList();
+});
+LobbiesConnectionManager.instance.onGameStart.subscribe((data: any) => {
+    ViewsManager.setActiveView('game');
+
+    const players_data = [];
+
+    data.players.forEach((player) => {
+        players_data.push(new PlayerData(
+            player.user_id,
+            player.local_id,
+            `player_${player.user_id}`,
+            player.color,
+            player.isClient,
+            player.position
+        ));
+    });
+
+    const settings = new GameSettings(
+        players_data,
+        data.settings.map,
+        data.settings.ball_speed,
+        data.settings.ball_size,
+        data.ball.color,
+        data.settings.player_speed,
+        data.ball.position,
+    );
+    
+    document.getElementById('game-container').appendChild(initGame());
+    
+    startGame(settings);
 });
 
 

@@ -9,10 +9,6 @@ export default class GameObject{
      */
     private _position: Position;
     /**
-     * Rotation in radians
-     */
-    private _rotation: number;
-    /**
      * Name of the game object
      */
     public name: string;
@@ -30,12 +26,11 @@ export default class GameObject{
      */
     public readonly onPositionChanged: ObservableEvent<Position> = new ObservableEvent<Position>();
 
-    constructor(position: Position, components: IComponent[] = [], name: string = "GameObject", rotation: number = 0){
+    constructor(position: Position, components: IComponent[] = [], name: string = "GameObject"){
         GameManager.game.addGameObject(this);
         
         this._position = position;
         this.name = name;
-        this._rotation = rotation;
 
         this.components = [];
 
@@ -56,20 +51,6 @@ export default class GameObject{
     public set position(position: Position){
         this._position = position;
         this.onPositionChanged.notify(position);
-    }
-
-    /**
-     * Rotation in radians
-     */
-    public get rotation(){
-        return this._rotation;
-    }
-    /**
-     * Rotation in radians
-     */
-    public set rotation(rotation: number){
-        this._rotation = rotation;
-        this.onRotationChanged.notify(rotation);
     }
 
     /**

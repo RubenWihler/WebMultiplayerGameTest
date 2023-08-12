@@ -1,16 +1,16 @@
 export default interface UpdatePackage {
     positions: {
-        players: { 
-            [id: number]: {
-                x: number,
-                y: number,
-                rotation: number,
-            },
-        },
+        /**
+         * Key: player id (user id)
+         */
+        players: Array< {
+            id: number,
+            x: number,
+            y: number,
+        }>,
         ball: { 
             x: number, 
             y: number, 
-            rotation: number 
         }
     };
 }

@@ -9,11 +9,12 @@ import EngineConfig from "./server_game_engine/engine_config.js";
 import Ball from "./server_game_engine/game_objects/entities/ball.js";
 import DeathZone from "./server_game_engine/game_objects/entities/death_zone.js";
 import Player from "./server_game_engine/game_objects/entities/player.js";
-import Wall from "./server_game_engine/game_objects/entities/wall.js";
+import GameInitPackage from "./server_game_engine/packages/game_init_package.js";
 import UpdatePackage from "./server_game_engine/packages/update_package.js";
-import { distance } from "./server_game_engine/types/Vector2.js";
-import { checkCollision } from "./server_game_engine/types/collision.js";
-import { Paths } from "./server_game_engine/types/player_path.js";
+import { aabbCollision } from "./server_game_engine/types/collision.js";
+import PlayerMovementType from "./server_game_engine/types/player_movement_type.js";
+import Position from "./server_game_engine/types/position.js";
+import Size from "./server_game_engine/types/size.js";
 
 export default class Game {
     private _lobby: Lobby;
@@ -23,7 +24,6 @@ export default class Game {
     private _players: Map<number, Player>;
     private _player_local_id: Map<number, number>;
     private _ball: Ball;
-    private _walls: Wall[];
     private _death_zones: DeathZone[];
     private _last_death_zone_player_id: number;
 
@@ -31,6 +31,7 @@ export default class Game {
         this._lobby = lobby;
         this._settings = settings;
         this._status = GameStatus.WAITING;
+        this._players = new Map();
     }
 
     public get status(): GameStatus{
@@ -67,10 +68,21 @@ export default class Game {
         if (this._status != GameStatus.WAITING) return;
         this._status = GameStatus.STARTING;
 
+        //initialize the game objects
         this.initObjects();
+
+        //send the init package to all players
+        this._players.forEach(player => {
+            this.sendInitPackage(player.connectionHandler);
+        });
 
         //start the game loop
         this.gameLoop();
+
+        //start the first round
+        this.startRound();
+
+        console.log(`[+] Game ${this.__id} started!`);
     }
 
     public connectPlayer(connectionHandler: ConnectionHandler): any{
@@ -81,18 +93,16 @@ export default class Game {
 
         const player = new Player(
             connectionHandler, 
-            {x: 500, y: 700},//temp 
-            0,//temp 
+            {x: 0, y: 0},
             this._settings.player_size, 
-            this._settings.player_speed, 
-            {
-                left: {x: 200, y: 700},//temp
-                right: {x: 700, y: 700}//temp
-            }
+            this._settings.player_speed
         );
 
         const id = connectionHandler.connection_data.user.userId;
         this._players.set(id, player);
+
+        console.log(`[+] Player ${connectionHandler.connection_data.user.userId} connected to game ${this.__id}!`);
+
         this.onPlayerConnect();
     }
 
@@ -103,15 +113,19 @@ export default class Game {
     }
 
     private async startRound(){
+
+        console.log(`[+] Starting round in game ${this.__id} ...`);
+
         //set the game's status to IN_ROUND_BREAK
         this._status = GameStatus.IN_ROUND_BREAK;
 
         //set the ball's position to the center of the terrain and make it fixed
-        this._ball.fixed = true;
         this._ball.spawn();
+        this._ball.fixed = true;
 
         //fix the players' positions
         this._players.forEach(player => {
+            player.tpToSpawn();
             player.fixed = true;
         });
 
@@ -134,6 +148,7 @@ export default class Game {
      */
     private async onScore(playerId){
         //todo: update life points
+        console.log(`[+] Player ${playerId} lost a life in game ${this.__id}!`);
         this.startRound();
     }
 
@@ -151,14 +166,16 @@ export default class Game {
             player.update();
         });
         this._ball.update();
-        if (!this.checkCollisions()){
-            //check if the ball is in a death zone
-            if (!this.checkDeathZone()){
-                //check if the ball is out of bounds
-                if (this.checkOutOfBounds()){
-                    this.onScore(this._last_death_zone_player_id);
-                }
-            }
+
+        if (this.checkCollisions()){
+        }
+        //check if the ball is in a death zone
+        if (this.checkDeathZone()){
+        }
+
+        //check if the ball is out of bounds
+        if (this.checkOutOfBounds()){
+            this.onScore(this._last_death_zone_player_id);
         }
 
         this.sendUpdatePackage();
@@ -169,22 +186,16 @@ export default class Game {
 
         //check collisions between players and ball
         this._players.forEach(player => {
-            const collision = checkCollision(player, this._ball);
-            if (collision.collided){
-                this._ball.onCollision(player, collision.collision_position);
-                collided = true;
-                return;
-            }
-        });
+            if (aabbCollision(player, this._ball)){
+                let to_invert: 'x' | 'y' = 'x';
 
-        //if the ball collided with a player, don't check for collisions with walls
-        if (collided) return true;
+                if (player.localId == 0) to_invert = 'y';
+                else if (player.localId == 1) to_invert = 'y';
+                else if (player.localId == 2) to_invert = 'x';
+                else if (player.localId == 3) to_invert = 'x';
 
-        //check collisions between walls and ball
-        this._walls.forEach(wall => {
-            const collision = checkCollision(wall, this._ball);
-            if (collision.collided){
-                this._ball.onCollision(wall, collision.collision_position);
+                this._ball.onCollision(to_invert);
+                console.log(`[+] ball collision with ${player.name} !`)
                 collided = true;
                 return;
             }
@@ -193,19 +204,18 @@ export default class Game {
         return collided;
     }
     private checkDeathZone(): boolean{
-        const ball_position = this._ball.position;
         let player_id: number = -1;
 
         //check if the ball is in a death zone
         this._death_zones.forEach(death_zone => {
-            if (checkCollision(death_zone, this._ball)){
+            if (aabbCollision(death_zone, this._ball)){
                 player_id = death_zone.playerId;
                 return;
             }
         });
 
         //if the ball is not in a death zone, return false
-        if (player_id == -1) return false;
+        if (player_id < 0) return false;
 
         this._last_death_zone_player_id = player_id;
         return true;
@@ -213,8 +223,33 @@ export default class Game {
     private checkOutOfBounds(): boolean{
         const ball_position = this._ball.position;
 
-        return ball_position.x > 0 && ball_position.x < EngineConfig.TERRAIN_MATRIX_SIZE.x && 
-            ball_position.y > 0 && ball_position.y < EngineConfig.TERRAIN_MATRIX_SIZE.y;
+        if (this._settings.player_count == 2) {
+            if (ball_position.x < 0){
+                this._ball.onCollision('x');
+                return false;
+            }
+            else if (ball_position.x > EngineConfig.TERRAIN_MATRIX_SIZE.x - this._ball.width){
+                this._ball.onCollision('x');
+                return false;
+            }
+
+            return ball_position.y < 0 || ball_position.y > EngineConfig.TERRAIN_MATRIX_SIZE.y - this._ball.height;
+        }
+        else if (this._settings.player_count == 3){
+            if (ball_position.x > EngineConfig.TERRAIN_MATRIX_SIZE.x - this._ball.width){
+                this._ball.onCollision('x');
+                return false;
+            }
+
+            return ball_position.x < 0 
+                || ball_position.y < 0 
+                || ball_position.y > EngineConfig.TERRAIN_MATRIX_SIZE.y - this._ball.height;
+        }
+        
+        return ball_position.x < 0 
+                || ball_position.x > EngineConfig.TERRAIN_MATRIX_SIZE.x - this._ball.width
+                || ball_position.y < 0 
+                || ball_position.y > EngineConfig.TERRAIN_MATRIX_SIZE.y - this._ball.height;
     }
 
 
@@ -223,39 +258,35 @@ export default class Game {
     private initObjects(){
         this.initPlayers();
         this.initBall();
-        this.initWalls();
         this.initDeathZones();
     }
     private initPlayers(){
+        const player_count = this._settings.player_count;
         this._player_local_id = new Map();
         let local_id = 0;
-        let player_index = 0;
 
-        //initialize the players' local ids
+        //initialize players
         this._players.forEach(player => {
             this._player_local_id.set(local_id, player.id);
-            local_id++;
-        });
+            player.localId = local_id;
+            player.fixed = false;
+            player.color = EngineConfig.PLAYER_COLORS[player_count][local_id];
+            player.spawnPosition = EngineConfig.PLAYER_SPAWN_POSITIONS[player_count][local_id];
+            player.movementType = EngineConfig.PLAYER_MOVEMENT_TYPES[player_count][local_id];
 
-        //initialize the players' max positions + rotations and initialize them
-        Paths[this._settings.player_count].paths.forEach(paths => {
-            const player = this._players.get(this._player_local_id.get(player_index));
+            if (player.movementType == PlayerMovementType.Horizontal){
+                player.size = this._settings.player_size;
+            }
+            else{
+                player.size = {
+                    width: this._settings.player_size.height,
+                    height: this._settings.player_size.width
+                }
+            }
 
-            const left_position = paths.left_position;
-            const right_position = paths.right_position;
-
-            const rotation = Math.atan2(
-                right_position.y - left_position.y,
-                right_position.x - left_position.x
-            );
-
-            player.max_positions = {
-                left: left_position,
-                right: right_position
-            };
-
-            player.transform.rotation = rotation;
+            player.fixed = true;
             player.init();
+            local_id++;
         });
     }
     private initBall(){
@@ -264,7 +295,6 @@ export default class Game {
                 x: EngineConfig.TERRAIN_MATRIX_SIZE.x / 2,
                 y:EngineConfig.TERRAIN_MATRIX_SIZE.y / 2
             },
-            0,
             this._settings.ball_size,
             this._settings.ball_speed
         );
@@ -272,82 +302,28 @@ export default class Game {
         ball.init();
         this._ball = ball;
     }
-    private initWalls(){
-        const center_x = EngineConfig.TERRAIN_MATRIX_SIZE.x / 2;
-        const center_y = EngineConfig.TERRAIN_MATRIX_SIZE.y / 2;
-
-        this._walls = [];
-
-        switch (this._settings.player_count) {
-            case 2:
-                const wall1 = new Wall(
-                    {
-                        x: EngineConfig.WALL_SIZE.width / 2,
-                        y: center_y
-                    },
-                    0,
-                    EngineConfig.WALL_SIZE
-                );
-                const wall2 = new Wall(
-                    {
-                        x: EngineConfig.TERRAIN_MATRIX_SIZE.x - EngineConfig.WALL_SIZE.width / 2,
-                        y: center_y
-                    },
-                    0,
-                    EngineConfig.WALL_SIZE
-                );
-
-                this._walls.push(wall1);
-                this._walls.push(wall2);
-                break;
-        
-            default:
-                break;
-        }
-    }
     private initDeathZones(){
         this._death_zones = [];
 
-        Paths[this._settings.player_count].paths.forEach(paths => {
+        this._players.forEach(player => {
+            const pos : Position = {
+                x: player.spawnPosition.x,
+                y: player.spawnPosition.y
+            }
 
-            //width is the distance between the left and right positions
-            const width = distance(paths.left_position, paths.right_position);
-            const height = EngineConfig.DEATH_ZONE_SIZE_HEIGHT;
-
-            //calculate the center of the death zone
-            const center_x = (paths.left_position.x + paths.right_position.x) / 2;
-            const center_y = (paths.left_position.y + paths.right_position.y) / 2;
-
-            // Calculate the angle of rotation in radians
-            const rotation = Math.atan2(
-                paths.right_position.y - paths.left_position.y,
-                 paths.right_position.x - paths.left_position.x
-            );
+            const size: Size = player.movementType == PlayerMovementType.Horizontal ?
+                { width: EngineConfig.TERRAIN_MATRIX_SIZE.x, height: EngineConfig.DEATH_ZONE_THICKNESS } :
+                { width: EngineConfig.DEATH_ZONE_THICKNESS, height: EngineConfig.TERRAIN_MATRIX_SIZE.y };
 
             const death_zone = new DeathZone(
-                {
-                    x: center_x,
-                    y: center_y
-                },
-                rotation,
-                {
-                    width: width,
-                    height: height
-                }
+                pos,
+                size,
+                player.id,
             );
 
+            death_zone.init();
+
             this._death_zones.push(death_zone);
-        });
-
-
-        //assign a player to each death zone and initialize it
-        let player_index = 0;
-
-        this._death_zones.forEach(deathZone => {
-            deathZone.playerId = this._player_local_id[player_index];
-            player_index++;
-
-            deathZone.init();
         });
     }
 
@@ -357,35 +333,80 @@ export default class Game {
         const socket = connectionHandler.socket;
     }
 
-    private sendUpdatePackage(){
-        const players = {};
+    private sendInitPackage(connectionHandler: ConnectionHandler){
+        const players = [];
+        let local_id = 0;
 
         //get the players' positions
         this._players.forEach(player => {
             const player_data = {
-                x: player.x,
-                y: player.y,
-                rotation: player.rotation
+                user_id: player.id,
+                local_id: local_id,
+                position: {
+                    x: player.x,
+                    y: player.y,
+                },
+                color: player.color,
+                isClient: player.connectionHandler.connection_data.user.userId == connectionHandler.connection_data.user.userId
             };
 
-            players[player.id] = player_data;
+            players.push(player_data);
+            local_id++;
+        });
+
+        const ball = {
+            position: {
+                x: this._ball.x,
+                y: this._ball.y,
+            },
+            color: 0xFFFFFF
+        };
+
+        const settings = {
+            map: this._settings.map,
+            player_life: this._settings.player_life,
+            player_count: this._settings.player_count,
+            player_size: this._settings.player_size,
+            player_speed: this._settings.player_speed,
+            ball_size: this._settings.ball_size,
+            ball_speed: this._settings.ball_speed
+        };
+
+        const pack: GameInitPackage = {
+            players: players,
+            settings: settings,
+            ball: ball
+        };
+
+        connectionHandler.socket.emit(Messages.GAME_INIT, pack);
+    }
+
+    private sendUpdatePackage(){
+        const players_pos = [];
+
+        //get the players' positions
+        this._players.forEach(player => {
+            const player_data = {
+                id: player.id,
+                x: player.x,
+                y: player.y,
+            };
+
+            players_pos.push(player_data);
         });
 
         const ball = {
             x: this._ball.x,
             y: this._ball.y,
-            rotation: this._ball.rotation
         };
-
         
-        const positions = {
-            players: players,
+        const pos = {
+            players: players_pos,
             ball: ball
         };
-        
 
         const pack: UpdatePackage = {
-            positions: positions
+            positions: pos
         };
 
         this._lobby.sendMessageToAllConnections(Messages.GAME_UPDATE, pack);

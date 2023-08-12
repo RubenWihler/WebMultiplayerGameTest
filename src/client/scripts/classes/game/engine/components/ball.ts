@@ -14,11 +14,10 @@ export default class Ball extends Entity {
         this._color = color;
     }
 
-    public setTransform(x: number, y: number, rotation: number): void {
-        x -= this._sprite.width / 2;
-        y -= this._sprite.height / 2;
+    public setTransform(x: number, y: number): void {
+        // x -= this._sprite.width / 2;
+        // y -= this._sprite.height / 2;
         this.gameObject.position = { x, y };
-        this.gameObject.rotation = rotation;
     }
 
     public attach(gameObject: GameObject): void {

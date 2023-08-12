@@ -77,6 +77,8 @@ export default class Messages{
 
     //#region GAME
 
+    public static readonly GAME_INIT = "game-init";
+
     public static readonly GAME_START = "game-start";
     
     public static readonly GAME_END = "game-end";

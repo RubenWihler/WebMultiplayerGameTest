@@ -6,26 +6,27 @@ import GameObject from "../game_object.js";
 
 export default class Player extends Entity {
     public readonly id: number;
+    public readonly local_id: number;
     public readonly name: string;
     public readonly color: Color;
     public readonly isLocal: boolean;
     private _sprite: Sprite;
     
 
-    constructor(id: number, name: string, color: number, isLocal: boolean) {
+    constructor(id: number, localId: number, name: string, color: number, isLocal: boolean) {
         super();
         this.id = id;
+        this.local_id = localId;
         this.name = name;
         this.color = color;
         this.isLocal = isLocal;
 
     }
 
-    public setTransform(x: number, y: number, rotation: number): void {
-        x -= this._sprite.width / 2;
-        y -= this._sprite.height / 2;
+    public setTransform(x: number, y: number): void {
+        // x -= this._sprite.width / 2;
+        // y -= this._sprite.height / 2;
         this.gameObject.position = { x, y };
-        this.gameObject.rotation = rotation;
     }
 
     public attach(gameObject: GameObject): void {

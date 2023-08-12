@@ -5,8 +5,9 @@ import Entity from "./entity.js";
 export default class DeathZone extends Entity {
     private _player_id: number;
     
-    constructor(spawnPosition: Vector2, spawnRotation: number, size: Size){
-        super("death_zone", {position: spawnPosition, rotation: spawnRotation}, size);
+    constructor(spawnPosition: Vector2, size: Size, playerId: number){
+        super("death_zone", spawnPosition, size);
+        this._player_id = playerId;
     }
 
     public get playerId(): number {
@@ -27,11 +28,4 @@ export default class DeathZone extends Entity {
     }
     public destroy(): void {
     }
-
-    protected onSizeChange(newSize: Size): void {
-    }
-    protected onFixedChange(newFixedValue: boolean): boolean {
-        return true;
-    }
-
 }
