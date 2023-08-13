@@ -1164,18 +1164,19 @@ LobbiesConnectionManager.instance.onGameStart.subscribe((data: any) => {
             `player_${player.user_id}`,
             player.color,
             player.isClient,
-            player.position
+            player.position,
+            player.size
         ));
     });
 
     const settings = new GameSettings(
         players_data,
+        data.ball.position,
         data.settings.map,
         data.settings.ball_speed,
         data.settings.ball_size,
         data.ball.color,
         data.settings.player_speed,
-        data.ball.position,
     );
     
     document.getElementById('game-container').appendChild(initGame());

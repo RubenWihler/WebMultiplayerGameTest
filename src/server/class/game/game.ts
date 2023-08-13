@@ -273,16 +273,15 @@ export default class Game {
             player.color = EngineConfig.PLAYER_COLORS[player_count][local_id];
             player.spawnPosition = EngineConfig.PLAYER_SPAWN_POSITIONS[player_count][local_id];
             player.movementType = EngineConfig.PLAYER_MOVEMENT_TYPES[player_count][local_id];
+            player.position = player.spawnPosition;
 
-            if (player.movementType == PlayerMovementType.Horizontal){
-                player.size = this._settings.player_size;
-            }
-            else{
-                player.size = {
-                    width: this._settings.player_size.height,
-                    height: this._settings.player_size.width
-                }
-            }
+            //set the player size
+            //if the player moves horizontally, the size is the default size
+            //if the player moves vertically, the size is inverted (width becomes height and vice-versa)
+            player.size = player.movementType == PlayerMovementType.Horizontal ? this._settings.player_size : {
+                width: this._settings.player_size.height,
+                height: this._settings.player_size.width
+            };
 
             player.fixed = true;
             player.init();
@@ -346,8 +345,12 @@ export default class Game {
                     x: player.x,
                     y: player.y,
                 },
+                size: {
+                    width: player.width,
+                    height: player.height
+                },
                 color: player.color,
-                isClient: player.connectionHandler.connection_data.user.userId == connectionHandler.connection_data.user.userId
+                isClient: player.connectionHandler.connection_data.user.userId == connectionHandler.connection_data.user.userId,
             };
 
             players.push(player_data);

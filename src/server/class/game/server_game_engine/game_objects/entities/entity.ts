@@ -64,19 +64,25 @@ export default abstract class Entity extends GObject{
     }
 
     /**
-     * Shortcut to the transform position
+     * position (x, y) of the entity
      */
     public get position(): Position{
         return this._position;
     }
     /**
-     * Shortcut to the transform x position
+     * position (x, y) of the entity
+     */
+    public set position(value: Position){
+        this._position = value;
+    }
+    /**
+     * x position of the entity
      */
     public get x(): number{
         return this._position.x;
     }
     /**
-     * Shortcut to the transform y position
+     * y position of the entity
      */
     public get y(): number{
         return this._position.y;

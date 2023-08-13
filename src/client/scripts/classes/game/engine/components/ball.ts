@@ -7,11 +7,12 @@ export default class Ball extends Entity {
 
     private _sprite: Sprite;
     private _color: number = 0xFFFFFF;
+    private _size: {width: number, height: number};
 
-    constructor(color: number) {
+    constructor(color: number, size: {width: number, height: number}) {
         super();
-
         this._color = color;
+        this._size = size;
     }
 
     public setTransform(x: number, y: number): void {
@@ -44,8 +45,8 @@ export default class Ball extends Entity {
     private createSprite(): Sprite {
         const sprite = new Sprite(
             Texture.white,
-            20,
-            20
+            this._size.width,
+            this._size.height
         );
 
         const sprite_renderer = sprite.sprite;

@@ -31,12 +31,8 @@ export default class GameConnectionManager {
     private bindMessages() {
         // Game update
         ConnectionManager.on("game-update", (updatePackage: UpdatePackage) => {
-            console.log(updatePackage);
             this.onGameNetworkUpdate.notify(updatePackage);
         });
     }
-
-
-
 }
 

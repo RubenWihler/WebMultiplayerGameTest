@@ -102,6 +102,11 @@ export default class Game{
         this._running = true;
         this._app.ticker.add(this.update, this);
         this._app.ticker.start();
+
+        //bind resize event
+        window.addEventListener("resize", this.onResize.bind(this));
+
+        // subscribe to network messages
         GameConnectionManager.instance.onGameNetworkUpdate.subscribe((data) => this.networkUpdate(data));
     }
 
@@ -149,7 +154,8 @@ export default class Game{
                 player_data.local_id,
                 player_data.name, 
                 player_data.color, 
-                player_data.is_local
+                player_data.is_local,
+                player_data.size
             );
 
             //player game object
@@ -159,12 +165,13 @@ export default class Game{
                 `player_${player_data.id}`,
             );
 
+            console.log(player_data.position);
+
             this._players.set(player_data.id, player_component);
         }
     }
     private createBall(){
-        // const ball_component = new Ball(this._settings.ball_color);
-        const ball_component = new Ball(0xFF0000);
+        const ball_component = new Ball(0xFF0000, this._settings.ball_size);
         const ball_position = this._settings.ball_position;
 
         const ball_go = new GameObject(
@@ -191,4 +198,9 @@ export default class Game{
         this._inputManager = input_manager_component;
     }
 
+    private onResize = (): void => {
+        this._app.renderer.resize(window.innerWidth, window.innerHeight);
+        this._terrain.x = this._app.screen.width / 2 - 400;
+        this._terrain.y = this._app.screen.height / 2 - 400;
+    }
 }

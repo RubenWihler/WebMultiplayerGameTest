@@ -11,16 +11,17 @@ export default class Player extends Entity {
     public readonly color: Color;
     public readonly isLocal: boolean;
     private _sprite: Sprite;
+    private _size: {width: number, height: number};
     
 
-    constructor(id: number, localId: number, name: string, color: number, isLocal: boolean) {
+    constructor(id: number, localId: number, name: string, color: number, isLocal: boolean, size: {width: number, height: number}) {
         super();
         this.id = id;
         this.local_id = localId;
         this.name = name;
         this.color = color;
         this.isLocal = isLocal;
-
+        this._size = size;
     }
 
     public setTransform(x: number, y: number): void {
@@ -51,8 +52,8 @@ export default class Player extends Entity {
     private createSprite(): Sprite {
         const sprite = new Sprite(
             Texture.white,
-            100,
-            25
+            this._size.width,
+            this._size.height
         );
 
         const sprite_renderer = sprite.sprite;
