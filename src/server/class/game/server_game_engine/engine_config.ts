@@ -71,12 +71,12 @@ export default class EngineConfig{
                 y: EngineConfig.PLAYER_SPAWN_POSITION_OFFSET - EngineConfig.DEFAULT_PLAYER_SIZE.height / 2
             },
             {
-                x: EngineConfig.PLAYER_SPAWN_POSITION_OFFSET - EngineConfig.DEFAULT_PLAYER_SIZE.width,
-                y: EngineConfig.TERRAIN_MATRIX_SIZE.y / 2 - EngineConfig.DEFAULT_PLAYER_SIZE.height / 2
-            },
-            {
                 x: EngineConfig.TERRAIN_MATRIX_SIZE.x / 2 - EngineConfig.DEFAULT_PLAYER_SIZE.width / 2,
                 y: EngineConfig.TERRAIN_MATRIX_SIZE.y - EngineConfig.PLAYER_SPAWN_POSITION_OFFSET - EngineConfig.DEFAULT_PLAYER_SIZE.height / 2
+            },
+            {
+                x: EngineConfig.PLAYER_SPAWN_POSITION_OFFSET - EngineConfig.DEFAULT_PLAYER_SIZE.height / 2,
+                y: EngineConfig.TERRAIN_MATRIX_SIZE.y / 2 - EngineConfig.DEFAULT_PLAYER_SIZE.width / 2
             }
         ],
         4: [
@@ -85,16 +85,16 @@ export default class EngineConfig{
                 y: EngineConfig.PLAYER_SPAWN_POSITION_OFFSET - EngineConfig.DEFAULT_PLAYER_SIZE.height / 2
             },
             {
-                x: EngineConfig.PLAYER_SPAWN_POSITION_OFFSET - EngineConfig.DEFAULT_PLAYER_SIZE.width / 2,
-                y: EngineConfig.TERRAIN_MATRIX_SIZE.y / 2 - EngineConfig.DEFAULT_PLAYER_SIZE.height / 2
-            },
-            {
-                x: EngineConfig.TERRAIN_MATRIX_SIZE.x - EngineConfig.PLAYER_SPAWN_POSITION_OFFSET - EngineConfig.DEFAULT_PLAYER_SIZE.width / 2,
-                y: EngineConfig.TERRAIN_MATRIX_SIZE.y / 2 - EngineConfig.DEFAULT_PLAYER_SIZE.height / 2
-            },
-            {
                 x: EngineConfig.TERRAIN_MATRIX_SIZE.x / 2 - EngineConfig.DEFAULT_PLAYER_SIZE.width / 2,
                 y: EngineConfig.TERRAIN_MATRIX_SIZE.y - EngineConfig.PLAYER_SPAWN_POSITION_OFFSET - EngineConfig.DEFAULT_PLAYER_SIZE.height / 2
+            },
+            {
+                x: EngineConfig.PLAYER_SPAWN_POSITION_OFFSET - EngineConfig.DEFAULT_PLAYER_SIZE.height / 2,
+                y: EngineConfig.TERRAIN_MATRIX_SIZE.y / 2 - EngineConfig.DEFAULT_PLAYER_SIZE.width / 2
+            },
+            {
+                x: EngineConfig.TERRAIN_MATRIX_SIZE.x - EngineConfig.PLAYER_SPAWN_POSITION_OFFSET - EngineConfig.DEFAULT_PLAYER_SIZE.height / 2,
+                y: EngineConfig.TERRAIN_MATRIX_SIZE.y / 2 - EngineConfig.DEFAULT_PLAYER_SIZE.width / 2
             }
         ],
     }
@@ -102,18 +102,18 @@ export default class EngineConfig{
     static readonly PLAYER_MOVEMENT_TYPES = {
         2: [
             PlayerMovementType.Horizontal,
-            PlayerMovementType.Horizontal,
+            PlayerMovementType.Horizontal
         ],
         3: [
             PlayerMovementType.Horizontal,
-            PlayerMovementType.Vertical,
-            PlayerMovementType.Horizontal
+            PlayerMovementType.Horizontal,
+            PlayerMovementType.Vertical
         ],
         4: [
             PlayerMovementType.Horizontal,
+            PlayerMovementType.Horizontal,
             PlayerMovementType.Vertical,
-            PlayerMovementType.Vertical,
-            PlayerMovementType.Horizontal
+            PlayerMovementType.Vertical
         ],
     }
 }
