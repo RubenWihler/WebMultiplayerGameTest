@@ -1,11 +1,20 @@
 import * as PIXI from "pixi.js"
 import Component from "../component.js";
+import Position from "../position.js";
 
 export default class Sprite extends Component {
-    private _sprite: PIXI.Sprite;
-    private _texture: PIXI.Texture;
-    private _width: number;
-    private _height: number;
+    protected _sprite: PIXI.Sprite;
+    protected _texture: PIXI.Texture;
+    protected _width: number;
+    protected _height: number;
+
+    /**
+     * Callback function that is called when the position of the sprite is changed
+     * @param x the new x position of the sprite
+     * @param y the new y position of the sprite
+     * @returns the new position of the sprite
+     */
+    public onPositionChanged: (x: number, y: number) => Position = null;
 
     constructor(texture: PIXI.Texture, width: number, height: number) {
         super();
@@ -61,9 +70,20 @@ export default class Sprite extends Component {
     }
 
     private initEvents(){
-        this.gameObject.onPositionChanged.subscribe((position) => {
-            this._sprite.position.set(position.x, position.y);
-        });
+        //if on position changed is not set, subscribe to the event normally
+        if (this.onPositionChanged == null){
+            this.gameObject.onPositionChanged.subscribe((position) => {
+                this._sprite.position.set(position.x, position.y);
+            });
+        }
+        //else, subscribe to the event and call the callback function
+        else{
+            this.gameObject.onPositionChanged.subscribe((position) => {
+                position = this.onPositionChanged(position.x, position.y);
+                this._sprite.position.set(position.x, position.y);
+            });
+        }
+
         this.gameObject.onRotationChanged.subscribe((rotation) => {
             this._sprite.rotation = rotation;
         });

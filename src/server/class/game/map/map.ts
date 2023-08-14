@@ -1,9 +1,9 @@
 enum GameMap{
-    DEFAULT,
-    SPACE,
-    DESERT,
-    FOREST,
-    CITY
+    DEFAULT = 'default',
+    SPACE = 'space',
+    DESERT = 'desert',
+    FOREST = 'forest',
+    CITY = 'city',
 }
 
 export default GameMap;
