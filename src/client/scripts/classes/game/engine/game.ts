@@ -1,7 +1,7 @@
 import * as PIXI from "pixi.js"
 import GameObject from "./game_object.js";
 import GameSettings from "../game_settings.js";
-import UpdatePackage, { InputPackage, ScorePackage } from "./update_package.js";
+import UpdatePackage, { InputPackage, ScorePackage } from "./packages.js";
 import Player from "./components/player.js";
 import Position from "./position.js";
 import Ball from "./components/ball.js";

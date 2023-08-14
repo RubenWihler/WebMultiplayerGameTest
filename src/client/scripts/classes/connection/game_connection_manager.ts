@@ -1,4 +1,4 @@
-import UpdatePackage, { InputPackage, ScorePackage } from "../game/engine/update_package.js";
+import UpdatePackage, { InputPackage, ScorePackage } from "../game/engine/packages.js";
 import ConnectionManager from "./connection_manager.js";
 import ObservableEvent from "../global_types/observable_event.js";
 

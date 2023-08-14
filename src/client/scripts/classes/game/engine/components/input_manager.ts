@@ -1,6 +1,6 @@
 import ObservableEvent from "../../../global_types/observable_event.js";
 import Component from "../component.js";
-import { InputPackage } from "../update_package.js";
+import { InputPackage } from "../packages.js";
 
 export default class InputManager extends Component {
     public readonly onInputPackage: ObservableEvent<InputPackage>;
