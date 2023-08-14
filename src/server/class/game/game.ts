@@ -10,6 +10,7 @@ import Ball from "./server_game_engine/game_objects/entities/ball.js";
 import DeathZone from "./server_game_engine/game_objects/entities/death_zone.js";
 import Player from "./server_game_engine/game_objects/entities/player.js";
 import GameInitPackage from "./server_game_engine/packages/game_init_package.js";
+import ScorePackage from "./server_game_engine/packages/score_package.js";
 import UpdatePackage from "./server_game_engine/packages/update_package.js";
 import { aabbCollision } from "./server_game_engine/types/collision.js";
 import PlayerMovementType from "./server_game_engine/types/player_movement_type.js";
@@ -26,6 +27,8 @@ export default class Game {
     private _ball: Ball;
     private _death_zones: DeathZone[];
     private _last_death_zone_player_id: number;
+
+    private _players_life: Map<number, number>;
 
     public constructor(lobby: Lobby, settings: GameSettings){
         this._lobby = lobby;
@@ -132,6 +135,8 @@ export default class Game {
         //wait 2 seconds
         await new Promise(resolve => setTimeout(resolve, 2000));
 
+        this.sendRoundStartPackage();
+
         //unfix the players' positions
         this._players.forEach(player => {
             player.fixed = false;
@@ -149,13 +154,20 @@ export default class Game {
     private async onScore(playerId){
         //todo: update life points
         console.log(`[+] Player ${playerId} lost a life in game ${this.__id}!`);
+
+        this.sendScorePackage();
+
         this.startRound();
     }
 
     private async gameLoop(){
+        //physics loop
+        //updated at 66Hz (15ms)
+        const time_step = 1000 / 66;
+
         while (this._status != GameStatus.ENDING){
             this.update();
-            await new Promise(resolve => setTimeout(resolve, 1000 / EngineConfig.FPS));
+            await new Promise(resolve => setTimeout(resolve, time_step));
         }
     }
 
@@ -263,11 +275,14 @@ export default class Game {
     private initPlayers(){
         const player_count = this._settings.player_count;
         this._player_local_id = new Map();
+        this._players_life = new Map();
         let local_id = 0;
 
         //initialize players
         this._players.forEach(player => {
             this._player_local_id.set(local_id, player.id);
+            this._players_life.set(player.id, this._settings.player_life);
+
             player.localId = local_id;
             player.fixed = false;
             player.color = EngineConfig.PLAYER_COLORS[player_count][local_id];
@@ -328,9 +343,11 @@ export default class Game {
 
     //#endregion
 
-    private bindMessages(connectionHandler: ConnectionHandler){
-        const socket = connectionHandler.socket;
-    }
+    
+
+    //#region Game packages handling
+
+    //#region Server -> Client
 
     private sendInitPackage(connectionHandler: ConnectionHandler){
         const players = [];
@@ -351,6 +368,7 @@ export default class Game {
                 },
                 color: player.color,
                 isClient: player.connectionHandler.connection_data.user.userId == connectionHandler.connection_data.user.userId,
+                movement_type: player.movementType
             };
 
             players.push(player_data);
@@ -383,7 +401,28 @@ export default class Game {
 
         connectionHandler.socket.emit(Messages.GAME_INIT, pack);
     }
+    private sendScorePackage(){
+        const players_score = [];
 
+        //get the players' positions
+        this._players.forEach(player => {
+            const player_data = {
+                id: player.id,
+                life: this._players_life.get(player.id),
+            };
+
+            players_score.push(player_data);
+        });
+
+        const pack: ScorePackage = {
+            scores: players_score
+        };
+
+        this._lobby.sendMessageToAllConnections(Messages.GAME_SCORE, pack);
+    }
+    private sendRoundStartPackage(){
+        this._lobby.sendMessageToAllConnections(Messages.GAME_ROUND_START, {});
+    }
     private sendUpdatePackage(){
         const players_pos = [];
 
@@ -414,4 +453,18 @@ export default class Game {
 
         this._lobby.sendMessageToAllConnections(Messages.GAME_UPDATE, pack);
     }
+
+    //#endregion
+
+    //#region Client -> Server
+
+    private bindMessages(connectionHandler: ConnectionHandler){
+        const socket = connectionHandler.socket;
+    }
+
+    //#endregion
+
+    //#endregion
+
+    
 }

@@ -10,11 +10,19 @@ export default class Player extends Entity {
     public readonly name: string;
     public readonly color: Color;
     public readonly isLocal: boolean;
+    /**
+     * 0: horizontal
+     * 1: vertical
+     */
+    public readonly movement_type: number;
     private _sprite: Sprite;
     private _size: {width: number, height: number};
     
+    public get size(): {width: number, height: number} {
+        return this._size;
+    }
 
-    constructor(id: number, localId: number, name: string, color: number, isLocal: boolean, size: {width: number, height: number}) {
+    constructor(id: number, localId: number, name: string, color: number, isLocal: boolean, size: {width: number, height: number}, movement_type: number) {
         super();
         this.id = id;
         this.local_id = localId;
@@ -22,12 +30,11 @@ export default class Player extends Entity {
         this.color = color;
         this.isLocal = isLocal;
         this._size = size;
+        this.movement_type = movement_type;
     }
 
     public setTransform(x: number, y: number): void {
-        // x -= this._sprite.width / 2;
-        // y -= this._sprite.height / 2;
-        this.gameObject.position = { x, y };
+        super.setTransform(x, y);
     }
 
     public attach(gameObject: GameObject): void {

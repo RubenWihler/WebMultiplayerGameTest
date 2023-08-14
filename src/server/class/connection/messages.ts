@@ -87,6 +87,9 @@ export default class Messages{
 
     public static readonly GAME_CLIENT_INPUTS = "game-client-inputs";
 
+    public static readonly GAME_SCORE = "game-score";
+
+    public static readonly GAME_ROUND_START = "game-round-start";
     //#endregion
 
 }

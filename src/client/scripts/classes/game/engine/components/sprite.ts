@@ -56,6 +56,10 @@ export default class Sprite extends Component {
     destroy(): void {
     }
 
+    public move(x: number, y: number){
+        this._sprite.position.set(x, y);
+    }
+
     private initEvents(){
         this.gameObject.onPositionChanged.subscribe((position) => {
             this._sprite.position.set(position.x, position.y);
@@ -64,5 +68,4 @@ export default class Sprite extends Component {
             this._sprite.rotation = rotation;
         });
     }
-
 }

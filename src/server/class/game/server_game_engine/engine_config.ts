@@ -13,7 +13,7 @@ export default class EngineConfig{
 
     static readonly DEFAULT_PLAYER_SIZE = {
         width: 100,
-        height: 25
+        height: 15
     };
 
     static readonly DEFAULT_BALL_SIZE = {

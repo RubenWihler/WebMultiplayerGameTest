@@ -27,13 +27,15 @@ export class PlayerData {
     public is_local: boolean;
     public position: {x: number, y: number};
     public size: {width: number, height: number};
+    public movement_type: number;
 
-    constructor(id: number, localId: number, name: string, color: number, is_local: boolean, position: {x: number, y: number}, size: {width: number, height: number}) {
+    constructor(id: number, localId: number, name: string, color: number, is_local: boolean, position: {x: number, y: number}, size: {width: number, height: number}, movement_type: number) {
         this.id = id;
         this.name = name;
         this.color = color;
         this.is_local = is_local;
         this.position = position;
         this.size = size;
+        this.movement_type = movement_type;
     }
 }

@@ -1,4 +1,5 @@
 import GameSettings from "../../game_settings.js"
+import PlayerMovementType from "../types/player_movement_type.js"
 
 export default interface GameInitPackage{
     players: Array<{
@@ -9,7 +10,8 @@ export default interface GameInitPackage{
             y: number
         },
         color: number,
-        isClient: boolean
+        isClient: boolean,
+        movement_type: PlayerMovementType
     }>,
     settings: GameSettings,
     ball: {

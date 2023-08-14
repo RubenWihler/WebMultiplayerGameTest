@@ -1165,7 +1165,8 @@ LobbiesConnectionManager.instance.onGameStart.subscribe((data: any) => {
             player.color,
             player.isClient,
             player.position,
-            player.size
+            player.size,
+            player.movement_type
         ));
     });
 

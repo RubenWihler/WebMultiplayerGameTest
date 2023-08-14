@@ -25,3 +25,7 @@ export class InputPackage{
         this.move_down = move_down;
     }
 }
+
+export interface ScorePackage {
+    scores: Array<{id: number, life: number}>;
+}
