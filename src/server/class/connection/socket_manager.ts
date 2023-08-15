@@ -82,6 +82,7 @@ export default class SocketManager {
 
         socket.on(Messages.DISCONNECT, () => this.onDisconnect(socket));
         socket.on(Messages.SIGNUP, (signup_data) => this.onSignup(socket, signup_data));
+        socket.on(Messages.GUEST_SIGNUP, () => this.onGuestSignup(socket));
         socket.on(Messages.LOGIN, (login_data) => this.onLogin(socket, login_data));
         socket.on(Messages.TOKEN_LOGIN, (token_login_data) => this.onTokenLogin(socket, token_login_data));
         socket.on(Messages.LOGOUT, () => this.onLogout(socket));
@@ -120,7 +121,6 @@ export default class SocketManager {
         console.log('[+] socket disconnected : ' + socket.id);
     }
     private async onSignup(socket: Socket, signup_data: any){
-        
         //If the socket is already associated with a connection
         if(this.isSocketAlreadyConnected(socket)){
             socket.emit(Messages.SIGNUP_RESPONSE, {
@@ -208,6 +208,64 @@ export default class SocketManager {
             }
         }
         socket.emit(Messages.SIGNUP_RESPONSE, response);
+    }
+    private async onGuestSignup(socket: Socket){
+        //If the socket is already associated with a connection
+        if(this.isSocketAlreadyConnected(socket)){
+            socket.emit(Messages.SIGNUP_RESPONSE, {
+                success: false,
+                messages: ['USER_ALREADY_LOGGED_IN']
+            });
+            return;
+        }
+
+        //make request to the database
+        const signup_response = await UserProcessor.createGuestAsync();
+        
+        // If the signup is not successful
+        if (!signup_response.statut){
+            socket.emit(Messages.SIGNUP_RESPONSE, {
+                success: false,
+                messages: signup_response.msg
+            });
+            return;
+        }
+
+        const login_response = await UserProcessor.signinWithTokenAsync(
+            signup_response.connection_data.user.username, 
+            signup_response.connection_data.token
+        );
+
+        if (!login_response.statut){
+            socket.emit(Messages.SIGNUP_RESPONSE, {
+                success: false,
+                messages: ['Your account has been created successfully but an error occured while trying to login you. Please try to login manually.']
+            });
+            return;
+        }
+
+        // The login is successful
+        const connection_handler = new ConnectionHandler();
+        connection_handler.connect(login_response.connection_data, socket);
+
+        this.not_connected_sockets.splice(this.not_connected_sockets.indexOf(socket), 1);
+        this.connected_sockets.set(socket.id, connection_handler);
+        connection_handler.socket = socket;
+        
+        
+        const response = {
+            success: true,
+            messages: ['Your account has been created successfully ! You are now logged in.'],
+            signup_response_data: {
+                user_data: {
+                    userId: login_response.connection_data.user.userId,
+                    username: login_response.connection_data.user.username,
+                    email: login_response.connection_data.user.email
+                },
+                token: login_response.connection_data.token
+            }
+        }
+        socket.emit(Messages.GUEST_SIGNUP_RESPONSE, response);
     }
     private async onLogin(socket: Socket, login_data: any){
 

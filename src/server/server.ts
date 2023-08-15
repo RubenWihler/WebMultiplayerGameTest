@@ -13,6 +13,7 @@ import { setUpListeningMessages } from './messages/any_message.js';
 import { setUpListeningLoggedMessages } from './messages/logged_messages.js';
 
 import { router as main_router, __dirname } from './routes/main_routes.js';
+import DatabaseManager from './class/database/database_connection.js';
 
 dotenv.config();
 
@@ -20,6 +21,19 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 const port : number = Number(process.env.LISTEN_PORT);
+
+console.log('[+] Initializing server...');
+
+console.log('[+] connecting to database...');
+
+try {
+    DatabaseManager.initialize();
+}
+catch (error) {
+    console.error('[-] Error while connecting to database : ' + error);
+    process.exit(1);
+}
+
 
 console.log('[+] strating server...');
 

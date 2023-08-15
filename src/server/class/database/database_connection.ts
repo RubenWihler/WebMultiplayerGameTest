@@ -1,6 +1,7 @@
 import mysql from 'mysql2';
 import dotenv from 'dotenv';
 import { Pool } from 'mysql2/typings/mysql/lib/Pool';
+import UserProcessor from './processor/user_processor';
 
 export default class DatabaseManager{
     private static pool: Pool;
@@ -21,5 +22,8 @@ export default class DatabaseManager{
             password: process.env.MYSQL_PASSWORD,
             database: process.env.MYSQL_DATABASE
         });
+
+        // Initialize processors
+        UserProcessor.init();
     }
 }

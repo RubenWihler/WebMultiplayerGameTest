@@ -1,4 +1,5 @@
 import { Pool } from "mysql2";
+import dotenv from 'dotenv';
 import TokenGenerator from "uuid-token-generator";
 import User from "../../connection/connection_types/user.js";
 import DatabaseManager from "../database_connection.js";
@@ -11,6 +12,33 @@ import EventsManager from "../../event_system/events_manager.js";
  * This class contains all the methods that are related to user management in the database.
  */
 export default class UserProcessor{
+    private static _guest_user_name: string;
+    private static _guest_user_email: string;
+    private static _guest_user_password: string;
+    private static _initialized: Boolean = false;
+
+
+    public static get GUEST_USER_NAME(): string {
+        if (!this._initialized) this.init();
+        return this._guest_user_name;
+    }
+    public static get GUEST_USER_EMAIL(){
+        if (!this._initialized) this.init();
+        return this._guest_user_email;
+    }
+    public static get GUEST_USER_PASSWORD(){
+        if (!this._initialized) this.init();
+        return this._guest_user_password;
+    }
+
+    static init(){
+        dotenv.config();
+        this._guest_user_name = process.env.GUEST_USERNAME;
+        this._guest_user_email = process.env.GUEST_EMAIL;
+        this._guest_user_password = process.env.GUEST_PASSWORD;
+        this._initialized = true;
+    }
+
     /**
      * Create a new user
      * @param username the username
@@ -84,6 +112,44 @@ export default class UserProcessor{
             connection: connection_data
         };
     }
+    static async createGuestAsync() : Promise<any>{
+        const pool : Pool = DatabaseManager.Pool;
+        const query = "INSERT INTO Users (username, email, password) VALUES (?, ?, ?)";
+        const queryValues = [
+            this.GUEST_USER_NAME,
+            this.GUEST_USER_EMAIL,
+            HashTools.hash(this.GUEST_USER_PASSWORD)
+        ];
+        const [result] : any = await pool.promise().query(query, queryValues);
+
+        if (result.affectedRows == 0){
+            return {
+                statut: false,
+                msg: ["An error occured while creating the user"]
+            };
+        }
+
+        const user = new User(
+            result.insertId,
+            this.GUEST_USER_NAME,
+            this.GUEST_USER_EMAIL
+        );
+
+        const token = this.generateToken();
+        await this.setUserTokenAsync(user.userId, token);
+        
+        const connection_data = new ConnectionData(
+            token,
+            user
+        );
+
+        EventsManager.onUserCreated.notify(connection_data);
+
+        return {
+            statut: true,
+            connection: connection_data
+        };
+    }
     /**
      * Get the user's data by his id, if the user doesn't exist, return an object with the statut false and a message
      * if the user exist, return an object with the statut true and the user's data
@@ -123,6 +189,13 @@ export default class UserProcessor{
      * @returns the statut and the connection_data
      */
     static async signInAsync(emailOrUsername: string, password: string) : Promise<any>{
+        if (emailOrUsername == this.GUEST_USER_EMAIL || emailOrUsername == this.GUEST_USER_NAME){
+            return {
+                statut: false,
+                msg: ["GUEST_USER_CANT_SIGN_IN"]
+            };
+        }
+
         const pool : Pool = DatabaseManager.Pool;
         const query = "SELECT * FROM Users WHERE email = ? OR username = ? LIMIT 1";
         const queryValues = [emailOrUsername, emailOrUsername];
@@ -219,6 +292,13 @@ export default class UserProcessor{
             };
         }
 
+        if (rows[0].email === this.GUEST_USER_EMAIL){
+            return {
+                statut: false,
+                msg: ["GUEST_USER_CANT_SIGN_OUT"]
+            };
+        }
+
         const user = new User(
             rows[0].userId,
             rows[0].username,
@@ -247,9 +327,8 @@ export default class UserProcessor{
      * If the user is deleted, return an object with the statut true
      */
     static async deleteUserAsync(userId: number, password: string) : Promise<any>{
-
         const pool : Pool = DatabaseManager.Pool;
-        const password_check_query = "SELECT password FROM Users WHERE userId = ? LIMIT 1";
+        const password_check_query = "SELECT password, email FROM Users WHERE userId = ? LIMIT 1";
         const password_check_queryValues = [userId];
         const [rows] : any = await pool.promise().query(password_check_query, password_check_queryValues);
         
@@ -263,6 +342,13 @@ export default class UserProcessor{
             return {
                 statut: false,
                 msg: ["WRONG_CREDENTIALS"]
+            };
+        }
+
+        if (rows[0].email === this.GUEST_USER_EMAIL){
+            return {
+                statut: false,
+                msg: ["GUEST_USER_CANT_BE_DELETED"]
             };
         }
 
@@ -318,6 +404,7 @@ export default class UserProcessor{
      * @returns if the email is valid
      */
     private static isEmailValid(email: string) : Boolean{
+        if (email == this.GUEST_USER_EMAIL) return false;
         const expression: RegExp = /^(?=.{1,254}$)(?=.{1,64}@)[-!#$%&'*+/0-9=?A-Z^_`a-z{|}~]+(\.[-!#$%&'*+/0-9=?A-Z^_`a-z{|}~]+)*@[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?(\.[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?)*$/;
         return expression.test(email);
     }

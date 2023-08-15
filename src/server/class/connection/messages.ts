@@ -8,6 +8,9 @@ export default class Messages{
     public static readonly SIGNUP = "signup";
     public static readonly SIGNUP_RESPONSE = "signup-response";
 
+    public static readonly GUEST_SIGNUP = "guest-signup";
+    public static readonly GUEST_SIGNUP_RESPONSE = "guest-signup-response";
+
     public static readonly LOGIN = "login";
     public static readonly LOGIN_RESPONSE = "login-response";
 
