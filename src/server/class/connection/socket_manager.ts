@@ -232,8 +232,8 @@ export default class SocketManager {
         }
 
         const login_response = await UserProcessor.signinWithTokenAsync(
-            signup_response.connection_data.user.username, 
-            signup_response.connection_data.token
+            signup_response.connection.user.username, 
+            signup_response.connection.token
         );
 
         if (!login_response.statut){
