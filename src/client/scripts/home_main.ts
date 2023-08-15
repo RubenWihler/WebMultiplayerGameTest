@@ -22,8 +22,11 @@ var disconnected_refresh_interval: any = null;
 //#region ----- html elements -----
 
 //#region connection view elements
+
 const element_connection_signin_button : HTMLButtonElement = document.getElementById('connection-signin-button') as HTMLButtonElement;
 const element_connection_signup_button : HTMLButtonElement = document.getElementById('connection-signup-button') as HTMLButtonElement;
+const element_connection_guest_button: HTMLButtonElement = document.getElementById('connection-guest-button') as HTMLButtonElement;
+
 //#endregion
 
 //#region sign in view elements
@@ -292,6 +295,12 @@ element_connection_signin_button.addEventListener('click', (event) => {
 element_connection_signup_button.addEventListener('click', (event) => {
     if (!checkConnection()) return;
     ViewsManager.setActiveView('signup');
+});
+element_connection_guest_button.addEventListener('click', async (event) => {
+    if (!checkConnection()) return;
+
+    event.preventDefault();
+    const result = await AccountConnectionManager.signupAsGuest();
 });
 //#endregion
 

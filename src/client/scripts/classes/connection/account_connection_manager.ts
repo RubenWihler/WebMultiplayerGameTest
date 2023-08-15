@@ -111,6 +111,36 @@ export default class AccountConnectionManager {
         this.isDeletingAccount = true;
         ConnectionManager.send('delete-account', paquet);
     }
+    public static async signupAsGuest() : Promise<boolean> {
+        if (this.isLogged
+            || this.isMakingOperation
+            || !ConnectionManager.isConnected) return;
+
+        this.isSigningUp = true;
+
+        const operation : RequestOperation<any,any> = new RequestOperation(
+            'guest-signup',
+            'guest-signup-response',
+            {}
+        );    
+
+        const response = await operation.start();
+
+        if (!response.success) {
+            AccountConnectionManager.isSigningUp = false;
+            alert(response.messages[0]);
+            return false;
+        }
+
+        AccountConnectionManager.isSigningUp = false;
+
+        AccountConnectionManager.Instance.connect(
+            response.signup_response_data.user_data,
+            response.signup_response_data.token
+        );
+
+        return response.success;
+    }
 
     /**
      * Check if the given id is the id of the logged user.
