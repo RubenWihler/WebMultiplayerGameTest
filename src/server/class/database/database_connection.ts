@@ -1,7 +1,7 @@
 import mysql from 'mysql2';
 import dotenv from 'dotenv';
 import { Pool } from 'mysql2/typings/mysql/lib/Pool';
-import UserProcessor from './processor/user_processor';
+import UserProcessor from './processor/user_processor.js';
 
 export default class DatabaseManager{
     private static pool: Pool;
