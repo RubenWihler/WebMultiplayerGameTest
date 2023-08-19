@@ -50,7 +50,7 @@ export default class Ball extends Entity {
         );
 
         const sprite_renderer = sprite.sprite;
-        sprite_renderer.tint = this._color;
+        sprite_renderer.tint = 0x2E2E2E;
 
         return sprite;
     }

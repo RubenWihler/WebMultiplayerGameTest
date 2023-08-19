@@ -62,8 +62,8 @@ export default class Sprite extends Component {
     }
     update(): void {
     }
-    destroy(): void {
-        this._sprite.destroy();
+    destroy(): void {;
+        this._gameObject.scene.removeChild(this._sprite);
     }
 
     public move(x: number, y: number){
@@ -84,9 +84,5 @@ export default class Sprite extends Component {
                 this._sprite.position.set(position.x, position.y);
             });
         }
-
-        this._gameObject.onRotationChanged.subscribe((rotation) => {
-            this._sprite.rotation = rotation;
-        });
     }
 }

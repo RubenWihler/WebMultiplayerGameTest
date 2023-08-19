@@ -178,6 +178,7 @@ export default class Game{
             //remove client player from players map and player positions map
             this._players.delete(this._client_player.id);
             this._player_positions.delete(this._client_player.id);
+            this._player_lifes.delete(this._client_player.id);
             
             //destroy client player game object and set it to null
             this._client_player_go.destroy();
@@ -410,7 +411,9 @@ export default class Game{
      * @param data the score package
      */
     private onScore(data: ScorePackage){
+        
         // update player lifes
+        this._player_lifes = new Map<number, number>();
         data.scores.forEach((score) => {
             this._player_lifes.set(score.id, score.life);
         });

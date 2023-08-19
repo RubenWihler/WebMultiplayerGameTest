@@ -105,6 +105,9 @@ export default class GameObject{
      * Destroy all components of the game object
      */
     public destroy(){
+        this.onPositionChanged.dispose();
+        this.onRotationChanged.dispose();
+
         this.components.forEach(component => {
             component.destroy();
         });
