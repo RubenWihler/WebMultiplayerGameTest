@@ -32,7 +32,8 @@ export default class GameManager{
     
     private static createApp(): PIXI.Application{
         const app = new PIXI.Application({
-            background: 0x40247A,
+            background: 0x00000000,
+            backgroundAlpha: 0,
             resizeTo: window
         });
 

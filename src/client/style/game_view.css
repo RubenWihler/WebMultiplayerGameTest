@@ -1,0 +1,144 @@
+#game-container{
+    position: absolute;
+    z-index: -1;
+}
+
+#hud-container{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#hud-left-container{
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    width: 30%;
+    height: 95%;
+}
+
+#hud-score-container{
+    width: 70%;
+    height: 300px;
+    margin-left: 5%;
+    align-self: flex-start;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 12px;
+}
+#hud-score-container>h3{
+    font-size: 1.5rem;
+    font-weight: 700;
+    z-index: 1;
+    height: 25px;
+}
+/*separator*/
+#hud-score-container>span{
+    width: 100%;
+    height: 6%;
+}
+#hud-scores-items{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    overflow-y: auto;
+}
+
+.hud-score-item{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding-left: 5%;
+    padding-right: 5%;
+    width: 70%;
+    height: 37px;
+    min-height: 40px;
+    margin-bottom: 8px;
+}
+.hud-score-item>span{
+    font-size: 1rem;
+    font-weight: 500;
+    z-index: 1;
+    white-space: nowrap;
+    overflow: hidden;
+}
+.hud-score-item.is-client>span{
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+#hud-separator{
+    width: 900px;
+    height: 100%;
+}
+
+#hud-right-container{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    width: 30%;
+    height: 95%;
+}
+
+
+#hud-specate-container{
+    width: 100%;
+    height: 55px;
+    align-self: flex-end;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 12px;
+}
+#hud-spectate{
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+    width: 90%;
+    height: 55px;
+    font-size: 1.5em;
+    font-weight: 700;
+    text-align: right;
+    color: #FF4141;
+}
+#hud-spectate>i{
+    margin-right: 10px;
+    font-size: 1.2rem;
+    color: #FF4141;
+}
+
+#hud-buttons-container{
+    width: 90%;
+    height: 75px;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: flex-end;
+}
+
+.hud-button{
+    width: 125px;
+    height: 50px;
+    margin-left: 10px;
+}
+
+.hud-button>i{
+    font-size: 1.2rem;
+}
+
+#hud-leave-button{
+
+}

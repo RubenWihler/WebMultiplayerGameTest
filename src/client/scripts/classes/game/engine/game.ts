@@ -8,6 +8,8 @@ import Ball from "./components/ball.js";
 import InputManager from "./components/input_manager.js";
 import GameConnectionManager from "../../connection/game_connection_manager.js";
 import ConnectionManager from "../../connection/connection_manager.js";
+import HUDManager from "../hud/hud_manager.js";
+import LobbiesConnectionManager from "../../connection/lobbies_connection_manager.js";
 
 
 export default class Game{
@@ -21,16 +23,19 @@ export default class Game{
     private _players: Map<number, Player>;
     private _ball: Ball;
     private _inputManager: InputManager;
-
+    
     private _player_lifes: Map<number, number>;
-
+    
     //for client prediction
     private _client_player: Player;
     private _client_player_go: GameObject;
-
+    
     //for position interpolation
     private _player_positions: Map<number, Position>;
     private _ball_position: Position;
+    
+    //hud manager
+    private _hud_manager: HUDManager;
 
     public get terrain(): PIXI.Container{
         return this._terrain;
@@ -45,6 +50,7 @@ export default class Game{
         this._player_positions = new Map();
         this._ball_position = null;
         this._player_lifes = new Map();
+        this._hud_manager = new HUDManager();
     }
 
     //#region Game objects management
@@ -67,12 +73,20 @@ export default class Game{
      * Starts the game loop and binds events.
      */
     private start(){
+        // display hud
+        this._hud_manager.display();
+
         this._running = true;
+
+        //start game loop
         this._app.ticker.add(this.update, this);
         this._app.ticker.start();
 
         //bind resize event
         window.addEventListener("resize", this.onResize.bind(this));
+
+        //bind hud events
+        this.bindHudEvents();
 
         // subscribe to network messages
         GameConnectionManager.instance.onGameNetworkUpdate.subscribe((data) => this.networkUpdate(data));
@@ -86,6 +100,10 @@ export default class Game{
      * Stops the game loop unbinds events and destroys the game and all its objects.
      */
     public destroy(){
+        this._hud_manager.onLeaveClick.dispose();
+        this._hud_manager.hide();
+        this._hud_manager = null;
+
         this._running = false;
 
         // stop game loop
@@ -167,7 +185,7 @@ export default class Game{
             this._client_player = null;
         }
         
-        this.drawSpectatingText();
+        this.displaySpecateHud(true);
         console.log("[+] Spectating");
     }
     
@@ -398,7 +416,7 @@ export default class Game{
         });
 
         // update score text
-        this.drawScore(data);
+        this.updateScoreHud();
     }
 
     private onRoundStart(){
@@ -441,53 +459,44 @@ export default class Game{
 
     //#endregion
 
-    //#region pixi ui
+    //#region hud
 
-    private drawScore(score: ScorePackage){
-        // remove old score text
-        const old_text = this._scene.getChildByName("score_text");
-        if (old_text) this._scene.removeChild(old_text);
+    private bindHudEvents(){
+        //bind leave button click event
+        this._hud_manager.onLeaveClick.subscribe(() => {
+            LobbiesConnectionManager.leaveLobby();
+        });
+    }
 
-        // create new score text
-        let score_text_value = `Lifes:\n`;
-        for (const s of score.scores){
-            const player = this._players.get(s.id);
+    /**
+     * Updates the hud to display the spectating text.
+     * @param value if the player is spectating
+     */
+    private displaySpecateHud(value: boolean){
+        this._hud_manager.spectating = value;
+    }
+
+    /**
+     * Updates the hud to display the score.
+     */
+    private updateScoreHud(){
+        const client_id = this._spectating ? -1 : this._client_player.id;
+        const scores = [];
+
+        // create score array
+        for (const score of this._player_lifes){
+            const player = this._players.get(score[0]);
             if (player == undefined) continue;
-            score_text_value += `${player.name}: ${s.life}\n`;
+
+            scores.push({
+                id: score[0],
+                name: player.name,
+                life: score[1],
+            });
         }
 
-        const score_text = new PIXI.Text(score_text_value, {
-            fontFamily: "Arial",
-            fontSize: 24,
-            fill: 0xFFFFFF,
-            align: "left",
-        });
-        score_text.name = "score_text";
-        score_text.zIndex = 1;
-        score_text.x = 10;
-        score_text.y = 10;
-        this._scene.addChild(score_text);
+        this._hud_manager.updateScore(scores, client_id);
     }
-
-    private drawSpectatingText(){
-        // remove old spectating text
-        const old_text = this._scene.getChildByName("spectating_text");
-        if (old_text) this._scene.removeChild(old_text);
-
-        // create new spectating text
-        const spectating_text = new PIXI.Text("Spectating", {
-            fontFamily: "Arial",
-            fontSize: 24,
-            fill: 0xFF4444,
-            align: "left",
-        });
-        spectating_text.name = "spectating_text";
-        spectating_text.zIndex = 1;
-        spectating_text.x = this._app.screen.width - 150;
-        spectating_text.y = 10;
-        this._scene.addChild(spectating_text);
-    }
-
 
     //#endregion
 

@@ -6,6 +6,7 @@
     <title>Client</title>
     <link rel="stylesheet" href="./style/main.css">
     <link rel="stylesheet" href="./style/home.css">
+    <link rel="stylesheet" href="./style/game_view.css">
     <link rel="stylesheet" href="./style/glass_card.css">
     <link rel="stylesheet" href="./style/dot_pulse.css">
 </head>
@@ -361,9 +362,54 @@
         </div>
 
         <div class="view" id="game" style="display: none; visibility: hidden;">
-            <div id="game-container">
+
+            <div id="hud-container">
+                
+                <aside id="hud-left-container">
+
+                    <div id="hud-score-container" class="glass-card">
+                        <h3>Lifes</h3>
+
+                        <div id="hud-scores-items">
+                            <div class="hud-score-item glass-card">
+                                <span class="hud-score-item-name">Player 1</span>
+                                <span class="hud-score-item-value">3</span>
+                            </div>
+                            <div class="hud-score-item glass-card is-client">
+                                <span class="hud-score-item-name">Playe balbalbalr 2</span>
+                                <span class="hud-score-item-value">3</span>
+                            </div>
+                            <div class="hud-score-item glass-card">
+                                <span class="hud-score-item-name">Player 3</span>
+                                <span class="hud-score-item-value">3</span>
+                            </div>
+                            <div class="hud-score-item glass-card">
+                                <span class="hud-score-item-name">Player 4</span>
+                                <span class="hud-score-item-value">3</span>
+                            </div>
+                        </div>
+
+                        <span></span>
+                    </div>
+                    
+                </aside>
+
+                <div id="hud-separator"></div>
+                
+                <aside id="hud-right-container">
+                    <div id="hud-specate-container">
+                        <span id="hud-spectate"><i class="fas fa-circle"></i>Spectating</span>
+                    </div>
+                    
+                    <div id="hud-buttons-container">
+                        <button id="hud-leave-button" class="hud-button fill-button"><i class="fas fa-door-open"></i></button>    
+                    </div>
+
+                </aside>
 
             </div>
+            
+            <div id="game-container"></div>
         </div>
 
     </div>
