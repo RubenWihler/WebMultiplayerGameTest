@@ -272,7 +272,6 @@ export default class Game {
         this._death_zones.forEach(death_zone => {
             if (aabbCollision(death_zone, this._ball)){
                 player_id = death_zone.playerId;
-                console.log(`[+] COLLISION WITH DEATH ZONE OF PLAYER ${player_id} !`);
                 return;
             }
         });
