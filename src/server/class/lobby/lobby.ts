@@ -7,6 +7,7 @@ import GameManager from "../game/game_manager.js";
 import GameSettings from "../game/game_settings.js";
 import GameMap from "../game/map/map.js";
 import EngineConfig from "../game/server_game_engine/engine_config.js";
+import Game from "../game/game.js";
 
 export default class Lobby {
     public static readonly MIN_LOBBY_PLAYERS = 2;
@@ -20,6 +21,8 @@ export default class Lobby {
     private _owner_id: number;
     private _banned_user_ids: Set<number>;
 
+    private _game: Game = null;
+
     public readonly onConnectionAdd: ObservableEvent<ConnectionHandler> = new ObservableEvent();
     public readonly onConnectionRemove: ObservableEvent<ConnectionHandler> = new ObservableEvent();
     public readonly onNameChange: ObservableEvent<string> = new ObservableEvent();
@@ -30,6 +33,10 @@ export default class Lobby {
     public readonly onUserUnBan: ObservableEvent<number> = new ObservableEvent();
     public readonly onUserKick: ObservableEvent<number> = new ObservableEvent();
     public readonly onUserStatusChange: ObservableEvent<ConnectionHandler> = new ObservableEvent();
+    /**
+     * Called when a user disconnect (socket disconnected or leave) from the lobby.
+     */
+    public readonly onUserDisconnect: ObservableEvent<ConnectionHandler> = new ObservableEvent();
 
     constructor(id: string, name: string, password: string = null) {
         this._id = id;
@@ -144,9 +151,9 @@ export default class Lobby {
         }
 
 
-        const game = GameManager.instance.createGame(this, settings);
+        this._game = GameManager.instance.createGame(this, settings);
 
-        if (game === null) {
+        if (this._game === null) {
             return {
                 success: false,
                 error: "GAME_CREATION_ERROR"
@@ -154,8 +161,12 @@ export default class Lobby {
         }
 
         for (const connection of this._connections.values()) {
-            game.connectPlayer(connection);
+            this._game.connectPlayer(connection);
         }
+
+        this._game.onGameDeleting.subscribe(() => {
+            this._game = null;  
+        });
 
         return {
             success: true,
@@ -170,6 +181,11 @@ export default class Lobby {
         this._connections.forEach((connection: ConnectionHandler) => {
             this.disconnect(connection);
         });
+
+        if (this._game !== null) {
+            this._game.delete();
+            this._game = null;
+        }
 
         this._connections.clear();
         this.onNameChange.dispose();
@@ -257,6 +273,10 @@ export default class Lobby {
         }
 
         connection.socket.emit(Messages.LOBBY_JOINED, paquet);
+
+        if (this._game !== null) {
+            this._game.connectPlayer(connection);
+        }
         
         return {
             success: true
@@ -274,6 +294,7 @@ export default class Lobby {
 
         this._connections.delete(connection.connection_data.user.userId);
         this.onConnectionLeft(connection);
+        this.onUserDisconnect.notify(connection);
 
         //if the connection is still connected, send a message to notify it that it left the lobby.
         //the if statement is here to prevent the server from sending a message to a disconnected socket.

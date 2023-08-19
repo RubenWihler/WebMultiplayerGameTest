@@ -12,5 +12,4 @@ export default interface GameSettings {
     ball_speed: number;
 
     player_life: number;
-
 }

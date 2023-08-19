@@ -43,7 +43,7 @@ export default class Player extends Entity {
     }
     
     public start(): void {
-        
+        this._gameObject
     }
     public update(): void {
         
@@ -54,7 +54,7 @@ export default class Player extends Entity {
 
     private initComponents(): void {
         this._sprite = this.createSprite();
-        this.gameObject.addComponent(this._sprite);
+        this._gameObject.addComponent(this._sprite);
     }
     private createSprite(): Sprite {
         const sprite = new Sprite(

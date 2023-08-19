@@ -1,10 +1,14 @@
 import GameObject from "./game_object.js";
 
 export default abstract class IComponent {
-    protected gameObject: GameObject;
+    protected _gameObject: GameObject;
+
+    public get gameObject(): GameObject{
+        return this._gameObject;
+    }
 
     public attach(gameObject: GameObject): void{
-        this.gameObject = gameObject;
+        this._gameObject = gameObject;
     }
 
     public abstract start(): void;

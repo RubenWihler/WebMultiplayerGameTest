@@ -85,14 +85,20 @@ export default class Messages{
     public static readonly GAME_START = "game-start";
     
     public static readonly GAME_END = "game-end";
-
+    
     public static readonly GAME_UPDATE = "game-update";
-
+    
     public static readonly GAME_CLIENT_INPUTS = "game-client-inputs";
-
+    
     public static readonly GAME_SCORE = "game-score";
-
+    
     public static readonly GAME_ROUND_START = "game-round-start";
+    public static readonly GAME_ROUND_END = "game-round-end";
+
+    public static readonly GAME_END_LEADERBOARD = "game-end-leaderboard";
+
+    public static readonly GAME_PLAYERS_UPDATE = "game-players-update";
+
     //#endregion
 
 }

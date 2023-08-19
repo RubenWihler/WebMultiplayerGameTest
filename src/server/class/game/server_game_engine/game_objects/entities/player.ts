@@ -15,10 +15,8 @@ export default class Player extends Entity{
     protected _input_manager: PlayerInputManager;
     protected _player_movement_type: PlayerMovementType;
     protected _spawn_position: Position;
-
-    //cached values
-    private ___widthDividedByTwo: number;
-    private ___heightDividedByTwo: number;
+    protected _spectating: boolean = false;
+    protected _hasPlayed: boolean = false;
 
     /**
      * the user id of the player
@@ -65,6 +63,37 @@ export default class Player extends Entity{
     public set size(value: Size) {
         this._size = value;
     }
+
+    public get spectating(): boolean {
+        return this._spectating;
+    }
+    public set spectating(value: boolean) {
+        this._spectating = value;
+
+        //the player is spectating
+        if (value) {
+            //destroy the input manager
+            if (this._input_manager != null){
+                this._input_manager.destroy();
+                this._input_manager = null;
+            }
+
+            //set the position to -100, -100
+            this.fixed = false;
+            this.position = {x: -100, y: -100};
+            this.fixed = true;
+
+            //set the size to 0, 0
+            this.size = {width: 0, height: 0};
+        }
+    }
+
+    public get hasPlayed(): boolean {
+        return this._hasPlayed;
+    }
+    public set hasPlayed(value: boolean) {
+        this._hasPlayed = value;
+    }
     
     constructor(connectionHandler: ConnectionHandler, spawnPosition: Position, size: Size, speed: number){
         super("player", spawnPosition, size);
@@ -73,23 +102,22 @@ export default class Player extends Entity{
         this._connectionHandler = connectionHandler;
         this._player_movement_type = PlayerMovementType.Horizontal;
         this._input_manager = new PlayerInputManager(this._connectionHandler);
-        this.___widthDividedByTwo = this._size.width / 2;
-        this.___heightDividedByTwo = this._size.height / 2;
     }
 
     public init(): void {
-        this._input_manager.init();
+        if (this._input_manager != null) this._input_manager.init();
     }
     public start(): void {
         super.start();
     }
     public update(): void {
+        if (this._spectating) return;
         if (this.tryMove(this._input_manager.movingDirection)){
             this.checkOutOfBounds();
         }
     }
     public destroy(): void {
-        this._input_manager.destroy();
+        if (this._input_manager != null) this._input_manager.destroy();
     }
 
     public tpToSpawn(): void {

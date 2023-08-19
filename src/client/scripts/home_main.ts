@@ -11,6 +11,9 @@ import SettingsElement from './classes/ui/elements/lobby_settings_item.js';
 import { Setting, SettingsType, SettingConstraint } from './classes/settings/settings_system.js';
 import { init as initGame, start as startGame } from './classes/game/game_main.js';
 import GameSettings, { PlayerData } from './classes/game/game_settings.js';
+import GameManager from './classes/game/engine/game_manager.js';
+import GameConnectionManager from './classes/connection/game_connection_manager.js';
+import { InitPackage } from './classes/game/engine/packages.js';
 
 var trying_to_join_lobby: boolean = false;
 var refresh_on_disconnect = true;
@@ -681,27 +684,7 @@ element_lobby_password_return_button.addEventListener('click', () => {
     removeParamFromUrl('lobby');
     ViewsManager.setActiveView('home');
 });
-element_lobby_ready_button.addEventListener('click', () => {
-    //TODO: send ready request
-    const ready = !LobbiesConnectionManager.instance.isReady;
-    LobbiesConnectionManager.setReady(ready);
 
-    // <button id="lobby-ready-button" class="fill-button waiting">
-        //     <span>waiting <span>for players</span></span>
-        //     <div class="dot-pulse"></div>
-        // </button>
-
-    if (ready) {
-        element_lobby_ready_button.classList.add('waiting');
-        element_lobby_ready_button.innerHTML = `
-            <span>waiting <span>for players</span></span>
-            <div class="dot-pulse"></div>`;
-    }
-    else{
-        element_lobby_ready_button.classList.remove('waiting');
-        element_lobby_ready_button.innerHTML = '<span>set ready</span>';
-    }
-});
 
 
 //#endregion
@@ -727,6 +710,26 @@ element_lobby_copy_code_button.addEventListener('click', (event) => {
     const url = `${window.location.origin}/?lobby=${LobbiesConnectionManager.currentLobbyData.id}`;
 
     navigator.clipboard.writeText(url);
+});
+element_lobby_ready_button.addEventListener('click', () => {
+    const ready = !LobbiesConnectionManager.instance.isReady;
+    LobbiesConnectionManager.setReady(ready);
+
+    // <button id="lobby-ready-button" class="fill-button waiting">
+        //     <span>waiting <span>for players</span></span>
+        //     <div class="dot-pulse"></div>
+        // </button>
+
+    if (ready) {
+        element_lobby_ready_button.classList.add('waiting');
+        element_lobby_ready_button.innerHTML = `
+            <span>waiting <span>for players</span></span>
+            <div class="dot-pulse"></div>`;
+    }
+    else{
+        element_lobby_ready_button.classList.remove('waiting');
+        element_lobby_ready_button.innerHTML = '<span>set ready</span>';
+    }
 });
 
 //#endregion
@@ -1161,7 +1164,7 @@ LobbiesConnectionManager.instance.onLobbyUsersChanged.subscribe((users: {id: num
 LobbiesConnectionManager.instance.onLobbySettingsChanged.subscribe(() => {
     refreshSettingsList();
 });
-LobbiesConnectionManager.instance.onGameStart.subscribe((data: any) => {
+LobbiesConnectionManager.instance.onGameStart.subscribe((data: InitPackage) => {
     ViewsManager.setActiveView('game');
 
     const players_data = [];
@@ -1170,7 +1173,7 @@ LobbiesConnectionManager.instance.onGameStart.subscribe((data: any) => {
         players_data.push(new PlayerData(
             player.user_id,
             player.local_id,
-            `player_${player.user_id}`,
+            player.name,
             player.color,
             player.isClient,
             player.position,
@@ -1189,11 +1192,20 @@ LobbiesConnectionManager.instance.onGameStart.subscribe((data: any) => {
         data.settings.player_speed,
     );
     
+    element_lobby_ready_button.click();
     document.getElementById('game-container').appendChild(initGame());
     
     startGame(settings);
 });
 
+
+//#endregion
+
+//#region ----- Game -----
+
+GameConnectionManager.instance.onGameEnd.subscribe(() => {
+    ViewsManager.setActiveView('lobby');
+});
 
 //#endregion
 

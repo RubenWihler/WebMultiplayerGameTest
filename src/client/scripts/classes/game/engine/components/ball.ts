@@ -18,7 +18,7 @@ export default class Ball extends Entity {
     public setTransform(x: number, y: number): void {
         // x -= this._sprite.width / 2;
         // y -= this._sprite.height / 2;
-        this.gameObject.position = { x, y };
+        this._gameObject.position = { x, y };
     }
 
     public attach(gameObject: GameObject): void {
@@ -39,7 +39,7 @@ export default class Ball extends Entity {
 
     private initComponents(): void {
         this._sprite = this.createSprite();
-        this.gameObject.addComponent(this._sprite);
+        this._gameObject.addComponent(this._sprite);
     }
 
     private createSprite(): Sprite {

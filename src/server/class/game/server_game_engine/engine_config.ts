@@ -32,7 +32,7 @@ export default class EngineConfig{
         height: 10
     };
 
-    static readonly DEATH_ZONE_THICKNESS = 100;
+    static readonly DEATH_ZONE_THICKNESS = 50;
 
     static readonly PLAYER_COLORS = {
         2: [

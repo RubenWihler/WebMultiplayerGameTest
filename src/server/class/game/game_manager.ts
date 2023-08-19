@@ -49,6 +49,7 @@ export default class GameManager {
         if (!game) return false;
         game.delete();
         this._games.delete(game_id);
+        console.log(`[+] Game: ${game_id} deleted !`);
         return true;
     }
 

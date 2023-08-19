@@ -1,7 +1,7 @@
 import * as PIXI from "pixi.js"
 import GameObject from "./game_object.js";
 import GameSettings from "../game_settings.js";
-import UpdatePackage, { InputPackage, ScorePackage } from "./packages.js";
+import UpdatePackage, { InputPackage, PlayerUpdatePackage, ScorePackage } from "./packages.js";
 import Player from "./components/player.js";
 import Position from "./position.js";
 import Ball from "./components/ball.js";
@@ -12,6 +12,7 @@ import ConnectionManager from "../../connection/connection_manager.js";
 
 export default class Game{
     private _running: boolean = false;
+    private _spectating: boolean = false;
     private _settings: GameSettings;
     private _app: PIXI.Application;
     private _scene: PIXI.Container;
@@ -46,52 +47,44 @@ export default class Game{
         this._player_lifes = new Map();
     }
 
-    public getObjectByName(name: string): GameObject{
-        return this._gameObjects.find(obj => obj.name == name);
-    } 
+    //#region Game objects management
 
+    /**
+     * Adds a game object to the game.
+     * @param gameObject the game object to add
+     * @returns if the game object was added successfully
+     */
     public addGameObject(gameObject: GameObject): boolean{
         this._gameObjects.push(gameObject);
         return true;
     }
 
+    //#endregion
 
-    public networkUpdate(updatePackage: UpdatePackage){
-        // Update players
-        for (const player_pos of updatePackage.positions.players){
-            // directly update client player position without interpolation
-            // because we are predicting it with input package
-            if (player_pos.id == this._client_player.id){
-                // update client player position
-                // we don't use _client_player.setTransform because..
-                //  ..it force updates position even if it is fixed
-                this._client_player_go.position = new Position(
-                    player_pos.x,
-                    player_pos.y,
-                );
+    //#region Game Management
+    
+    /**
+     * Starts the game loop and binds events.
+     */
+    private start(){
+        this._running = true;
+        this._app.ticker.add(this.update, this);
+        this._app.ticker.start();
 
-                continue;
-            }
+        //bind resize event
+        window.addEventListener("resize", this.onResize.bind(this));
 
-            // update other players positions for interpolation
-            this._player_positions.set(player_pos.id, {x: player_pos.x, y: player_pos.y});
-        }
-
-        // Update ball
-        const ball_data = updatePackage.positions.ball;
-        this._ball_position = ball_data;
+        // subscribe to network messages
+        GameConnectionManager.instance.onGameNetworkUpdate.subscribe((data) => this.networkUpdate(data));
+        GameConnectionManager.instance.onScore.subscribe((data) => this.onScore(data));
+        GameConnectionManager.instance.onRoundStart.subscribe(() => this.onRoundStart());
+        GameConnectionManager.instance.onRoundEnd.subscribe(() => this.onRoundEnd());
+        GameConnectionManager.instance.onPlayerUpdate.subscribe((data) => this.onPlayerUpdate(data));
     }
 
-    public update(){
-        //update objects positions based on interpolation
-        this.movementInterpolation();
-
-        // update game objects
-        for (const obj of this._gameObjects){
-            obj.update();
-        }
-    }
-
+    /**
+     * Stops the game loop unbinds events and destroys the game and all its objects.
+     */
     public destroy(){
         this._running = false;
 
@@ -124,20 +117,9 @@ export default class Game{
 
     }
 
-    private start(){
-        this._running = true;
-        this._app.ticker.add(this.update, this);
-        this._app.ticker.start();
-
-        //bind resize event
-        window.addEventListener("resize", this.onResize.bind(this));
-
-        // subscribe to network messages
-        GameConnectionManager.instance.onGameNetworkUpdate.subscribe((data) => this.networkUpdate(data));
-        GameConnectionManager.instance.onScore.subscribe((data) => this.onScore(data));
-        GameConnectionManager.instance.onRoundStart.subscribe(() => this.onRoundStart());
-    }
-
+    /**
+     * Creates the game objects and starts the game.
+     */
     public create(){
         this._scene = this.createScene();
         this._terrain = this.createTerrain();
@@ -147,6 +129,49 @@ export default class Game{
         this.createInputManager();
         this.start();
     }
+
+    /**
+     * The client game loop that is called every frame.
+     */
+    public update(){
+        //update objects positions based on interpolation
+        this.movementInterpolation();
+
+        // update game objects
+        for (const obj of this._gameObjects){
+            obj.update();
+        }
+    }
+
+    /**
+     * Makes the client spectate the game. (no input)
+     */
+    public spectate(){
+        this._spectating = true;
+
+        // destroy input manager
+        if (this._inputManager != null){
+            this._inputManager.destroy();
+            this._inputManager = null;
+        }
+
+        // set client player to null
+        if (this._client_player_go != null){
+            //remove client player from players map and player positions map
+            this._players.delete(this._client_player.id);
+            this._player_positions.delete(this._client_player.id);
+            
+            //destroy client player game object and set it to null
+            this._client_player_go.destroy();
+            this._client_player_go = null;
+            this._client_player = null;
+        }
+        
+        this.drawSpectatingText();
+        console.log("[+] Spectating");
+    }
+    
+    //#endregion
 
     //#region object creation
 
@@ -204,6 +229,11 @@ export default class Game{
 
             this._players.set(player_data.id, player_component);
         }
+
+        //if client player is null (spectating) set spectating mode
+        if (this._client_player == null){
+            this.spectate();
+        }
     }
     private createBall(){
         const ball_component = new Ball(0xFF0000, this._settings.ball_size);
@@ -218,6 +248,9 @@ export default class Game{
         this._ball = ball_component;
     }
     private createInputManager(): void{
+        // return if spectating
+        if (this._spectating) return;
+
         const input_manager_component = new InputManager();
         const input_manager_go = new GameObject(
             new Position(0, 0),
@@ -236,7 +269,17 @@ export default class Game{
 
     //#endregion
 
+    //#region movement
+
+    /**
+     * Predicts the client player position based on the input package.
+     * @warning the package is not received from the server, it is created by the input manager.
+     * @param inputPackage 
+     */
     private clientPrediction(inputPackage: InputPackage){
+        // return if spectating
+        if (this._spectating) return;
+
         //return if player will not move
         if (!inputPackage.move_left && !inputPackage.move_right && !inputPackage.move_up && !inputPackage.move_down) return;
 
@@ -267,11 +310,15 @@ export default class Game{
         // set new position
         this._client_player.setTransform(new_pos.x, new_pos.y);        
     }
+    /**
+     * Moves the players and the ball based on an interpolation of
+     * the current position and the last network update position.
+     */
     private movementInterpolation(){
         //player movement interpolation
         for (const player of this._players.values()){
             // skip client player
-            if (player.id == this._client_player.id) continue;
+            if (!this._spectating && player.id == this._client_player.id) continue;
 
             const target_pos = this._player_positions.get(player.id);
             if (target_pos == undefined) continue;
@@ -306,6 +353,44 @@ export default class Game{
         this._ball.setTransform(new_pos.x, new_pos.y);
     }
 
+    //#endregion
+
+    //#region network messages
+
+    /**
+     * This method is called when a network update is received.
+     * @param updatePackage A package containing all the positions of the players and the ball.
+     */
+    public networkUpdate(updatePackage: UpdatePackage){
+        // Update players
+        for (const player_pos of updatePackage.positions.players){
+            // directly update client player position without interpolation
+            // because we are predicting it with input package
+            if (!this._spectating && player_pos.id == this._client_player.id){
+                // update client player position
+                // we don't use _client_player.setTransform because..
+                //  ..it force updates position even if it is fixed
+                this._client_player_go.position = new Position(
+                    player_pos.x,
+                    player_pos.y,
+                );
+
+                continue;
+            }
+
+            // update other players positions for interpolation
+            this._player_positions.set(player_pos.id, {x: player_pos.x, y: player_pos.y});
+        }
+
+        // Update ball
+        const ball_data = updatePackage.positions.ball;
+        this._ball_position = ball_data;
+    }
+
+    /**
+     * Called when a player has lost a life.
+     * @param data the score package
+     */
     private onScore(data: ScorePackage){
         // update player lifes
         data.scores.forEach((score) => {
@@ -313,26 +398,97 @@ export default class Game{
         });
 
         // update score text
-        //to do
-
-        //call round end
-        this.roundEnd();
+        this.drawScore(data);
     }
 
     private onRoundStart(){
         //unfixed client player position cause of input prediction
-        this._client_player.fixed = false;
+        if (this._client_player != null) this._client_player.fixed = false;
     }
-
-    private roundEnd(){
+    private onRoundEnd(){
         //fixed client player position cause of input prediction
-        this._client_player.fixed = true;
+        if (this._client_player != null) this._client_player.fixed = true;
     }
 
+    private onPlayerUpdate(data: PlayerUpdatePackage){
+        //remove unused players
+        for (const player of this._players.values()){
+            if (!data.players.find((p) => p.id == player.id)){
+                this._players.delete(player.id);
+                this._player_positions.delete(player.id);
+                player.gameObject.destroy();
+            }
+        }
+
+        //if client player is removed set spectating mode
+        if (!this._spectating && !data.players.find((p) => p.id == this._client_player.id)){
+            this.spectate();
+        }
+    }
+
+    //#endregion
+
+    //#region pixi events
+
+    /**
+     * Called when window is resized.
+     */
     private onResize = (): void => {
         this._app.renderer.resize(window.innerWidth, window.innerHeight);
         this._terrain.x = this._app.screen.width / 2 - 400;
         this._terrain.y = this._app.screen.height / 2 - 400;
     }
+
+    //#endregion
+
+    //#region pixi ui
+
+    private drawScore(score: ScorePackage){
+        // remove old score text
+        const old_text = this._scene.getChildByName("score_text");
+        if (old_text) this._scene.removeChild(old_text);
+
+        // create new score text
+        let score_text_value = `Lifes:\n`;
+        for (const s of score.scores){
+            const player = this._players.get(s.id);
+            if (player == undefined) continue;
+            score_text_value += `${player.name}: ${s.life}\n`;
+        }
+
+        const score_text = new PIXI.Text(score_text_value, {
+            fontFamily: "Arial",
+            fontSize: 24,
+            fill: 0xFFFFFF,
+            align: "left",
+        });
+        score_text.name = "score_text";
+        score_text.zIndex = 1;
+        score_text.x = 10;
+        score_text.y = 10;
+        this._scene.addChild(score_text);
+    }
+
+    private drawSpectatingText(){
+        // remove old spectating text
+        const old_text = this._scene.getChildByName("spectating_text");
+        if (old_text) this._scene.removeChild(old_text);
+
+        // create new spectating text
+        const spectating_text = new PIXI.Text("Spectating", {
+            fontFamily: "Arial",
+            fontSize: 24,
+            fill: 0xFF4444,
+            align: "left",
+        });
+        spectating_text.name = "spectating_text";
+        spectating_text.zIndex = 1;
+        spectating_text.x = this._app.screen.width - 150;
+        spectating_text.y = 10;
+        this._scene.addChild(spectating_text);
+    }
+
+
+    //#endregion
 
 }
