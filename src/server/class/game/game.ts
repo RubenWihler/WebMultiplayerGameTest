@@ -184,7 +184,7 @@ export default class Game {
         //start the first round
         this.startRound();
 
-        console.log(`[+] Game ${this.__id} started!`);
+        console.log(`[+] Game ${this.__id} started !`);
     }
 
     private async end(){
@@ -203,7 +203,7 @@ export default class Game {
         //delete the game
         this.delete();
 
-        console.log(`[+] Game ${this.__id} ended!`);
+        console.log(`[+] Game ${this.__id} ended !`);
     }
     
 
@@ -331,8 +331,6 @@ export default class Game {
      * Called when a player looses a point
      */
     private onScore(playerId){
-        console.log(`[+] Player ${playerId} lost a life in game ${this.__id}!`);
-
         const new_life = this._players_life.get(playerId) - 1;
         this._players_life.set(playerId, new_life);
         if (this.isPlayerEliminated(playerId)){
@@ -348,8 +346,6 @@ export default class Game {
     }
 
     private onPlayerEliminated(playerId: number){
-        console.log(`[+] Player ${playerId} eliminated in game ${this.__id}!`);
-
         const player = this._players.get(playerId);
         
         //set in the leaderboard
@@ -540,8 +536,6 @@ export default class Game {
         //send the round end package to all players
         this.sendRoundEndPackage();
 
-        console.log(`[+] Starting round in game ${this.__id} ...`);
-
         //set the game's status to IN_ROUND_BREAK
         this._status = GameStatus.IN_ROUND_BREAK;
 
@@ -685,8 +679,6 @@ export default class Game {
 
             this.sendScorePackage();
 
-            console.log(`[+] Player ${user_id} connected to game ${this.__id} as a spectator!`);
-
             return { success: true };
         }
 
@@ -705,7 +697,6 @@ export default class Game {
         const id = connectionHandler.connection_data.user.userId;
         this._players.set(id, player);
 
-        console.log(`[+] Player ${connectionHandler.connection_data.user.userId} connected to game ${this.__id}!`);
 
         this.onPlayerConnect();
 
