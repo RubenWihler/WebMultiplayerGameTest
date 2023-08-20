@@ -171,7 +171,7 @@ export default class EngineConfig{
                     }
                 ];
 
-            case 4:
+            default:
                 return [
                     {
                         x: terrainSize.x / 2 - playerSize.width / 2,
