@@ -8,6 +8,22 @@ import GameSettings from "../game/game_settings.js";
 import GameMap from "../game/map/map.js";
 import EngineConfig from "../game/server_game_engine/engine_config.js";
 import Game from "../game/game.js";
+import Size from "../game/server_game_engine/types/size.js";
+
+type LobbySetting = {
+    id: string, 
+    name: string, 
+    using_password: boolean, 
+    password: string, 
+    max_players: number, 
+    owner_id: number,
+    game_player_count: number,
+    game_player_size: Size,
+    game_player_speed: number,
+    game_ball_size: Size,
+    game_ball_speed: number,
+    game_player_life: number
+}
 
 export default class Lobby {
     public static readonly MIN_LOBBY_PLAYERS = 2;
@@ -23,12 +39,26 @@ export default class Lobby {
 
     private _game: Game = null;
 
+    //game settings
+    private _game_player_count: number;
+    private _game_player_size: Size;
+    private _game_player_speed: number;
+    private _game_ball_size: Size;
+    private _game_ball_speed: number;
+    private _game_player_life: number;
+
     public readonly onConnectionAdd: ObservableEvent<ConnectionHandler> = new ObservableEvent();
     public readonly onConnectionRemove: ObservableEvent<ConnectionHandler> = new ObservableEvent();
     public readonly onNameChange: ObservableEvent<string> = new ObservableEvent();
     public readonly onPasswordChange: ObservableEvent<string> = new ObservableEvent();
     public readonly onMaxPlayersChange: ObservableEvent<number> = new ObservableEvent();
     public readonly onOwnerChange: ObservableEvent<ConnectionHandler> = new ObservableEvent();
+    public readonly onGamePlayerCountChange: ObservableEvent<number> = new ObservableEvent();
+    public readonly onGamePlayerSizeChange: ObservableEvent<Size> = new ObservableEvent();
+    public readonly onGamePlayerSpeedChange: ObservableEvent<number> = new ObservableEvent();
+    public readonly onGameBallSizeChange: ObservableEvent<Size> = new ObservableEvent();
+    public readonly onGameBallSpeedChange: ObservableEvent<number> = new ObservableEvent();
+    public readonly onGamePlayerLifeChange: ObservableEvent<number> = new ObservableEvent();
     public readonly onUserBan: ObservableEvent<number> = new ObservableEvent();
     public readonly onUserUnBan: ObservableEvent<number> = new ObservableEvent();
     public readonly onUserKick: ObservableEvent<number> = new ObservableEvent();
@@ -45,6 +75,14 @@ export default class Lobby {
         this._banned_user_ids = new Set<number>();
         this._connections = new Map<number, ConnectionHandler>();
         this._password = password;
+
+        //set default game settings
+        this._game_player_count = EngineConfig.DEFAULT_PLAYER_COUNT;
+        this._game_player_size = EngineConfig.DEFAULT_PLAYER_SIZE;
+        this._game_player_speed = EngineConfig.DEFAULT_PLAYER_SPEED;
+        this._game_ball_size = EngineConfig.DEFAULT_BALL_SIZE;
+        this._game_ball_speed = EngineConfig.DEFAULT_BALL_SPEED;
+        this._game_player_life = EngineConfig.DEFAULT_PLAYER_LIFE;
     }
 
     /**
@@ -110,14 +148,20 @@ export default class Lobby {
     /**
      * Returns the current's lobby settings.
      */
-    public get settings(): { id: string, name: string, using_password: boolean, password: string, max_players: number, owner_id: number } {
+    public get settings(): LobbySetting {
         return {
             id: this._id,
             name: this._name,
             using_password: this.using_password,
             password: this._password,
             max_players: this._max_players,
-            owner_id: this._owner_id
+            owner_id: this._owner_id,
+            game_player_count: this._game_player_count,
+            game_player_size: this._game_player_size,
+            game_player_speed: this._game_player_speed,
+            game_ball_size: this._game_ball_size,
+            game_ball_speed: this._game_ball_speed,
+            game_player_life: this._game_player_life
         };
     }
     /**
@@ -140,14 +184,19 @@ export default class Lobby {
     public startGame(): any {
         console.log("[+] starting game ...");
 
+        //ensure that the lobby has enough players to start a game.
+        if (this._connections.size < this._game_player_count){
+            this._game_player_count = this._connections.size;
+        }
+
         const settings: GameSettings = {
             map: GameMap.DEFAULT,
-            player_count: this._connections.size,
-            player_size: EngineConfig.DEFAULT_PLAYER_SIZE,
-            player_speed: EngineConfig.DEFAULT_PLAYER_SPEED,
-            ball_size: EngineConfig.DEFAULT_BALL_SIZE,
-            ball_speed : EngineConfig.DEFAULT_BALL_SPEED,
-            player_life: 3
+            player_count: this._game_player_count,
+            player_size: this._game_player_size,
+            player_speed: this._game_player_speed,
+            ball_size: this._game_ball_size,
+            ball_speed : this._game_ball_speed,
+            player_life: this._game_player_life
         }
 
 
@@ -268,6 +317,12 @@ export default class Lobby {
                 password: this._password,
                 max_players: this._max_players,
                 owner_id: this._owner_id,
+                game_player_count: this._game_player_count,
+                game_player_size: this._game_player_size,
+                game_player_speed: this._game_player_speed,
+                game_ball_size: this._game_ball_size,
+                game_ball_speed: this._game_ball_speed,
+                game_player_life: this._game_player_life,
                 users: this.users
             }
         }
@@ -465,6 +520,163 @@ export default class Lobby {
         };
     }
     /**
+     * Change the game player count.
+     * @param new_player_count the new game player count.
+     * @returns if the operation was successful or not and the error messages if any.
+     */
+    public changeGamePlayerCount(new_player_count: number): any {
+        if (new_player_count < EngineConfig.MIN_PLAYERS) {
+            return {
+                success: false,
+                messages: ["PLAYER_COUNT_TOO_LOW"]
+            };
+        }
+
+        if (new_player_count > EngineConfig.MAX_PLAYERS) {
+            return {
+                success: false,
+                messages: ["PLAYER_COUNT_TOO_HIGH"]
+            };
+        }
+
+        this._game_player_count = new_player_count;
+        
+        return {
+            success: true
+        };
+    }
+    /**
+     * Change the game player size.
+     * @param new_player_size the new game player size.
+     * @returns if the operation was successful or not and the error messages if any.
+     */
+    public changeGamePlayerSize(new_player_size: Size): any {
+        if (new_player_size.width < EngineConfig.MIN_PLAYER_SIZE.width || new_player_size.height < EngineConfig.MIN_PLAYER_SIZE.height) {
+            return {
+                success: false,
+                messages: ["PLAYER_SIZE_TOO_LOW"]
+            };
+        }
+
+        if (new_player_size.width > EngineConfig.MAX_PLAYER_SIZE.width || new_player_size.height > EngineConfig.MAX_PLAYER_SIZE.height) {
+            return {
+                success: false,
+                messages: ["PLAYER_SIZE_TOO_HIGH"]
+            };
+        }
+
+        this._game_player_size = new_player_size;
+
+        return {
+            success: true
+        };
+    }
+    /**
+     * Change the game player speed.
+     * @param new_player_speed the new game player speed.
+     * @returns if the operation was successful or not and the error messages if any.
+     */
+    public changeGamePlayerSpeed(new_player_speed: number): any {
+        if (new_player_speed < EngineConfig.MIN_PLAYER_SPEED) {
+            return {
+                success: false,
+                messages: ["PLAYER_SPEED_TOO_LOW"]
+            }
+        }
+
+        if (new_player_speed > EngineConfig.MAX_PLAYER_SPEED) {
+            return {
+                success: false,
+                messages: ["PLAYER_SPEED_TOO_HIGH"]
+            }
+        }
+
+        this._game_player_speed = new_player_speed;
+
+        return {
+            success: true
+        };
+    }
+    /**
+     * Change the game ball size.
+     * @param new_ball_size the new game ball size.
+     * @returns if the operation was successful or not and the error messages if any.
+     */
+    public changeGameBallSize(new_ball_size: Size): any {
+        if (new_ball_size.width < EngineConfig.MIN_BALL_SIZE.width || new_ball_size.height < EngineConfig.MIN_BALL_SIZE.height) {
+            return {
+                success: false,
+                messages: ["BALL_SIZE_TOO_LOW"]
+            };
+        }
+
+        if (new_ball_size.width > EngineConfig.MAX_BALL_SIZE.width || new_ball_size.height > EngineConfig.MAX_BALL_SIZE.height) {
+            return {
+                success: false,
+                messages: ["BALL_SIZE_TOO_HIGH"]
+            };
+        }
+
+        this._game_ball_size = new_ball_size;
+
+        return {
+            success: true
+        };
+    }
+    /**
+     * Change the game ball speed.
+     * @param new_ball_speed the new game ball speed.
+     * @returns if the operation was successful or not and the error messages if any.
+     */
+    public changeGameBallSpeed(new_ball_speed: number): any {
+        if (new_ball_speed < EngineConfig.MIN_BALL_SPEED) {
+            return {
+                success: false,
+                messages: ["BALL_SPEED_TOO_LOW"]
+            }
+        }
+
+        if (new_ball_speed > EngineConfig.MAX_BALL_SPEED) {
+            return {
+                success: false,
+                messages: ["BALL_SPEED_TOO_HIGH"]
+            }
+        }
+
+        this._game_ball_speed = new_ball_speed;
+
+        return {
+            success: true
+        };
+    }
+    /**
+     * Change the game player life.
+     * @param new_player_life the new game player life.
+     * @returns if the operation was successful or not and the error messages if any.
+     */
+    public changeGamePlayerLife(new_player_life: number): any {
+        if (new_player_life < EngineConfig.MIN_PLAYER_LIFE) {
+            return {
+                success: false,
+                messages: ["PLAYER_LIFE_TOO_LOW"]
+            }
+        }
+
+        if (new_player_life > EngineConfig.MAX_PLAYER_LIFE) {
+            return {
+                success: false,
+                messages: ["PLAYER_LIFE_TOO_HIGH"]
+            }
+        }
+
+        this._game_player_life = new_player_life;
+
+        return {
+            success: true
+        };
+    }
+
+    /**
      * Sets the owner of the lobby.
      * @param connection the connection of the new owner.
      * @returns if the operation was successful or not.
@@ -603,7 +815,54 @@ export default class Lobby {
         this.sendMessageToAllConnections(Messages.LOBBY_SETTINGS_CHANGED, this.settings);
         this.onPasswordChange.notify(new_password_hash);
     }
-    
+    /**
+     * Called when the player count of the game changed.
+     * @param player_count the new player count.
+     */
+    private onGamePlayerCountChanged(player_count: number) {
+        this.onGamePlayerCountChange.notify(player_count);
+        this.sendMessageToAllConnections(Messages.LOBBY_SETTINGS_CHANGED, this.settings);
+    }
+    /**
+     * Called when the player size of the game changed.
+     * @param player_size the new player size.
+     */
+    private onGamePlayerSizeChanged(player_size: Size) {
+        this.onGamePlayerSizeChange.notify(player_size);
+        this.sendMessageToAllConnections(Messages.LOBBY_SETTINGS_CHANGED, this.settings);
+    }
+    /**
+     * Called when the player speed of the game changed.
+     * @param player_speed the new player speed.
+     */
+    private onGamePlayerSpeedChanged(player_speed: number) {
+        this.onGamePlayerSpeedChange.notify(player_speed);
+        this.sendMessageToAllConnections(Messages.LOBBY_SETTINGS_CHANGED, this.settings);
+    }
+    /**
+     * Called when the ball size of the game changed.
+     * @param ball_size the new ball size.
+     */
+    private onGameBallSizeChanged(ball_size: Size) {
+        this.onGameBallSizeChange.notify(ball_size);
+        this.sendMessageToAllConnections(Messages.LOBBY_SETTINGS_CHANGED, this.settings);
+    }
+    /**
+     * Called when the ball speed of the game changed.
+     * @param ball_speed the new ball speed.
+     */
+    private onGameBallSpeedChanged(ball_speed: number) {
+        this.onGameBallSpeedChange.notify(ball_speed);
+        this.sendMessageToAllConnections(Messages.LOBBY_SETTINGS_CHANGED, this.settings);
+    }
+    /**
+     * Called when the player life of the game changed.
+     * @param player_life the new player life.
+     */
+    private onGamePlayerLifeChanged(player_life: number) {
+        this.onGamePlayerLifeChange.notify(player_life);
+        this.sendMessageToAllConnections(Messages.LOBBY_SETTINGS_CHANGED, this.settings);
+    }
 
     /**
      * Bind all the message events to the connection.
@@ -788,6 +1047,168 @@ export default class Lobby {
             });
         });
 
+        //on user send a request to change the max player of the lobby.
+        connection.socket.on(Messages.LOBBY_CHANGE_GAME_PLAYER_COUNT, (data: {player_count: number}) => {
+            if (connection.connection_data.user.userId !== this._owner_id) {
+                connection.socket.emit(Messages.LOBBY_CHANGE_GAME_PLAYER_COUNT_RESPONSE, {
+                    success: false,
+                    messages: ["NOT_OWNER"]
+                });
+                return;
+            }
+
+            const result = this.changeGamePlayerCount(data.player_count);
+            if (!result.success) {
+                connection.socket.emit(Messages.LOBBY_CHANGE_GAME_PLAYER_COUNT_RESPONSE, {
+                    success: false,
+                    messages: result.messages
+                });
+
+                return;
+            }
+
+            connection.socket.emit(Messages.LOBBY_CHANGE_GAME_PLAYER_COUNT_RESPONSE, {
+                success: true
+            });
+
+            this.onGamePlayerCountChanged(data.player_count);
+        });
+
+        //on user send a request to change the player size
+        connection.socket.on(Messages.LOBBY_CHANGE_GAME_PLAYER_SIZE, (data: {player_size: Size}) => {
+            if (connection.connection_data.user.userId !== this._owner_id) {
+                connection.socket.emit(Messages.LOBBY_CHANGE_GAME_PLAYER_SIZE_RESPONSE, {
+                    success: false,
+                    messages: ["NOT_OWNER"]
+                });
+                return;
+            }
+
+            const result = this.changeGamePlayerSize(data.player_size);
+            if (!result.success) {
+                connection.socket.emit(Messages.LOBBY_CHANGE_GAME_PLAYER_SIZE_RESPONSE, {
+                    success: false,
+                    messages: result.messages
+                });
+
+                return;
+            }
+
+            connection.socket.emit(Messages.LOBBY_CHANGE_GAME_PLAYER_SIZE_RESPONSE, {
+                success: true
+            });
+
+            this.onGamePlayerSizeChanged(data.player_size);
+        });
+
+        //on user send a request to change the player speed
+        connection.socket.on(Messages.LOBBY_CHANGE_GAME_PLAYER_SPEED, (data: {player_speed: number}) => {
+            if (connection.connection_data.user.userId !== this._owner_id) {
+                connection.socket.emit(Messages.LOBBY_CHANGE_GAME_PLAYER_SPEED_RESPONSE, {
+                    success: false,
+                    messages: ["NOT_OWNER"]
+                });
+                return;
+            }
+
+            const result = this.changeGamePlayerSpeed(data.player_speed);
+            if (!result.success) {
+                connection.socket.emit(Messages.LOBBY_CHANGE_GAME_PLAYER_SPEED_RESPONSE, {
+                    success: false,
+                    messages: result.messages
+                });
+
+                return;
+            }
+
+            connection.socket.emit(Messages.LOBBY_CHANGE_GAME_PLAYER_SPEED_RESPONSE, {
+                success: true
+            });
+
+            this.onGamePlayerSpeedChanged(data.player_speed);
+        });
+
+        //on user send a request to change the ball size
+        connection.socket.on(Messages.LOBBY_CHANGE_GAME_BALL_SIZE, (data: {ball_size: Size}) => {
+            if (connection.connection_data.user.userId !== this._owner_id) {
+                connection.socket.emit(Messages.LOBBY_CHANGE_GAME_BALL_SIZE_RESPONSE, {
+                    success: false,
+                    messages: ["NOT_OWNER"]
+                });
+                return;
+            }
+
+            const result = this.changeGameBallSize(data.ball_size);
+            if (!result.success) {
+                connection.socket.emit(Messages.LOBBY_CHANGE_GAME_BALL_SIZE_RESPONSE, {
+                    success: false,
+                    messages: result.messages
+                });
+
+                return;
+            }
+
+            connection.socket.emit(Messages.LOBBY_CHANGE_GAME_BALL_SIZE_RESPONSE, {
+                success: true
+            });
+
+            this.onGameBallSizeChanged(data.ball_size);
+        });
+
+        //on user send a request to change the ball speed
+        connection.socket.on(Messages.LOBBY_CHANGE_GAME_BALL_SPEED, (data: {ball_speed: number}) => {
+            if (connection.connection_data.user.userId !== this._owner_id) {
+                connection.socket.emit(Messages.LOBBY_CHANGE_GAME_BALL_SPEED_RESPONSE, {
+                    success: false,
+                    messages: ["NOT_OWNER"]
+                });
+                return;
+            }
+
+            const result = this.changeGameBallSpeed(data.ball_speed);
+            if (!result.success) {
+                connection.socket.emit(Messages.LOBBY_CHANGE_GAME_BALL_SPEED_RESPONSE, {
+                    success: false,
+                    messages: result.messages
+                });
+                
+                return;
+            }
+
+            connection.socket.emit(Messages.LOBBY_CHANGE_GAME_BALL_SPEED_RESPONSE, {
+                success: true
+            });
+
+            this.onGameBallSpeedChanged(data.ball_speed);
+        });
+
+        //on user send a request to change the player life
+        connection.socket.on(Messages.LOBBY_CHANGE_GAME_PLAYER_LIFE, (data: {player_life: number}) => {
+            if (connection.connection_data.user.userId !== this._owner_id) {
+                connection.socket.emit(Messages.LOBBY_CHANGE_GAME_PLAYER_LIFE_RESPONSE, {
+                    success: false,
+                    messages: ["NOT_OWNER"]
+                });
+                return;
+            }
+
+            const result = this.changeGamePlayerLife(data.player_life);
+            if (!result.success) {
+                connection.socket.emit(Messages.LOBBY_CHANGE_GAME_PLAYER_LIFE_RESPONSE, {
+                    success: false,
+                    messages: result.messages
+                });
+
+                return;
+            }
+
+            connection.socket.emit(Messages.LOBBY_CHANGE_GAME_PLAYER_LIFE_RESPONSE, {
+                success: true
+            });
+
+            this.onGamePlayerLifeChanged(data.player_life);
+        });
+
         //on user send a request to set if is ready or not.
         connection.socket.on(Messages.LOBBY_SET_READY, (data: {ready: boolean}) => {
             this.setReady(connection.connection_data.user.userId, data.ready);
@@ -809,6 +1230,12 @@ export default class Lobby {
         socket.removeAllListeners(Messages.LOBBY_KICK_USER);
         socket.removeAllListeners(Messages.LOBBY_CHANGE_PASSWORD);
         socket.removeAllListeners(Messages.LOBBY_CHANGE_MAX_PLAYERS);
+        socket.removeAllListeners(Messages.LOBBY_CHANGE_GAME_PLAYER_COUNT);
+        socket.removeAllListeners(Messages.LOBBY_CHANGE_GAME_PLAYER_SIZE);
+        socket.removeAllListeners(Messages.LOBBY_CHANGE_GAME_PLAYER_SPEED);
+        socket.removeAllListeners(Messages.LOBBY_CHANGE_GAME_BALL_SIZE);
+        socket.removeAllListeners(Messages.LOBBY_CHANGE_GAME_BALL_SPEED);
+        socket.removeAllListeners(Messages.LOBBY_CHANGE_GAME_PLAYER_LIFE);
         socket.removeAllListeners(Messages.LOBBY_SET_READY);
     }
     /**

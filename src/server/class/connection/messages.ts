@@ -74,6 +74,24 @@ export default class Messages{
     public static readonly LOBBY_CHANGE_MAX_PLAYERS = "lobby-change-max-player";
     public static readonly LOBBY_CHANGE_MAX_PLAYERS_RESPONSE = "lobby-change-max-players-response";
 
+    public static readonly LOBBY_CHANGE_GAME_PLAYER_COUNT = "lobby-change-player-count";
+    public static readonly LOBBY_CHANGE_GAME_PLAYER_COUNT_RESPONSE = "lobby-change-player-count-response";
+
+    public static readonly LOBBY_CHANGE_GAME_PLAYER_SIZE = "lobby-change-game-player-size";
+    public static readonly LOBBY_CHANGE_GAME_PLAYER_SIZE_RESPONSE = "lobby-change-game-player-size-response";
+
+    public static readonly LOBBY_CHANGE_GAME_BALL_SIZE = "lobby-change-game-ball-size";
+    public static readonly LOBBY_CHANGE_GAME_BALL_SIZE_RESPONSE = "lobby-change-game-ball-size-response";
+
+    public static readonly LOBBY_CHANGE_GAME_PLAYER_SPEED = "lobby-change-game-player-speed";
+    public static readonly LOBBY_CHANGE_GAME_PLAYER_SPEED_RESPONSE = "lobby-change-game-player-speed-response";
+
+    public static readonly LOBBY_CHANGE_GAME_BALL_SPEED = "lobby-change-game-ball-speed";
+    public static readonly LOBBY_CHANGE_GAME_BALL_SPEED_RESPONSE = "lobby-change-game-ball-speed-response";
+
+    public static readonly LOBBY_CHANGE_GAME_PLAYER_LIFE = "lobby-change-game-player-life";
+    public static readonly LOBBY_CHANGE_GAME_PLAYER_LIFE_RESPONSE = "lobby-change-game-player-life-response";
+
     public static readonly LOBBY_SET_READY = "lobby-set-ready";
 
     //#endregion

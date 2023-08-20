@@ -1129,6 +1129,176 @@ function refreshSettingsList(){
 
     //#endregion
 
+    //#region game player count
+
+    const game_player_count = new Setting(
+        'Game player count',
+        SettingsType.NUMBER,
+        [SettingConstraint.NUMBER_RANGE(1, 5)],
+        LobbiesConnectionManager.currentLobbyData.game_player_count
+    );
+
+    game_player_count.onValueChanged.subscribe(async (value) => {
+        const response =await LobbiesConnectionManager.setGamePlayerCount(value);
+    });
+
+    const game_player_count_element = new SettingsElement(
+        game_player_count,
+        readonly
+    );
+
+    lobby_settings_elements_list.push(game_player_count_element);
+
+    //#endregion
+
+    //#region game player life
+
+    const game_player_life = new Setting(
+        'Game player life',
+        SettingsType.NUMBER,
+        [SettingConstraint.NUMBER_RANGE(0, 11)],
+        LobbiesConnectionManager.currentLobbyData.game_player_life
+    );
+
+    game_player_life.onValueChanged.subscribe(async (value) => {
+        const response = await LobbiesConnectionManager.setGamePlayerLife(value);
+    });
+
+    const game_player_life_element = new SettingsElement(
+        game_player_life,
+        readonly
+    );
+
+    lobby_settings_elements_list.push(game_player_life_element);
+
+    //#endregion
+
+    //#region game player size
+
+    const game_player_size = LobbiesConnectionManager.currentLobbyData.game_player_size;
+
+    const game_player_width = new Setting(
+        'Game player width',
+        SettingsType.NUMBER,
+        [SettingConstraint.NUMBER_RANGE(14, 701)],
+        game_player_size.width
+    );
+
+    const game_player_height = new Setting(
+        'Game player height',
+        SettingsType.NUMBER,
+        [SettingConstraint.NUMBER_RANGE(9, 51)],
+        game_player_size.height
+    );
+
+    game_player_width.onValueChanged.subscribe(async (value) => {
+        const response =await LobbiesConnectionManager.setGamePlayerSize({width: value, height: game_player_size.height});
+    });
+
+    game_player_height.onValueChanged.subscribe(async (value) => {
+        const response =await LobbiesConnectionManager.setGamePlayerSize({width: game_player_size.width, height: value});
+    });
+
+    const game_player_width_element = new SettingsElement(
+        game_player_width,
+        readonly
+    );
+
+    const game_player_height_element = new SettingsElement(
+        game_player_height,
+        readonly
+    );
+
+    lobby_settings_elements_list.push(game_player_width_element);
+    lobby_settings_elements_list.push(game_player_height_element);
+
+    //#endregion
+
+    //#region game ball size
+
+    const game_ball_size = LobbiesConnectionManager.currentLobbyData.game_ball_size;
+
+    const game_ball_width = new Setting(
+        'Game ball width',
+        SettingsType.NUMBER,
+        [SettingConstraint.NUMBER_RANGE(9, 301)],
+        game_ball_size.width
+    );
+
+    const game_ball_height = new Setting(
+        'Game ball height',
+        SettingsType.NUMBER,
+        [SettingConstraint.NUMBER_RANGE(9, 301)],
+        game_ball_size.height
+    );
+
+    game_ball_width.onValueChanged.subscribe(async (value) => {
+        const response = await LobbiesConnectionManager.setGameBallSize({width: value, height: game_ball_size.height});
+    });
+
+    game_ball_height.onValueChanged.subscribe(async (value) => {
+        const response =await LobbiesConnectionManager.setGameBallSize({width: game_ball_size.width, height: value});
+    });
+
+    const game_ball_width_element = new SettingsElement(
+        game_ball_width,
+        readonly
+    );
+
+    const game_ball_height_element = new SettingsElement(
+        game_ball_height,
+        readonly
+    );
+
+    lobby_settings_elements_list.push(game_ball_width_element);
+    lobby_settings_elements_list.push(game_ball_height_element);
+
+    //#endregion
+
+    //#region game player speed
+
+    const game_player_speed = new Setting(
+        'Game player speed',
+        SettingsType.NUMBER,
+        [SettingConstraint.NUMBER_RANGE(0, 51)],
+        LobbiesConnectionManager.currentLobbyData.game_player_speed
+    );
+
+    game_player_speed.onValueChanged.subscribe(async (value) => {
+        const response =await LobbiesConnectionManager.setGamePlayerSpeed(value);
+    });
+
+    const game_player_speed_element = new SettingsElement(
+        game_player_speed,
+        readonly
+    );
+
+    lobby_settings_elements_list.push(game_player_speed_element);
+
+    //#endregion
+
+    //#region game ball speed
+
+    const game_ball_speed = new Setting(
+        'Game ball speed',
+        SettingsType.NUMBER,
+        [SettingConstraint.NUMBER_RANGE(0, 51)],
+        LobbiesConnectionManager.currentLobbyData.game_ball_speed
+    );
+
+    game_ball_speed.onValueChanged.subscribe(async (value) => {
+        const response =await LobbiesConnectionManager.setGameBallSpeed(value);
+    });
+
+    const game_ball_speed_element = new SettingsElement(
+        game_ball_speed,
+        readonly
+    );
+
+    lobby_settings_elements_list.push(game_ball_speed_element);
+
+    //#endregion
+    
     //append elements to the list foreach settings element
     lobby_settings_elements_list.forEach((element) => {
         element_lobby_settings_list.appendChild(element.element);

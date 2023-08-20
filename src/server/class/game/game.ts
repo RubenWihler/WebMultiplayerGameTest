@@ -462,7 +462,7 @@ export default class Game {
         player.localId = localId;
         player.fixed = false;
         player.color = EngineConfig.PLAYER_COLORS[playerCount][localId];
-        player.spawnPosition = EngineConfig.PLAYER_SPAWN_POSITIONS[playerCount][localId];
+        player.spawnPosition = EngineConfig.getSpawnPositions(playerCount, EngineConfig.TERRAIN_MATRIX_SIZE, this._settings.player_size, EngineConfig.PLAYER_SPAWN_POSITION_OFFSET)[localId];
         player.movementType = EngineConfig.PLAYER_MOVEMENT_TYPES[playerCount][localId];
         player.position = player.spawnPosition;
 
