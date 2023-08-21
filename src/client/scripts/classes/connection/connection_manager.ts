@@ -1,6 +1,5 @@
 declare var io: any;
 declare var Socket: any;
-// import { io, Socket } from 'socket.io-client';
 import ObservableEvent from '../global_types/observable_event.js';
 
 export default class ConnectionManager {

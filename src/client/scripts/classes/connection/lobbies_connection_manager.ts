@@ -1,6 +1,5 @@
 import ConnectionManager from "./connection_manager.js";
 import ObservableEvent from "../global_types/observable_event.js";
-import UserData from "./types/user_data.js";
 import { LobbyData } from "./types/lobbies_types.js";
 import RequestOperation from "../global_types/request_operation.js";
 import ViewsManager from "../views/views_manager.js";
