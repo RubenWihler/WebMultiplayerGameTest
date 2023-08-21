@@ -1,4 +1,3 @@
-import ObservableEvent from "../../../event_system/observable_event.js";
 import Position from "./position.js";
 
 /**

@@ -1,4 +1,3 @@
-import UserProcessor from "../database/processor/user_processor.js";
 import ConnectionHandler from "./connection_handler.js";
 import Messages from "./messages.js";
 

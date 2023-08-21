@@ -2,7 +2,6 @@ import { Socket, Server } from 'socket.io';
 import UserProcessor from '../database/processor/user_processor.js';
 import ConnectionHandler from './connection_handler.js';
 import ObservableEvent from '../event_system/observable_event.js';
-import { json } from 'express';
 import Messages from './messages.js';
 
 export default class SocketManager {

@@ -1,4 +1,3 @@
-
 /**
  * A class representing a game object
  */
