@@ -1184,33 +1184,16 @@ function refreshSettingsList(){
         game_player_size.width
     );
 
-    const game_player_height = new Setting(
-        'Game player height',
-        SettingsType.NUMBER,
-        [SettingConstraint.NUMBER_RANGE(9, 51)],
-        game_player_size.height
-    );
-
     game_player_width.onValueChanged.subscribe(async (value) => {
         const response =await LobbiesConnectionManager.setGamePlayerSize({width: value, height: game_player_size.height});
-    });
-
-    game_player_height.onValueChanged.subscribe(async (value) => {
-        const response =await LobbiesConnectionManager.setGamePlayerSize({width: game_player_size.width, height: value});
     });
 
     const game_player_width_element = new SettingsElement(
         game_player_width,
         readonly
     );
-
-    const game_player_height_element = new SettingsElement(
-        game_player_height,
-        readonly
-    );
-
+   
     lobby_settings_elements_list.push(game_player_width_element);
-    lobby_settings_elements_list.push(game_player_height_element);
 
     //#endregion
 
