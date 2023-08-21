@@ -362,9 +362,24 @@
         </div>
 
         <div class="view" id="game" style="display: none; visibility: hidden;">
+            <div id="leaderboard-container" style="display: none; visibility: hidden;">
+                <div id="leaderboard-card" class="glass-card">
+                    <h2>
+                        <i class="fas fa-medal"></i>
+                        <span>Leaderboard</span>
+                    </h2>
+                    <div id="leaderboard-items"></div>
+                    <div id="leaderboard-timeout-container">
+                        <span>
+                            <i class="fas fa-clock"></i>
+                            <span id="leaderboard-timeout-text">returning to lobby in</span>
+                            <span id="leaderboard-timeout-value">5</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
 
-            <div id="hud-container">
-                
+            <div id="hud-container" style="display: none; visibility: hidden;">                
                 <aside id="hud-left-container">
 
                     <div id="hud-score-container" class="glass-card">
@@ -411,7 +426,6 @@
             
             <div id="game-container"></div>
         </div>
-
     </div>
 
     <script src="./scripts/glass_card.js"></script>

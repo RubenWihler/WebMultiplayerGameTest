@@ -12,6 +12,7 @@ import Ball from "./server_game_engine/game_objects/entities/ball.js";
 import DeathZone from "./server_game_engine/game_objects/entities/death_zone.js";
 import Player from "./server_game_engine/game_objects/entities/player.js";
 import GameInitPackage from "./server_game_engine/packages/game_init_package.js";
+import LeaderboardPackage from "./server_game_engine/packages/leaderboard_package.js";
 import ScorePackage from "./server_game_engine/packages/score_package.js";
 import UpdatePackage from "./server_game_engine/packages/update_package.js";
 import { aabbCollision } from "./server_game_engine/types/collision.js";
@@ -190,6 +191,9 @@ export default class Game {
     private async end(){
         this._status = GameStatus.ENDING;
         this._ending = true;
+
+        //add the last player to the leaderboard
+        this._leaderboard.push(this._players_life.keys().next().value);
 
         //send the game end leaderboard package to all players
         this.sendGameEndLeaderboardPackage();
@@ -863,18 +867,21 @@ export default class Game {
         this._lobby.sendMessageToAllConnections(Messages.GAME_UPDATE, pack);
     }
     private sendGameEndLeaderboardPackage(){
-        const leaderboard = Array<{id: number, place: number}>();
-
-        for (let i = 0; i < this._leaderboard.size; i++){
+        const leaderboard = Array<{id: number, name: string, place: number}>();
+        const leaderboard_size = this._leaderboard.size;
+        
+        for (let i = 0; i < leaderboard_size; i++){
             const id = this._leaderboard.pop();
             const place = i + 1;
             leaderboard.push({
                 id: id,
+                name: this._players.get(id).connectionHandler.connection_data.user.username,
                 place: place
             });
         }
 
-        const pack = {
+        const pack : LeaderboardPackage = {
+            timout_duration: EngineConfig.LEADERBOARD_TIMEOUT_DURATION,
             leaderboard: leaderboard
         };
 

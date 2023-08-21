@@ -59,6 +59,8 @@ export default class EngineConfig{
 
     static readonly DEATH_ZONE_THICKNESS = 50;
 
+    static readonly LEADERBOARD_TIMEOUT_DURATION = 5;
+
     static readonly PLAYER_COLORS = {
         2: [
             0xFF7963,
@@ -76,7 +78,6 @@ export default class EngineConfig{
             0x874DFF
         ]
     }
-
     static readonly PLAYER_SPAWN_POSITION_OFFSET = 50;
 
     static readonly PLAYER_SPAWN_POSITIONS = {

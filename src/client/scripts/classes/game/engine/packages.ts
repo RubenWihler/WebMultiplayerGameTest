@@ -95,7 +95,8 @@ export interface ScorePackage {
  * Represents a package that is received from the server when the game ends to show the leaderboard.
  */
 export interface LeaderboardPackage {
-    leaderboard: Array<{id: number, place: number}>;
+    timout_duration: number;
+    leaderboard: Array<{id: number, name: string, place: number}>;
 }
 
 /**
@@ -107,4 +108,3 @@ export interface PlayerUpdatePackage{
         local_id: number
     }>;
 }
-

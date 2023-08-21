@@ -1,7 +1,7 @@
 import * as PIXI from "pixi.js"
 import GameObject from "./game_object.js";
 import GameSettings from "../game_settings.js";
-import UpdatePackage, { InputPackage, PlayerUpdatePackage, ScorePackage } from "./packages.js";
+import UpdatePackage, { InputPackage, LeaderboardPackage, PlayerUpdatePackage, ScorePackage } from "./packages.js";
 import Player from "./components/player.js";
 import Position from "./position.js";
 import Ball from "./components/ball.js";
@@ -36,12 +36,17 @@ export default class Game{
     
     //hud manager
     private _hud_manager: HUDManager;
+    private _leaderboard_timer: NodeJS.Timer;
+    private _leaderboard_current_duration: number;
+
+    private _game_container: HTMLDivElement;
 
     public get terrain(): PIXI.Container{
         return this._terrain;
     }
 
     constructor(app: PIXI.Application, settings: GameSettings){
+        this._game_container = document.querySelector("#game-container");
         this._settings = settings;
         this._app = app;
         this._scene = null;
@@ -73,6 +78,10 @@ export default class Game{
      * Starts the game loop and binds events.
      */
     private start(){
+        // display game
+        this._game_container.style.display = "block";
+        this._game_container.style.visibility = "visible";
+
         // display hud
         this._hud_manager.display();
 
@@ -93,6 +102,7 @@ export default class Game{
         GameConnectionManager.instance.onScore.subscribe((data) => this.onScore(data));
         GameConnectionManager.instance.onRoundStart.subscribe(() => this.onRoundStart());
         GameConnectionManager.instance.onRoundEnd.subscribe(() => this.onRoundEnd());
+        GameConnectionManager.instance.onGameLeaderboard.subscribe((data) => this.onLeaderboard(data));
         GameConnectionManager.instance.onPlayerUpdate.subscribe((data) => this.onPlayerUpdate(data));
     }
 
@@ -445,6 +455,37 @@ export default class Game{
         if (!this._spectating && !data.players.find((p) => p.id == this._client_player.id)){
             this.spectate();
         }
+    }
+
+    private onLeaderboard(data: LeaderboardPackage){
+        //hide game hud
+        this._hud_manager.hide();
+
+        //hide game
+        this._game_container.style.display = "none";
+        this._game_container.style.visibility = "hidden";
+
+        //update leaderboard and display it
+        this._hud_manager.updateLeaderboard(data.leaderboard);
+        this._hud_manager.displayLeaderboard();
+
+        //set leaderboard timeout duration
+        this._leaderboard_current_duration = data.timout_duration;
+
+        //start leaderboard timer
+        this._leaderboard_timer = setInterval(() => {
+            //decrease leaderboard timeout
+            this._leaderboard_current_duration--;
+
+            //update leaderboard timeout
+            this._hud_manager.setLeaderboardTimeout(this._leaderboard_current_duration);
+
+            //if timeout is over hide leaderboard and stop timer
+            if (this._leaderboard_current_duration <= 0){
+                clearInterval(this._leaderboard_timer);
+                this._hud_manager.hideLeaderboard();
+            }
+        }, 1000);
     }
 
     //#endregion

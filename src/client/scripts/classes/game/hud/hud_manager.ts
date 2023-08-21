@@ -1,4 +1,5 @@
 import ObservableEvent from "../../global_types/observable_event.js";
+import LeaderboardElement from "./leaderboard_element.js";
 import ScoreElement from "./score_element.js";
 
 /**
@@ -9,10 +10,14 @@ export default class HUDManager{
 
     private _hud_container: HTMLDivElement;
     private _score_container: HTMLDivElement;
+    private _leaderboard_container: HTMLDivElement;
+    private _leaderboard_items_container: HTMLDivElement;
+    private _leaderboard_timeout_value: HTMLSpanElement;
     private _element_spectate: HTMLSpanElement;
     private _leave_button: HTMLButtonElement;
 
     private _scores_elements: Array<ScoreElement> = [];
+    private _leaderboard_elements: Array<LeaderboardElement> = [];
 
     public readonly onLeaveClick: ObservableEvent<void>;
     
@@ -31,6 +36,9 @@ export default class HUDManager{
 
         this._hud_container = document.querySelector("#hud-container");
         this._score_container = document.querySelector("#hud-scores-items");
+        this._leaderboard_container = document.querySelector("#leaderboard-container");
+        this._leaderboard_items_container = document.querySelector("#leaderboard-items");
+        this._leaderboard_timeout_value = document.querySelector("#leaderboard-timeout-value");
         this._element_spectate = document.querySelector("#hud-spectate");
         this._leave_button = document.querySelector("#hud-leave-button");
 
@@ -72,6 +80,44 @@ export default class HUDManager{
                 )
             );
         });
+    }
+
+    //#endregion
+
+    //#region Leaderboard
+
+    /**
+     * Show leaderboard element
+     */
+    public displayLeaderboard(){
+        this.displayElement(this._leaderboard_container, true);
+    }
+    /**
+     * Hide leaderboard element
+     */
+    public hideLeaderboard(){
+        this.displayElement(this._leaderboard_container, false);
+    }
+    /**
+     * Update leaderboard element with new data
+     * @param leaderboard The new leaderboard data
+     */
+    public updateLeaderboard(leaderboard: Array<{id: number, name: string, place: number}>){
+        this._leaderboard_items_container.innerHTML = "";
+        this._leaderboard_elements = [];
+
+        leaderboard.forEach((element) => {
+            this._leaderboard_elements.push(
+                new LeaderboardElement(
+                    element.place,
+                    element.name,
+                    this._leaderboard_items_container
+                )
+            );
+        });
+    }
+    public setLeaderboardTimeout(duration: number){
+        this._leaderboard_timeout_value.innerText = duration.toString();
     }
 
     //#endregion
