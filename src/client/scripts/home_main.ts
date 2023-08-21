@@ -11,7 +11,6 @@ import SettingsElement from './classes/ui/elements/lobby_settings_item.js';
 import { Setting, SettingsType, SettingConstraint } from './classes/settings/settings_system.js';
 import { init as initGame, start as startGame } from './classes/game/game_main.js';
 import GameSettings, { PlayerData } from './classes/game/game_settings.js';
-import GameManager from './classes/game/engine/game_manager.js';
 import GameConnectionManager from './classes/connection/game_connection_manager.js';
 import { InitPackage } from './classes/game/engine/packages.js';
 
