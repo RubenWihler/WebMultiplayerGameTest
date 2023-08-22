@@ -1,8 +1,8 @@
 {
-  "name": "webmultiplayergametest",
+  "name": "multi-pong",
   "version": "1.0.0",
   "description": "",
-  "main": "server_main.js",
+  "main": "server.js",
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
